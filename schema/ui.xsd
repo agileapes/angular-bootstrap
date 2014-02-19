@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://www.agileapes.com/ui"
+           xmlns="http://www.agileapes.com/ui"
+           elementFormDefault="qualified">
+
+    <xs:element name="icon">
+        <xs:complexType>
+            <xs:attribute name="glyph" use="required" type="glyph"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="dropdown">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice>
+                    <xs:element name="dropdown-divider"/>
+                    <xs:element name="dropdown-item">
+                        <xs:complexType>
+                            <xs:attribute name="label" use="required" type="xs:string"/>
+                            <xs:attribute name="href" use="required" type="xs:string"/>
+                            <xs:attribute name="glyph" use="optional" type="glyph"/>
+                            <xs:attribute name="disabled" use="optional" type="true"/>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element name="dropdown-header">
+                        <xs:complexType>
+                            <xs:attribute name="label" use="required" type="xs:string"/>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:choice>
+            </xs:sequence>
+            <xs:attribute name="id" use="required" type="xs:string"/>
+            <xs:attribute name="position" use="optional" type="horizontalPosition"/>
+            <xs:attribute name="glyph" use="optional" type="glyph"/>
+            <xs:attribute name="label" use="required" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+
+    <xs:simpleType name="horizontalPosition">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="before"/>
+            <xs:enumeration value="after"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="glyph">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="asterisk"/>
+            <xs:enumeration value="plus"/>
+            <xs:enumeration value="euro"/>
+            <xs:enumeration value="minus"/>
+            <xs:enumeration value="cloud"/>
+            <xs:enumeration value="envelope"/>
+            <xs:enumeration value="pencil"/>
+            <xs:enumeration value="glass"/>
+            <xs:enumeration value="music"/>
+            <xs:enumeration value="search"/>
+            <xs:enumeration value="heart"/>
+            <xs:enumeration value="star"/>
+            <xs:enumeration value="star-empty"/>
+            <xs:enumeration value="user"/>
+            <xs:enumeration value="film"/>
+            <xs:enumeration value="th-large"/>
+            <xs:enumeration value="th"/>
+            <xs:enumeration value="th-list"/>
+            <xs:enumeration value="ok"/>
+            <xs:enumeration value="remove"/>
+            <xs:enumeration value="zoom-in"/>
+            <xs:enumeration value="zoom-out"/>
+            <xs:enumeration value="off"/>
+            <xs:enumeration value="signal"/>
+            <xs:enumeration value="cog"/>
+            <xs:enumeration value="trash"/>
+            <xs:enumeration value="home"/>
+            <xs:enumeration value="file"/>
+            <xs:enumeration value="time"/>
+            <xs:enumeration value="road"/>
+            <xs:enumeration value="download-alt"/>
+            <xs:enumeration value="download"/>
+            <xs:enumeration value="upload"/>
+            <xs:enumeration value="inbox"/>
+            <xs:enumeration value="play-circle"/>
+            <xs:enumeration value="repeat"/>
+            <xs:enumeration value="refresh"/>
+            <xs:enumeration value="list-alt"/>
+            <xs:enumeration value="lock"/>
+            <xs:enumeration value="flag"/>
+            <xs:enumeration value="headphones"/>
+            <xs:enumeration value="volume-off"/>
+            <xs:enumeration value="volume-down"/>
+            <xs:enumeration value="volume-up"/>
+            <xs:enumeration value="qrcode"/>
+            <xs:enumeration value="barcode"/>
+            <xs:enumeration value="tag"/>
+            <xs:enumeration value="tags"/>
+            <xs:enumeration value="book"/>
+            <xs:enumeration value="bookmark"/>
+            <xs:enumeration value="print"/>
+            <xs:enumeration value="camera"/>
+            <xs:enumeration value="font"/>
+            <xs:enumeration value="bold"/>
+            <xs:enumeration value="italic"/>
+            <xs:enumeration value="text-height"/>
+            <xs:enumeration value="text-width"/>
+            <xs:enumeration value="align-left"/>
+            <xs:enumeration value="align-center"/>
+            <xs:enumeration value="align-right"/>
+            <xs:enumeration value="align-justify"/>
+            <xs:enumeration value="list"/>
+            <xs:enumeration value="indent-left"/>
+            <xs:enumeration value="indent-right"/>
+            <xs:enumeration value="facetime-video"/>
+            <xs:enumeration value="picture"/>
+            <xs:enumeration value="map-marker"/>
+            <xs:enumeration value="adjust"/>
+            <xs:enumeration value="tint"/>
+            <xs:enumeration value="edit"/>
+            <xs:enumeration value="share"/>
+            <xs:enumeration value="check"/>
+            <xs:enumeration value="move"/>
+            <xs:enumeration value="step-backward"/>
+            <xs:enumeration value="fast-backward"/>
+            <xs:enumeration value="backward"/>
+            <xs:enumeration value="play"/>
+            <xs:enumeration value="pause"/>
+            <xs:enumeration value="stop"/>
+            <xs:enumeration value="forward"/>
+            <xs:enumeration value="fast-forward"/>
+            <xs:enumeration value="step-forward"/>
+            <xs:enumeration value="eject"/>
+            <xs:enumeration value="chevron-left"/>
+            <xs:enumeration value="chevron-right"/>
+            <xs:enumeration value="plus-sign"/>
+            <xs:enumeration value="minus-sign"/>
+            <xs:enumeration value="remove-sign"/>
+            <xs:enumeration value="ok-sign"/>
+            <xs:enumeration value="question-sign"/>
+            <xs:enumeration value="info-sign"/>
+            <xs:enumeration value="screenshot"/>
+            <xs:enumeration value="remove-circle"/>
+            <xs:enumeration value="ok-circle"/>
+            <xs:enumeration value="ban-circle"/>
+            <xs:enumeration value="arrow-left"/>
+            <xs:enumeration value="arrow-right"/>
+            <xs:enumeration value="arrow-up"/>
+            <xs:enumeration value="arrow-down"/>
+            <xs:enumeration value="share-alt"/>
+            <xs:enumeration value="resize-full"/>
+            <xs:enumeration value="resize-small"/>
+            <xs:enumeration value="exclamation-sign"/>
+            <xs:enumeration value="gift"/>
+            <xs:enumeration value="leaf"/>
+            <xs:enumeration value="fire"/>
+            <xs:enumeration value="eye-open"/>
+            <xs:enumeration value="eye-close"/>
+            <xs:enumeration value="warning-sign"/>
+            <xs:enumeration value="plane"/>
+            <xs:enumeration value="calendar"/>
+            <xs:enumeration value="random"/>
+            <xs:enumeration value="comment"/>
+            <xs:enumeration value="magnet"/>
+            <xs:enumeration value="chevron-up"/>
+            <xs:enumeration value="chevron-down"/>
+            <xs:enumeration value="retweet"/>
+            <xs:enumeration value="shopping-cart"/>
+            <xs:enumeration value="folder-close"/>
+            <xs:enumeration value="folder-open"/>
+            <xs:enumeration value="resize-vertical"/>
+            <xs:enumeration value="resize-horizontal"/>
+            <xs:enumeration value="hdd"/>
+            <xs:enumeration value="bullhorn"/>
+            <xs:enumeration value="bell"/>
+            <xs:enumeration value="certificate"/>
+            <xs:enumeration value="thumbs-up"/>
+            <xs:enumeration value="thumbs-down"/>
+            <xs:enumeration value="hand-right"/>
+            <xs:enumeration value="hand-left"/>
+            <xs:enumeration value="hand-up"/>
+            <xs:enumeration value="hand-down"/>
+            <xs:enumeration value="circle-arrow-right"/>
+            <xs:enumeration value="circle-arrow-left"/>
+            <xs:enumeration value="circle-arrow-up"/>
+            <xs:enumeration value="circle-arrow-down"/>
+            <xs:enumeration value="globe"/>
+            <xs:enumeration value="wrench"/>
+            <xs:enumeration value="tasks"/>
+            <xs:enumeration value="filter"/>
+            <xs:enumeration value="briefcase"/>
+            <xs:enumeration value="fullscreen"/>
+            <xs:enumeration value="dashboard"/>
+            <xs:enumeration value="paperclip"/>
+            <xs:enumeration value="heart-empty"/>
+            <xs:enumeration value="link"/>
+            <xs:enumeration value="phone"/>
+            <xs:enumeration value="pushpin"/>
+            <xs:enumeration value="usd"/>
+            <xs:enumeration value="gbp"/>
+            <xs:enumeration value="sort"/>
+            <xs:enumeration value="sort-by-alphabet"/>
+            <xs:enumeration value="sort-by-alphabet-alt"/>
+            <xs:enumeration value="sort-by-order"/>
+            <xs:enumeration value="sort-by-order-alt"/>
+            <xs:enumeration value="sort-by-attributes"/>
+            <xs:enumeration value="sort-by-attributes-alt"/>
+            <xs:enumeration value="unchecked"/>
+            <xs:enumeration value="expand"/>
+            <xs:enumeration value="collapse-down"/>
+            <xs:enumeration value="collapse-up"/>
+            <xs:enumeration value="log-in"/>
+            <xs:enumeration value="flash"/>
+            <xs:enumeration value="log-out"/>
+            <xs:enumeration value="new-window"/>
+            <xs:enumeration value="record"/>
+            <xs:enumeration value="save"/>
+            <xs:enumeration value="open"/>
+            <xs:enumeration value="saved"/>
+            <xs:enumeration value="import"/>
+            <xs:enumeration value="export"/>
+            <xs:enumeration value="send"/>
+            <xs:enumeration value="floppy-disk"/>
+            <xs:enumeration value="floppy-saved"/>
+            <xs:enumeration value="floppy-remove"/>
+            <xs:enumeration value="floppy-save"/>
+            <xs:enumeration value="floppy-open"/>
+            <xs:enumeration value="credit-card"/>
+            <xs:enumeration value="transfer"/>
+            <xs:enumeration value="cutlery"/>
+            <xs:enumeration value="header"/>
+            <xs:enumeration value="compressed"/>
+            <xs:enumeration value="earphone"/>
+            <xs:enumeration value="phone-alt"/>
+            <xs:enumeration value="tower"/>
+            <xs:enumeration value="stats"/>
+            <xs:enumeration value="sd-video"/>
+            <xs:enumeration value="hd-video"/>
+            <xs:enumeration value="subtitles"/>
+            <xs:enumeration value="sound-stereo"/>
+            <xs:enumeration value="sound-dolby"/>
+            <xs:enumeration value="sound-5-1"/>
+            <xs:enumeration value="sound-6-1"/>
+            <xs:enumeration value="sound-7-1"/>
+            <xs:enumeration value="copyright-mark"/>
+            <xs:enumeration value="registration-mark"/>
+            <xs:enumeration value="cloud-download"/>
+            <xs:enumeration value="cloud-upload"/>
+            <xs:enumeration value="tree-conifer"/>
+            <xs:enumeration value="tree-deciduous"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="true">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="true"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>
