@@ -27,7 +27,10 @@ BootstrapUI.directives.dropdown = function () {
             glyph: "@glyph",
             id: "@id",
             position: "@position",
-            label: "@label"
+            label: "@label",
+            kind: "@kind",
+            caret: "@caret",
+            size: "@size"
         },
         controller: function ($scope, $element) {
             var node = $element.get(0);
@@ -103,7 +106,8 @@ BootstrapUI.directives.groupButton = function () {
             label: "@label",
             href: "@href",
             glyph: "@glyph",
-            position: "@position"
+            position: "@position",
+            kind: "@kind"
         }
     };
 };

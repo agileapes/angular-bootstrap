@@ -22,6 +22,7 @@
                             <xs:attribute name="label" use="optional" type="xs:string"/>
                             <xs:attribute name="glyph" use="optional" type="glyph"/>
                             <xs:attribute name="position" use="optional" type="horizontalPosition"/>
+                            <xs:attribute name="kind" use="optional" default="none" type="buttonKind"/>
                         </xs:complexType>
                     </xs:element>
                 </xs:choice>
@@ -54,6 +55,9 @@
         <xs:attribute name="position" use="optional" type="horizontalPosition"/>
         <xs:attribute name="glyph" use="optional" type="glyph"/>
         <xs:attribute name="label" use="required" type="xs:string"/>
+        <xs:attribute name="kind" use="optional" default="none" type="buttonKind"/>
+        <xs:attribute name="caret" use="optional" default="false" type="true"/>
+        <xs:attribute name="size" use="optional" default="normal" type="size"/>
     </xs:complexType>
 
     <xs:simpleType name="horizontalPosition">
@@ -285,6 +289,17 @@
             <xs:enumeration value="normal"/>
             <xs:enumeration value="small"/>
             <xs:enumeration value="tiny"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="buttonKind">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="none"/>
+            <xs:enumeration value="normal"/>
+            <xs:enumeration value="primary"/>
+            <xs:enumeration value="success"/>
+            <xs:enumeration value="information"/>
+            <xs:enumeration value="warning"/>
+            <xs:enumeration value="danger"/>
         </xs:restriction>
     </xs:simpleType>
 </xs:schema>
