@@ -1,6 +1,7 @@
-<div class="dropdown">
-    <button class="btn dropdown-toggle" type="button" id="{{id}}" data-toggle="dropdown">
+<div class="dropdown" ng-class="{'btn-group': isBtnGroup()}">
+    <button class="btn dropdown-toggle" ng-class="{'btn-default': isBtnGroup()}" type="button" id="{{id}}" data-toggle="dropdown">
         <span ng-if="glyph && position == 'before'"><span class="glyphicon glyphicon-{{glyph}}"></span> </span> {{label}} <span ng-if="glyph && position == 'after'"><span class="glyphicon glyphicon-{{glyph}}"></span></span>
+        <span ng-class="{caret: isBtnGroup()}"></span>
     </button>
     <ul class="dropdown-menu" role="menu" aria-labelledby="{{id}}" ng-transclude>
     </ul>

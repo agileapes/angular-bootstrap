@@ -27,6 +27,16 @@ BootstrapUI.directives.dropdown = function () {
             position: "@position",
             label: "@label"
         },
+        controller: function ($scope, $element) {
+            var node = $element.get(0);
+            while (node && !angular.element(node).hasClass("dropdown")) {
+                node = node.parentNode;
+            }
+            var isInBtnGroup = angular.element(node.parentNode).hasClass("btn-group");
+            $scope.isBtnGroup = function () {
+                return isInBtnGroup;
+            };
+        },
         transclude: true,
         replace: true
     };
