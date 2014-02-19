@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<!--suppress CheckTagEmptyBody -->
+<html xmlns:x="http://www.agileapes.com/ui" ng-app="demoApp">
+<head>
+    <title>Angular Bootstrap</title>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.css"/>
+    <script src="js/jquery-2.0.3.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="js/directives.js"></script>
+    <script src="js/angular.js"></script>
+    <script src="js/demo.js"></script>
+</head>
+<body>
+<div class="container">
+    <x:button-group>
+        <x:group-button glyph="move"></x:group-button>
+        <x:group-button glyph="upload"></x:group-button>
+        <x:dropdown id="myDropdown" label="Hello" position="after">
+            <x:dropdown-header label="First Header"></x:dropdown-header>
+            <x:dropdown-item label="First" href="javascript:alert(1);" glyph="save"></x:dropdown-item>
+            <x:dropdown-item label="Second" href="javascript:alert(2);" glyph="asterisk"></x:dropdown-item>
+            <x:dropdown-divider></x:dropdown-divider>
+            <x:dropdown-item disabled="true" label="Third" href="javascript:alert(3);"></x:dropdown-item>
+            <x:dropdown-item label="Fourth" href="javascript:alert(4);"></x:dropdown-item>
+        </x:dropdown>
+    </x:button-group>
+</div>
+</body>
+</html>

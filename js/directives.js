@@ -5,7 +5,9 @@ BootstrapUI.templates = {
     dropdown: "templates/dropdown.html",
     dropdownItem: "templates/dropdown-item.html",
     dropdownDivider: "templates/dropdown-divider.html",
-    dropdownHeader: "templates/dropdown-header.html"
+    dropdownHeader: "templates/dropdown-header.html",
+    buttonGroup: "templates/button-group.html",
+    buttonGroupButton: "templates/button-group-button.html"
 };
 BootstrapUI.directives = {};
 BootstrapUI.directives.icon = function () {
@@ -32,7 +34,7 @@ BootstrapUI.directives.dropdown = function () {
             while (node && !angular.element(node).hasClass("dropdown")) {
                 node = node.parentNode;
             }
-            var isInBtnGroup = angular.element(node.parentNode).hasClass("btn-group");
+            var isInBtnGroup = angular.element(node.parentNode).hasClass("button-group");
             $scope.isBtnGroup = function () {
                 return isInBtnGroup;
             };
@@ -78,6 +80,32 @@ BootstrapUI.directives.dropdownHeader = function () {
             label: "@label"
         }
     }
+};
+BootstrapUI.directives.buttonGroup = function () {
+    return {
+        restrict: "E",
+        replace: true,
+        transclude: true,
+        templateUrl: BootstrapUI.templates.buttonGroup,
+        scope: {
+            size: "@size",
+            orientation: "@orientation"
+        }
+    };
+};
+BootstrapUI.directives.groupButton = function () {
+    return {
+        require: "^buttonGroup",
+        restrict: "E",
+        replace: true,
+        templateUrl: BootstrapUI.templates.buttonGroupButton,
+        scope: {
+            label: "@label",
+            href: "@href",
+            glyph: "@glyph",
+            position: "@position"
+        }
+    };
 };
 BootstrapUI.initialize = function () {
     var directives = [];

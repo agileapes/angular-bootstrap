@@ -10,33 +10,51 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="dropdown">
+    <xs:element name="dropdown" type="dropdown"/>
+
+    <xs:element name="button-group">
         <xs:complexType>
             <xs:sequence>
-                <xs:choice>
-                    <xs:element name="dropdown-divider"/>
-                    <xs:element name="dropdown-item">
+                <xs:choice minOccurs="1" maxOccurs="unbounded">
+                    <xs:element name="dropdown" type="dropdown"/>
+                    <xs:element name="group-button">
                         <xs:complexType>
-                            <xs:attribute name="label" use="required" type="xs:string"/>
-                            <xs:attribute name="href" use="required" type="xs:string"/>
+                            <xs:attribute name="label" use="optional" type="xs:string"/>
                             <xs:attribute name="glyph" use="optional" type="glyph"/>
-                            <xs:attribute name="disabled" use="optional" type="true"/>
-                        </xs:complexType>
-                    </xs:element>
-                    <xs:element name="dropdown-header">
-                        <xs:complexType>
-                            <xs:attribute name="label" use="required" type="xs:string"/>
+                            <xs:attribute name="position" use="optional" type="horizontalPosition"/>
                         </xs:complexType>
                     </xs:element>
                 </xs:choice>
             </xs:sequence>
-            <xs:attribute name="id" use="required" type="xs:string"/>
-            <xs:attribute name="position" use="optional" type="horizontalPosition"/>
-            <xs:attribute name="glyph" use="optional" type="glyph"/>
-            <xs:attribute name="label" use="required" type="xs:string"/>
+            <xs:attribute name="orientation" use="optional" default="horizontal" type="orientation"/>
+            <xs:attribute name="size" use="optional" default="normal" type="size"/>
         </xs:complexType>
     </xs:element>
 
+    <xs:complexType name="dropdown">
+        <xs:sequence>
+            <xs:choice minOccurs="1" maxOccurs="unbounded">
+                <xs:element name="dropdown-divider"/>
+                <xs:element name="dropdown-item">
+                    <xs:complexType>
+                        <xs:attribute name="label" use="required" type="xs:string"/>
+                        <xs:attribute name="href" use="required" type="xs:string"/>
+                        <xs:attribute name="glyph" use="optional" type="glyph"/>
+                        <xs:attribute name="disabled" use="optional" type="true"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="dropdown-header">
+                    <xs:complexType>
+                        <xs:attribute name="label" use="required" type="xs:string"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="id" use="required" type="xs:string"/>
+        <xs:attribute name="position" use="optional" type="horizontalPosition"/>
+        <xs:attribute name="glyph" use="optional" type="glyph"/>
+        <xs:attribute name="label" use="required" type="xs:string"/>
+    </xs:complexType>
 
     <xs:simpleType name="horizontalPosition">
         <xs:restriction base="xs:string">
@@ -252,6 +270,21 @@
     <xs:simpleType name="true">
         <xs:restriction base="xs:string">
             <xs:enumeration value="true"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="orientation">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="horizontal"/>
+            <xs:enumeration value="vertical"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="size">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="huge"/>
+            <xs:enumeration value="large"/>
+            <xs:enumeration value="normal"/>
+            <xs:enumeration value="small"/>
+            <xs:enumeration value="tiny"/>
         </xs:restriction>
     </xs:simpleType>
 </xs:schema>
