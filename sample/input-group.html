@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!--suppress CheckTagEmptyBody -->
+<html xmlns:x="http://www.agileapes.com/ui" ng-app="demoApp">
+<head>
+    <title>Angular Bootstrap</title>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/theme.css"/>
+    <script src="../js/config.js"></script>
+    <script src="../js/jquery-2.0.3.min.js"></script>
+    <script src="../bootstrap/js/bootstrap.min.js"></script>
+    <script src="../js/bootstrap-ui.js"></script>
+    <script src="../js/angular.js"></script>
+    <script src="../js/demo.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4">
+            <x:input-group>
+                <input type="text" class="form-control"/>
+                <x:group-append>GO</x:group-append>
+            </x:input-group>
+        </div>
+        <div class="col-lg-4">
+            <x:input-group>
+                <x:group-prepend>@</x:group-prepend>
+                <input type="text" class="form-control"/>
+            </x:input-group>
+        </div>
+        <div class="col-lg-4">
+            <x:input-group>
+                <x:group-prepend>@</x:group-prepend>
+                <input type="text" class="form-control"/>
+                <x:group-append>
+                    <button class="btn btn-default" type="button">Go!</button>
+                </x:group-append>
+            </x:input-group>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,4 @@
+BootstrapUIConfig = {
+    namespace: "x",
+    base: ".."
+};

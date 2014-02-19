@@ -1,5 +1,6 @@
 var BootstrapUI = {};
-BootstrapUI.namespace = "x";
+BootstrapUI.namespace = BootstrapUIConfig && BootstrapUIConfig.namespace ? BootstrapUIConfig.namespace : "x";
+BootstrapUI.base = BootstrapUIConfig && BootstrapUIConfig.base ? BootstrapUIConfig.base : ".";
 BootstrapUI.templates = {
     icon: "templates/icon.html",
     dropdown: "templates/dropdown.html",
@@ -7,7 +8,10 @@ BootstrapUI.templates = {
     dropdownDivider: "templates/dropdown-divider.html",
     dropdownHeader: "templates/dropdown-header.html",
     buttonGroup: "templates/button-group.html",
-    buttonGroupButton: "templates/button-group-button.html"
+    buttonGroupButton: "templates/button-group-button.html",
+    inputGroup: "templates/input-group.html",
+    inputGroupPrepend: "templates/input-group-prepend.html",
+    inputGroupAppend: "templates/input-group-append.html"
 };
 BootstrapUI.directives = {};
 BootstrapUI.directives.icon = function () {
@@ -111,11 +115,53 @@ BootstrapUI.directives.groupButton = function () {
         }
     };
 };
+BootstrapUI.directives.inputGroup = function () {
+    return {
+        restrict: "E",
+        replace: true,
+        transclude: true,
+        templateUrl: BootstrapUI.templates.inputGroup,
+        scope: {
+            size: "@size"
+        }
+    };
+};
+BootstrapUI.directives.groupPrepend = function () {
+    return {
+        require: "^inputGroup",
+        restrict: "E",
+        replace: true,
+        transclude: true,
+        templateUrl: BootstrapUI.templates.inputGroupPrepend,
+        controller: function ($scope, $element) {
+            $scope.prependAddonClass = function () {
+                return angular.element($element.get(0).parentNode).find(".input-group-prepend button").length > 0 ? "input-group-btn" : "input-group-addon";
+            };
+        }
+    };
+};
+BootstrapUI.directives.groupAppend = function () {
+    return {
+        require: "^inputGroup",
+        restrict: "E",
+        replace: true,
+        transclude: true,
+        templateUrl: BootstrapUI.templates.inputGroupAppend,
+        controller: function ($scope, $element) {
+            $scope.appendAddonClass = function () {
+                return angular.element($element.get(0).parentNode).find(".input-group-append button").length > 0 ? "input-group-btn" : "input-group-addon";
+            };
+        }
+    };
+};
 BootstrapUI.initialize = function () {
-    var directives = [];
     for (var directive in BootstrapUI.directives) {
+        //noinspection JSUnfilteredForInLoop
         BootstrapUI.directives[BootstrapUI.namespace + directive[0].toUpperCase() + directive.substring(1)] = BootstrapUI.directives[directive];
     }
-//    BootstrapUI.directives = directives;
+    for (var template in BootstrapUI.templates) {
+        //noinspection JSUnfilteredForInLoop
+        BootstrapUI.templates[template] = BootstrapUI.base + "/" + BootstrapUI.templates[template];
+    }
 };
 BootstrapUI.initialize();
