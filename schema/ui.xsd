@@ -61,6 +61,22 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="breadcrumbs">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="breadcrumb">
+                    <xs:complexType mixed="true">
+                        <xs:sequence>
+                            <xs:any processContents="lax" minOccurs="1" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                        <xs:attribute name="href" type="xs:anyURI" use="required"/>
+                        <xs:attribute name="glyph" type="glyph" use="optional"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
     <xs:complexType name="dropdown">
         <xs:sequence>
             <xs:choice minOccurs="1" maxOccurs="unbounded">

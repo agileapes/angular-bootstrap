@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<!--suppress CheckTagEmptyBody -->
+<html xmlns:x="http://www.agileapes.com/ui" ng-app="demoApp">
+<head>
+    <title>Angular Bootstrap</title>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/theme.css"/>
+    <script src="../js/config.js"></script>
+    <script src="../js/jquery-2.0.3.min.js"></script>
+    <script src="../bootstrap/js/bootstrap.min.js"></script>
+    <script src="../js/bootstrap-ui.js"></script>
+    <script src="../js/angular.js"></script>
+    <script src="../js/demo.js"></script>
+</head>
+<body>
+<div class="container">
+    <x:breadcrumbs>
+        <x:breadcrumb glyph="home" href="javascript:alert('home');">Home</x:breadcrumb>
+        <x:breadcrumb glyph="list" href="javascript:alert('library');">Library</x:breadcrumb>
+        <x:breadcrumb glyph="book" href="javascript:alert('books');">Books</x:breadcrumb>
+        <x:breadcrumb glyph="eye-open" href="javascript:alert('view book');">View Book</x:breadcrumb>
+    </x:breadcrumbs>
+</div>
+</body>
+</html>

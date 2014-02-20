@@ -17,7 +17,9 @@ BootstrapUI.templates = {
     inputGroupPrepend: "templates/input-group-prepend.html",
     inputGroupAppend: "templates/input-group-append.html",
     container: "templates/container.html",
-    section: "templates/section.html"
+    section: "templates/section.html",
+    breadcrumb: "templates/breadcrumb.html",
+    breadcrumbItem: "templates/breadcrumb-item.html"
 };
 BootstrapUI.directives = {};
 BootstrapUI.directives.icon = function () {
@@ -202,6 +204,51 @@ BootstrapUI.directives.section = function () {
         },
         link: function (scope, element, attribute, containerController) {
             containerController.addSection(scope);
+        }
+    };
+};
+BootstrapUI.directives.breadcrumbs = function () {
+    return {
+        restrict: "E",
+        transclude: true,
+        replace: true,
+        templateUrl: BootstrapUI.templates.breadcrumb,
+        controller: function ($scope) {
+            var crumbs = $scope.crumbs = [];
+            $scope.update = function () {
+                if (crumbs.length > 0) {
+                    angular.forEach(crumbs, function (crumb) {
+                        crumb.active = false;
+                    });
+                    console.log((crumbs.length - 1) + " is active now");
+                    crumbs[crumbs.length - 1].active = true;
+                }
+            };
+            this.addCrumb = function (crumb) {
+                crumbs.push(crumb);
+                $scope.update();
+            };
+        }
+    };
+};
+BootstrapUI.directives.breadcrumb = function () {
+    return {
+        require: '^breadcrumbs',
+        restrict: 'E',
+        transclude: true,
+        replace: true,
+        templateUrl: BootstrapUI.templates.breadcrumbItem,
+        scope: {
+            href: "@",
+            glyph: "@"
+        },
+        controller: function ($scope) {
+            $scope.navigate = function () {
+                window.location.href = $scope.href;
+            };
+        },
+        link: function (crumb, element, attribute, containerController) {
+            containerController.addCrumb(crumb);
         }
     };
 };
