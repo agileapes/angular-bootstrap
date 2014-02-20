@@ -1,0 +1,8 @@
+<div class="contained">
+    <ul class="nav" ng-class="{'nav-tabs': type == 'tab', 'nav-pills': type == 'pill', 'nav-stacked': stacked}">
+        <li ng-repeat="section in sections" ng-class="{'active': section.active}">
+            <a href="" ng-click="activate(section)"><span ng-class="{'glyphicon glyphicon-{{section.glyph}}': section.glyph}">&nbsp;</span>{{section.title}}</a>
+        </li>
+    </ul>
+    <div class="tab-content" ng-transclude></div>
+</div>

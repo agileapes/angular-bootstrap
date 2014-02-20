@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!--suppress CheckTagEmptyBody -->
+<html xmlns:x="http://www.agileapes.com/ui" ng-app="demoApp">
+<head>
+    <title>Angular Bootstrap</title>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/theme.css"/>
+    <script src="../js/config.js"></script>
+    <script src="../js/jquery-2.0.3.min.js"></script>
+    <script src="../bootstrap/js/bootstrap.min.js"></script>
+    <script src="../js/bootstrap-ui.js"></script>
+    <script src="../js/angular.js"></script>
+    <script src="../js/demo.js"></script>
+</head>
+<body>
+<div class="container">
+    <x:container type="tab">
+        <x:section title="My Home" glyph="home">This is my home</x:section>
+        <x:section glyph="paperclip" active="true" title="Profile">
+            Here goes the profile. This is the tab that is <strong>active</strong> by default.
+        </x:section>
+        <x:section glyph="envelope" title="Messages">Some messages might be here</x:section>
+        <x:section glyph="wrench" title="Settings">And this is the settings</x:section>
+    </x:container>
+</div>
+</body>
+</html>

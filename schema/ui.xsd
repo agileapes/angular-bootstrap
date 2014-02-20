@@ -42,6 +42,25 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="container">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="section">
+                    <xs:complexType mixed="true">
+                        <xs:sequence>
+                            <xs:any processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                        <xs:attribute name="title" type="xs:string" use="required"/>
+                        <xs:attribute name="active" type="true" default="false" use="optional"/>
+                        <xs:attribute name="glyph" type="glyph" use="optional"/>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="type" use="optional" default="tab" type="containerType"/>
+            <xs:attribute name="stacked" use="optional" default="false" type="true"/>
+        </xs:complexType>
+    </xs:element>
+
     <xs:complexType name="dropdown">
         <xs:sequence>
             <xs:choice minOccurs="1" maxOccurs="unbounded">
@@ -310,6 +329,12 @@
             <xs:enumeration value="information"/>
             <xs:enumeration value="warning"/>
             <xs:enumeration value="danger"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="containerType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="tab"/>
+            <xs:enumeration value="pill"/>
         </xs:restriction>
     </xs:simpleType>
 </xs:schema>

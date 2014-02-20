@@ -11,7 +11,9 @@ BootstrapUI.templates = {
     buttonGroupButton: "templates/button-group-button.html",
     inputGroup: "templates/input-group.html",
     inputGroupPrepend: "templates/input-group-prepend.html",
-    inputGroupAppend: "templates/input-group-append.html"
+    inputGroupAppend: "templates/input-group-append.html",
+    container: "templates/container.html",
+    section: "templates/section.html"
 };
 BootstrapUI.directives = {};
 BootstrapUI.directives.icon = function () {
@@ -19,7 +21,7 @@ BootstrapUI.directives.icon = function () {
         restrict: "E",
         templateUrl: BootstrapUI.templates.icon,
         scope: {
-            glyph: "@glyph"
+            glyph: "@"
         }
     };
 };
@@ -28,13 +30,13 @@ BootstrapUI.directives.dropdown = function () {
         restrict: "E",
         templateUrl: BootstrapUI.templates.dropdown,
         scope: {
-            glyph: "@glyph",
-            id: "@id",
-            position: "@position",
-            label: "@label",
-            kind: "@kind",
-            caret: "@caret",
-            size: "@size"
+            glyph: "@",
+            id: "@",
+            position: "@",
+            label: "@",
+            kind: "@",
+            caret: "@",
+            size: "@"
         },
         controller: function ($scope, $element) {
             var node = $element.get(0);
@@ -56,10 +58,10 @@ BootstrapUI.directives.dropdownItem = function () {
         restrict: "E",
         templateUrl: BootstrapUI.templates.dropdownItem,
         scope: {
-            label: "@label",
-            href: "@href",
-            glyph: "@glyph",
-            disabled: "@disabled"
+            label: "@",
+            href: "@",
+            glyph: "@",
+            disabled: "@"
         },
         controller: function ($scope) {
             $scope.navigate = function () {
@@ -84,7 +86,7 @@ BootstrapUI.directives.dropdownHeader = function () {
         templateUrl: BootstrapUI.templates.dropdownHeader,
         replace: true,
         scope: {
-            label: "@label"
+            label: "@"
         }
     }
 };
@@ -95,8 +97,8 @@ BootstrapUI.directives.buttonGroup = function () {
         transclude: true,
         templateUrl: BootstrapUI.templates.buttonGroup,
         scope: {
-            size: "@size",
-            orientation: "@orientation"
+            size: "@",
+            orientation: "@"
         }
     };
 };
@@ -107,11 +109,11 @@ BootstrapUI.directives.groupButton = function () {
         replace: true,
         templateUrl: BootstrapUI.templates.buttonGroupButton,
         scope: {
-            label: "@label",
-            href: "@href",
-            glyph: "@glyph",
-            position: "@position",
-            kind: "@kind"
+            label: "@",
+            href: "@",
+            glyph: "@",
+            position: "@",
+            kind: "@"
         }
     };
 };
@@ -122,7 +124,7 @@ BootstrapUI.directives.inputGroup = function () {
         transclude: true,
         templateUrl: BootstrapUI.templates.inputGroup,
         scope: {
-            size: "@size"
+            size: "@"
         }
     };
 };
@@ -151,6 +153,50 @@ BootstrapUI.directives.groupAppend = function () {
             $scope.appendAddonClass = function () {
                 return angular.element($element.get(0).parentNode).find(".input-group-append button").length > 0 ? "input-group-btn" : "input-group-addon";
             };
+        }
+    };
+};
+BootstrapUI.directives.container = function () {
+    return {
+        restrict: "E",
+        replace: true,
+        transclude: true,
+        templateUrl: BootstrapUI.templates.container,
+        scope: {
+            type: "@",
+            stacked: "@"
+        },
+        controller: function ($scope, $element) {
+            var sections = $scope.sections = [];
+            $scope.activate = function (section) {
+                angular.forEach(sections, function (section) {
+                    section.active = false;
+                });
+                section.active = true;
+            };
+            this.addSection = function (section) {
+                if (sections.length == 0 || section.active) {
+                    $scope.activate(section);
+                }
+                sections.push(section);
+            };
+        }
+    };
+};
+BootstrapUI.directives.section = function () {
+    return {
+        require: '^container',
+        restrict: 'E',
+        transclude: true,
+        replace: true,
+        templateUrl: BootstrapUI.templates.section,
+        scope: {
+            title: "@",
+            active: "@",
+            glyph: "@"
+        },
+        link: function (scope, element, attribute, containerController) {
+            containerController.addSection(scope);
         }
     };
 };
