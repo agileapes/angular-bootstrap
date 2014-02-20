@@ -67,15 +67,17 @@
                 <xs:element name="dropdown-divider"/>
                 <xs:element name="dropdown-item">
                     <xs:complexType>
-                        <xs:attribute name="label" use="required" type="xs:string"/>
                         <xs:attribute name="href" use="required" type="xs:string"/>
                         <xs:attribute name="glyph" use="optional" type="glyph"/>
                         <xs:attribute name="disabled" use="optional" type="true"/>
                     </xs:complexType>
                 </xs:element>
                 <xs:element name="dropdown-header">
-                    <xs:complexType>
-                        <xs:attribute name="label" use="required" type="xs:string"/>
+                    <xs:complexType mixed="true">
+                        <xs:sequence>
+                            <xs:any processContents="lax" minOccurs="1" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                        <xs:attribute name="glyph" use="optional" type="glyph"/>
                     </xs:complexType>
                 </xs:element>
             </xs:choice>

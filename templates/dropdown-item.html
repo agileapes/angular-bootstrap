@@ -1,1 +1,1 @@
-<li ng-class="{disabled: disabled}" role="presentation"><a role="menuitem" tabindex="-1" ng-click="disabled ? void(0) : navigate()"><span ng-if="glyph"><span class="glyphicon glyphicon-{{glyph}}"></span></span> {{label}}</a></li>
+<li ng-class="{disabled: disabled}" role="presentation"><a role="menuitem" tabindex="-1" ng-click="disabled ? void(0) : navigate()" class="btn-link"><span ng-if="glyph"><span class="glyphicon glyphicon-{{glyph}}"></span></span> <span ng-transclude></span></a></li>

@@ -57,8 +57,8 @@ BootstrapUI.directives.dropdownItem = function () {
         require: "^dropdown",
         restrict: "E",
         templateUrl: BootstrapUI.templates.dropdownItem,
+        transclude: true,
         scope: {
-            label: "@",
             href: "@",
             glyph: "@",
             disabled: "@"
@@ -83,10 +83,11 @@ BootstrapUI.directives.dropdownHeader = function () {
     return {
         require: "^dropdown",
         restrict: "E",
+        transclude: true,
         templateUrl: BootstrapUI.templates.dropdownHeader,
         replace: true,
         scope: {
-            label: "@"
+            glyph: "@"
         }
     }
 };

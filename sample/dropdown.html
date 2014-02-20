@@ -16,12 +16,13 @@
 <body>
     <div class="container">
         <x:dropdown id="myDropdown" label="Hello" glyph="print" position="before" kind="warning" caret="true" size="small">
-            <x:dropdown-header label="First Header"></x:dropdown-header>
-            <x:dropdown-item label="First" href="javascript:alert(1);" glyph="save"></x:dropdown-item>
-            <x:dropdown-item label="Second" href="javascript:alert(2);" glyph="asterisk"></x:dropdown-item>
+            <x:dropdown-header glyph="adjust">First Header</x:dropdown-header>
+            <x:dropdown-header>First Header</x:dropdown-header>
+            <x:dropdown-item href="javascript:alert(1);" glyph="save">First</x:dropdown-item>
+            <x:dropdown-item href="javascript:alert(2);" glyph="asterisk">Second</x:dropdown-item>
             <x:dropdown-divider></x:dropdown-divider>
-            <x:dropdown-item disabled="true" label="Third" href="javascript:alert(3);"></x:dropdown-item>
-            <x:dropdown-item label="Fourth" href="javascript:alert(4);"></x:dropdown-item>
+            <x:dropdown-item disabled="true" href="javascript:alert(3);">Third</x:dropdown-item>
+            <x:dropdown-item href="javascript:alert(4);">Fourth</x:dropdown-item>
         </x:dropdown>
     </div>
 </body>
