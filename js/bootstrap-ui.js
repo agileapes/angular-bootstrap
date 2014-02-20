@@ -1,3 +1,7 @@
+if (typeof BootstrapUIConfig == "undefined") {
+    BootstrapUIConfig = {};
+}
+
 var BootstrapUI = {};
 BootstrapUI.namespace = BootstrapUIConfig && BootstrapUIConfig.namespace ? BootstrapUIConfig.namespace : "x";
 BootstrapUI.base = BootstrapUIConfig && BootstrapUIConfig.base ? BootstrapUIConfig.base : ".";
