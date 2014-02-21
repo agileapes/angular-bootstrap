@@ -77,6 +77,16 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="pagination">
+        <xs:complexType>
+            <xs:attribute name="first" type="xs:nonNegativeInteger" use="required"/>
+            <xs:attribute name="last" type="xs:nonNegativeInteger" use="required"/>
+            <xs:attribute name="current" type="xs:nonNegativeInteger" use="optional"/>
+            <xs:attribute name="show" type="xs:nonNegativeInteger" use="optional"/>
+            <xs:attribute name="navigation" type="true" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+
     <xs:complexType name="dropdown">
         <xs:sequence>
             <xs:choice minOccurs="1" maxOccurs="unbounded">

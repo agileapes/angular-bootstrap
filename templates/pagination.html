@@ -1,0 +1,7 @@
+<ul class="pagination">
+    <li ng-show="navigation"><a href="" ng-click="previous()">&laquo;</a></li>
+    <li ng-show="skipsBeginning()"><a>...</a></li>
+    <li ng-repeat="page in [] | range: first:last:current:show" ng-class="{'active': page == current}"><a href="" ng-click="page != current ? go(page) : void(0);">{{page}}</a></li>
+    <li ng-show="skipsEnding()"><a>...</a></li>
+    <li ng-show="navigation"><a href="" ng-click="next()">&raquo;</a></li>
+</ul>

@@ -1,2 +1,1 @@
-angular.module("demoApp", [], null)
-    .directive(BootstrapUI.directives);
+BootstrapUI.bind(angular.module("demoApp", [], null));

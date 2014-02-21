@@ -14,12 +14,12 @@ BootstrapUI.templates = {
     buttonGroup: "templates/button-group.html",
     buttonGroupButton: "templates/button-group-button.html",
     inputGroup: "templates/input-group.html",
-    inputGroupPrepend: "templates/input-group-prepend.html",
-    inputGroupAppend: "templates/input-group-append.html",
+    inputGroupAddon: "templates/input-group-addon.html",
     container: "templates/container.html",
     section: "templates/section.html",
     breadcrumb: "templates/breadcrumb.html",
-    breadcrumbItem: "templates/breadcrumb-item.html"
+    breadcrumbItem: "templates/breadcrumb-item.html",
+    pagination: "templates/pagination.html"
 };
 BootstrapUI.directives = {};
 BootstrapUI.directives.icon = function () {
@@ -135,30 +135,17 @@ BootstrapUI.directives.inputGroup = function () {
         }
     };
 };
-BootstrapUI.directives.groupPrepend = function () {
+BootstrapUI.directives.groupPrepend = BootstrapUI.directives.groupAppend = function () {
     return {
         require: "^inputGroup",
         restrict: "E",
         replace: true,
         transclude: true,
-        templateUrl: BootstrapUI.templates.inputGroupPrepend,
-        controller: function ($scope, $element) {
-            $scope.prependAddonClass = function () {
-                return angular.element($element.get(0).parentNode).find(".input-group-prepend button").length > 0 ? "input-group-btn" : "input-group-addon";
-            };
-        }
-    };
-};
-BootstrapUI.directives.groupAppend = function () {
-    return {
-        require: "^inputGroup",
-        restrict: "E",
-        replace: true,
-        transclude: true,
-        templateUrl: BootstrapUI.templates.inputGroupAppend,
+        scope: true,
+        templateUrl: BootstrapUI.templates.inputGroupAddon,
         controller: function ($scope, $element) {
             $scope.appendAddonClass = function () {
-                return angular.element($element.get(0).parentNode).find(".input-group-append button").length > 0 ? "input-group-btn" : "input-group-addon";
+                return $element.find("button").length > 0 ? "input-group-btn" : "input-group-addon";
             };
         }
     };
@@ -182,10 +169,10 @@ BootstrapUI.directives.container = function () {
                 section.active = true;
             };
             this.addSection = function (section) {
-                if (sections.length == 0 || section.active) {
+                sections.push(section);
+                if (sections.length == 1 || section.active) {
                     $scope.activate(section);
                 }
-                sections.push(section);
             };
         }
     };
@@ -252,6 +239,111 @@ BootstrapUI.directives.breadcrumb = function () {
         }
     };
 };
+BootstrapUI.directives.pagination = function ($parse) {
+    return {
+        restrict: "E",
+        replace: false,
+        templateUrl: BootstrapUI.templates.pagination,
+        scope: {
+            first: "@",
+            last: "@",
+            current: "@",
+            show: "@",
+            navigation: "@",
+            onChange: "@"
+        },
+        controller: function ($scope, $element) {
+            var range = {};
+            $scope.skipsBeginning = function () {
+                return $scope.first != range.from;
+            };
+            $scope.skipsEnding = function () {
+                return $scope.last != range.to;
+            };
+            $scope.previous = function () {
+                $scope.current = parseInt($scope.current);
+                $scope.first = parseInt($scope.first);
+                if ($scope.current > $scope.first) {
+                    $scope.go($scope.current - 1);
+                }
+            };
+            $scope.next = function () {
+                $scope.current = parseInt($scope.current);
+                $scope.last = parseInt($scope.last);
+                if ($scope.current < $scope.last) {
+                    $scope.go($scope.current + 1);
+                }
+            };
+            var controller = this;
+            $scope.go = function (to) {
+                var from = $scope.current;
+                var changing = true;
+                $element.get(0).stop = function () {
+                    changing = false;
+                };
+                $element.trigger('changing', [to, from]);
+                if (!changing) {
+                    return;
+                }
+                $element.get(0).stop = null;
+                $scope.current = to;
+                controller.update();
+                $element.trigger('changed', [to, from]);
+            };
+            this.update = function () {
+                range = BootstrapUI.tools.range($scope.first, $scope.last, $scope.current, $scope.show);
+            };
+            this.update();
+        }
+    };
+};
+BootstrapUI.tools = {};
+BootstrapUI.tools.range = function (from, to, current, show) {
+    if (!to) {
+        to = from + 1;
+    }
+    if (!current) {
+        current = from;
+    }
+    if (!show) {
+        show = to - from + 1;
+    }
+    if (show > to - from + 1) {
+        show = to - from + 1;
+    }
+    from = parseInt(from);
+    to = parseInt(to);
+    current = parseInt(current);
+    show = parseInt(show);
+    var before = Math.floor(show / 2);
+    var after = Math.ceil(show / 2) - 1;
+    if (current + after + 1 > to) {
+        before += current + after - to;
+        after = to - current;
+    }
+    if (current - before < from) {
+        after += before - current + 1;
+        before = current - from;
+    }
+    var output = {
+        from: current - before,
+        to: current + after,
+        expand: function () {
+            var result = [];
+            for (var i = output.from; i < output.to + 1; i++) {
+                result.push(i);
+            }
+            return result;
+        }
+    };
+    return output;
+};
+BootstrapUI.filters = {};
+BootstrapUI.filters.range = function () {
+    return function (input, from, to, current, show) {
+        return BootstrapUI.tools.range(from, to, current, show).expand();
+    };
+};
 BootstrapUI.initialize = function () {
     for (var directive in BootstrapUI.directives) {
         //noinspection JSUnfilteredForInLoop
@@ -261,5 +353,9 @@ BootstrapUI.initialize = function () {
         //noinspection JSUnfilteredForInLoop
         BootstrapUI.templates[template] = BootstrapUI.base + "/" + BootstrapUI.templates[template];
     }
+};
+BootstrapUI.bind = function (module) {
+    module.directive(BootstrapUI.directives);
+    module.filter(BootstrapUI.filters);
 };
 BootstrapUI.initialize();
