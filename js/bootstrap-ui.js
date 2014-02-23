@@ -35,6 +35,8 @@ BootstrapUI.directives.dropdown = function () {
     return  {
         restrict: "E",
         templateUrl: BootstrapUI.templates.dropdown,
+        transclude: true,
+        replace: true,
         scope: {
             glyph: "@",
             id: "@",
@@ -53,9 +55,7 @@ BootstrapUI.directives.dropdown = function () {
             $scope.isBtnGroup = function () {
                 return isInBtnGroup;
             };
-        },
-        transclude: true,
-        replace: true
+        }
     };
 };
 BootstrapUI.directives.dropdownItem = function () {

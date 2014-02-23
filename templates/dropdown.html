@@ -1,5 +1,5 @@
 <div class="dropdown" ng-class="{'btn-group': isBtnGroup()}">
-    <a class="btn dropdown-toggle" ng-class="{'btn-default': isBtnGroup(), 'btn-default': kind == 'normal', 'btn-primary': kind == 'primary', 'btn-warning': kind == 'warning', 'btn-info': kind == 'information', 'btn-success': kind == 'success', 'btn-danger': kind == 'danger','btn-lg': size == 'large', 'btn-sm': size == 'small', 'btn-xs': size == 'tiny'}" type="button" id="{{id}}" data-toggle="dropdown">
+    <a class="btn dropdown-toggle" ng-class="{'btn-default': isBtnGroup() || !kind || kind == 'normal', 'btn-primary': kind == 'primary', 'btn-warning': kind == 'warning', 'btn-info': kind == 'information', 'btn-success': kind == 'success', 'btn-danger': kind == 'danger','btn-lg': size == 'large', 'btn-sm': size == 'small', 'btn-xs': size == 'tiny'}" type="button" id="{{id}}" data-toggle="dropdown">
         <span ng-show="glyph && (!position || position == 'before')" class="glyphicon glyphicon-{{glyph}}"></span> {{label}} <span ng-show="glyph && position == 'after'" class="glyphicon glyphicon-{{glyph}}"></span>
         <span ng-class="{caret: caret || isBtnGroup()}"></span>
     </a>
