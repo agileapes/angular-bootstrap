@@ -239,10 +239,10 @@ BootstrapUI.directives.breadcrumb = function () {
         }
     };
 };
-BootstrapUI.directives.pagination = function ($parse) {
+BootstrapUI.directives.pagination = function () {
     return {
         restrict: "E",
-        replace: false,
+        replace: true,
         templateUrl: BootstrapUI.templates.pagination,
         scope: {
             first: "@",
@@ -275,25 +275,27 @@ BootstrapUI.directives.pagination = function ($parse) {
                 }
             };
             var controller = this;
+            this.update = function () {
+                range = BootstrapUI.tools.range($scope.first, $scope.last, $scope.current, $scope.show);
+            };
+            this.update();
+        },
+        link: function ($scope, $element, $attributes, controller) {
             $scope.go = function (to) {
                 var from = $scope.current;
                 var changing = true;
-                $element.get(0).stop = function () {
+                var stop = function () {
                     changing = false;
                 };
-                $element.trigger('changing', [to, from]);
+                $($element).trigger('changing', [to, from, stop]);
                 if (!changing) {
                     return;
                 }
                 $element.get(0).stop = null;
                 $scope.current = to;
                 controller.update();
-                $element.trigger('changed', [to, from]);
+                $($element).trigger('changed', [to, from, stop]);
             };
-            this.update = function () {
-                range = BootstrapUI.tools.range($scope.first, $scope.last, $scope.current, $scope.show);
-            };
-            this.update();
         }
     };
 };
