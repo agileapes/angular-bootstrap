@@ -201,6 +201,10 @@
                 name: "inputGroup"
             },
             {
+                type: "directive",
+                name: "container"
+            },
+            {
                 type: "filter",
                 name: "capitalize"
             },

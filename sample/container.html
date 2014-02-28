@@ -1,40 +1,48 @@
 <!DOCTYPE html>
 <!--suppress CheckTagEmptyBody -->
-<html xmlns:x="http://www.agileapes.com/ui" ng-app="demoApp">
+<html xmlns:ui="http://www.agileapes.com/ui" data-bootstrapui="">
 <head>
-    <title>Angular Bootstrap</title>
+    <title>Angular Bootstrap :: Containers</title>
     <meta charset="UTF-8"/>
     <link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.css"/>
     <link rel="stylesheet" type="text/css" href="../css/theme.css"/>
     <script src="../js/config.js"></script>
     <script src="../js/jquery-1.11.0.js"></script>
     <script src="../bootstrap/js/bootstrap.min.js"></script>
-    <script src="../js/bootstrap-ui.js"></script>
     <script src="../js/angular.js"></script>
+    <script src="../js/bootstrapui-0.4.js"></script>
     <script src="../js/demo.js"></script>
 </head>
 <body>
 <div class="container">
-    <x:container type="tab">
-        <x:section title="My Home" glyph="home">
+    <ol class="breadcrumb">
+        <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
+        <li><span class="glyphicon glyphicon-inbox"></span> Containers</li>
+    </ol>
+    <h1 class="page-header">Containers</h1>
+    <ui:container type="tab">
+        <ui:section title="My Home" glyph="home">
             This is my home
-        </x:section>
-        <x:section glyph="paperclip" active="true" title="Profile">
+        </ui:section>
+        <ui:section glyph="paperclip" active="true" title="Profile">
             Here goes the profile. This is the tab that is <strong>active</strong> by default.
-        </x:section>
-        <x:section glyph="envelope" title="Messages">Some messages might be here</x:section>
-        <x:section glyph="wrench" title="Settings">And this is the settings</x:section>
-    </x:container>
+        </ui:section>
+        <ui:section glyph="envelope" title="Messages">Some messages might be here</ui:section>
+        <ui:section glyph="wrench" title="Settings">And this is the settings</ui:section>
+        <ui:section glyph="wrench" title="Random"></ui:section>
+    </ui:container>
     <hr/>
-    <x:container type="pill" id="firstSection">
-        <x:section title="First">This is the first one</x:section>
-        <x:section title="Second">This is the second one</x:section>
-    </x:container>
+    <ui:container type="pill" id="firstSection">
+        <ui:section title="First" active="true">This is the first one</ui:section>
+        <ui:section title="Second">This is the second one</ui:section>
+    </ui:container>
 </div>
 <script>
     $(function () {
-        $("x\\:container").on("changed", function (event, state) {
-            state.sections()[state.to].$content.html(Math.random());
+        $("ui\\:container").on("changed", function (event, state) {
+            if (state.sections()[state.to].title.toLowerCase() == "random") {
+                state.sections()[state.to].$content.html(Math.random());
+            }
         });
     });
 </script>
