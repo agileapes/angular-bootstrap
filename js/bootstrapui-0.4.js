@@ -301,6 +301,10 @@ function ifDefined(variable) {
                 name: "pagination"
             },
             {
+                type: "directive",
+                name: "form"
+            },
+            {
                 type: "filter",
                 name: "capitalize"
             },
@@ -327,6 +331,7 @@ function ifDefined(variable) {
             });
         }
         config.loaded = 0;
+        BootstrapUI.config = config;
     };
 
     BootstrapUI.load = function () {

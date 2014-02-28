@@ -1,0 +1,7 @@
+<label ng-class="{'col-sm-{{parent.parent.labelSize}}': parent.parent.orientation == 'horizontal', 'sr-only': parent.parent.orientation == 'inline'}">{{label}}</label>
+<div ng-if="parent.parent.orientation != 'inline'">
+    <div ng-class="{'col-sm-{{12 - parent.parent.labelSize}}': parent.parent.orientation == 'horizontal'}">
+        <p class="form-control-static">{{value}}</p>
+    </div>
+</div>
+<div ng-if="parent.parent.orientation == 'inline'"><p class="form-control-static">{{value}}</p></div>
