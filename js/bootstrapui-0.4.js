@@ -329,20 +329,10 @@ function ifDefined(variable) {
         config.loaded = 0;
     };
 
-    /**
-     * Will bootstrap the UI on the given root element
-     * @param root optional, assumed to be `document` if not provided
-     */
-    BootstrapUI.bootstrap = function (root) {
-        BootstrapUI.tools.console.debug("Bootstrapping the UI");
-        if (!root) {
-            root = document;
-        }
-        if (root.uiBootstrapped) {
-            throw "This element has been already bootstrapped";
-        }
-        root.uiBootstrapped = true;
+    BootstrapUI.load = function () {
+        BootstrapUI.tools.console.debug("Loading components ...");
         for (var i = 0; i < config.preload.length; i++) {
+            BootstrapUI.tools.console.debug("[" + (i + 1) + "/" + config.preload.length + "] Loading " + config.preload[i].type + " " + config.preload[i].name);
             if (config.preload[i].type == "directive") {
                 $.getScript(config.base + "/" + config.directivesBase + "/" + config.preload[i].name + ".js", function () {
                     config.loaded ++;
@@ -377,13 +367,37 @@ function ifDefined(variable) {
                     //noinspection JSUnfilteredForInLoop
                     BootstrapUI.filters[obj] = filter.factory;
                 }
-                BootstrapUI.tools.console.debug("UI ready");
+                BootstrapUI.tools.console.debug("Components loaded and pre-configured on namespace '" + config.namespace + "'.");
+                config.loadingDone = true;
+            }
+        }, 10);
+    };
+
+    /**
+     * Will bootstrap the UI on the given root element
+     * @param root optional, assumed to be `document` if not provided
+     */
+    BootstrapUI.bootstrap = function (root) {
+        BootstrapUI.tools.console.debug("Bootstrapping the UI ...");
+        if (!root) {
+            root = document;
+        }
+        if (root.uiBootstrapped) {
+            throw "This element has been already bootstrapped";
+        }
+        root.uiBootstrapped = true;
+        var waiting = setInterval(function () {
+            if (config.loadingDone) {
+                clearInterval(waiting);
                 new BootstrapUI.classes.State({
                     bind: function (module, callback) {
-                        BootstrapUI.tools.console.debug("Binding the directives");
+                        BootstrapUI.tools.console.debug("Binding the directives ...");
                         module.directive(BootstrapUI.directives);
+                        BootstrapUI.tools.console.debug("Binding the filters ...");
                         module.filter(BootstrapUI.filters);
+                        BootstrapUI.tools.console.debug("Bootstrapping AngularJS for module '" + module.name + "' ...");
                         angular.bootstrap(this.applicationRoot, [module.name]);
+                        BootstrapUI.tools.console.debug("All ready.");
                         if ($.isFunction(callback)) {
                             callback.apply(this, [module]);
                         }
@@ -397,11 +411,11 @@ function ifDefined(variable) {
         }, 1);
     };
     BootstrapUI.configure(config);
+    BootstrapUI.load();
     $(function () {
         $("html[data-bootstrapui]").each(function () {
-            BootstrapUI.tools.console.debug("Auto-bootstrap in progress");
+            BootstrapUI.tools.console.debug("Auto-bootstrap starting ...");
             BootstrapUI.bootstrap(this);
-            BootstrapUI.tools.console.debug("Auto-bootstrap done.");
         });
     });
 })(ifDefined("jQuery"), ifDefined("angular"), ifDefined("BootstrapUIConfig"));
