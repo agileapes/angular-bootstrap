@@ -205,12 +205,20 @@
                 name: "container"
             },
             {
+                type: "directive",
+                name: "pagination"
+            },
+            {
                 type: "filter",
                 name: "capitalize"
             },
             {
                 type: "filter",
                 name: "capitalizeFirst"
+            },
+            {
+                type: "filter",
+                name: "range"
             }
         ];
         var i;
@@ -227,6 +235,47 @@
             });
         }
         config.loaded = 0;
+    };
+
+    BootstrapUI.tools.range = function (from, to, current, show) {
+        if (!to) {
+            to = from + 1;
+        }
+        if (!current) {
+            current = from;
+        }
+        if (!show) {
+            show = to - from + 1;
+        }
+        if (show > to - from + 1) {
+            show = to - from + 1;
+        }
+        from = parseInt(from);
+        to = parseInt(to);
+        current = parseInt(current);
+        show = parseInt(show);
+        var before = Math.floor(show / 2);
+        var after = Math.ceil(show / 2) - 1;
+        if (current + after + 1 > to) {
+            before += current + after - to;
+            after = to - current;
+        }
+        if (current - before < from) {
+            after += before - current + 1;
+            before = current - from;
+        }
+        var output = {
+            from: current - before,
+            to: current + after,
+            expand: function () {
+                var result = [];
+                for (var i = output.from; i < output.to + 1; i++) {
+                    result.push(i);
+                }
+                return result;
+            }
+        };
+        return output;
     };
 
     /**

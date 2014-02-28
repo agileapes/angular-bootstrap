@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <!--suppress CheckTagEmptyBody -->
-<html xmlns:x="http://www.agileapes.com/ui" ng-app="demoApp">
+<html xmlns:ui="http://www.agileapes.com/ui" data-bootstrapui="">
 <head>
-    <title>Angular Bootstrap</title>
+    <title>Angular Bootstrap :: Pagination</title>
     <meta charset="UTF-8"/>
     <link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.css"/>
     <link rel="stylesheet" type="text/css" href="../css/theme.css"/>
     <script src="../js/config.js"></script>
     <script src="../js/jquery-1.11.0.js"></script>
     <script src="../bootstrap/js/bootstrap.min.js"></script>
-    <script src="../js/bootstrap-ui.js"></script>
     <script src="../js/angular.js"></script>
+    <script src="../js/bootstrapui-0.4.js"></script>
     <script src="../js/demo.js"></script>
     <script>
         var originalConsole = console;
@@ -19,10 +19,15 @@
                 var $pre = $("pre");
                 $pre.text(($pre.text() + "\n" + str).replace(/^\s+/, "").replace(/\s+$/, ""));
                 originalConsole.log(str);
+            },
+            debug: function (str) {
+                var $pre = $("pre");
+                $pre.text(($pre.text() + "\n" + str).replace(/^\s+/, "").replace(/\s+$/, ""));
+                originalConsole.debug(str);
             }
         };
         $(function () {
-            $("x\\:pagination").on('changing', function (e, state) {
+            $("ui\\:pagination").on('changing', function (e, state) {
                 if (state.from % 2 == state.to % 2) {
                     console.log("---- Stopped");
                     state.stop();
@@ -35,7 +40,12 @@
 </head>
 <body>
 <div class="container">
-    <x:pagination id="x1" first="1" last="20" current="7" navigation="true" show="6"></x:pagination>
+    <ol class="breadcrumb">
+        <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
+        <li><span class="glyphicon glyphicon-book"></span> Pagination</li>
+    </ol>
+    <h1 class="page-header">Pagination</h1>
+    <ui:pagination id="x1" first="1" last="20" current="7" navigation="true" show="6"></ui:pagination>
     <pre style="max-height: 200px; border: 1px dashed #000000; padding: 5px; margin: 5px;"></pre>
 </div>
 </body>
