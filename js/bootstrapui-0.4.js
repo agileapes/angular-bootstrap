@@ -1,3 +1,11 @@
+function ifDefined(variable) {
+    try {
+        return eval(variable);
+    } catch (e) {
+        return null;
+    }
+}
+
 (function ($, angular, config) {
 
     //*****
@@ -153,6 +161,87 @@
         };
     };
 
+    BootstrapUI.tools.range = function (from, to, current, show) {
+        if (!to) {
+            to = from + 1;
+        }
+        if (!current) {
+            current = from;
+        }
+        if (!show) {
+            show = to - from + 1;
+        }
+        if (show > to - from + 1) {
+            show = to - from + 1;
+        }
+        from = parseInt(from);
+        to = parseInt(to);
+        current = parseInt(current);
+        show = parseInt(show);
+        var before = Math.floor(show / 2);
+        var after = Math.ceil(show / 2) - 1;
+        if (current + after + 1 > to) {
+            before += current + after - to;
+            after = to - current;
+        }
+        if (current - before < from) {
+            after += before - current + 1;
+            before = current - from;
+        }
+        var output = {
+            from: current - before,
+            to: current + after,
+            expand: function () {
+                var result = [];
+                for (var i = output.from; i < output.to + 1; i++) {
+                    result.push(i);
+                }
+                return result;
+            }
+        };
+        return output;
+    };
+
+    BootstrapUI.tools.console = {
+        preserve: false,
+        messages: [],
+        clear: function () {
+            if (!config.debug) {
+                return;
+            }
+            BootstrapUI.tools.console.messages.length = 0;
+            if (console) {
+                console.clear();
+            }
+        },
+        handler: function (logger) {
+            logger = BootstrapUI.tools.console.proxy("console." + logger);
+            return function () {
+                if (!config.debug) {
+                    return;
+                }
+                for (var i = 0; i < arguments.length; i++) {
+                    var argument = arguments[i];
+                    if (BootstrapUI.tools.console.preserve) {
+                        BootstrapUI.tools.console.messages.push(argument);
+                    }
+                    if (logger) {
+                        logger(argument);
+                    }
+                }
+            }
+        },
+        proxy: function (target) {
+            eval("function proxy(x) {try {eval('" + target + "');} catch (e) {return;}" + target + "(x);}");
+            return eval("proxy");
+        }
+    };
+    BootstrapUI.tools.console.log = BootstrapUI.tools.console.handler("log");
+    BootstrapUI.tools.console.debug = BootstrapUI.tools.console.handler("debug");
+    BootstrapUI.tools.console.warn = BootstrapUI.tools.console.handler("warn");
+    BootstrapUI.tools.console.info = BootstrapUI.tools.console.handler("info");
+    BootstrapUI.tools.console.error = BootstrapUI.tools.console.handler("error");
+
     /**
      * Configures the Bootstrap UI for use with initial parameters
      * @param config
@@ -178,6 +267,9 @@
         }
         if (!config.filters) {
             config.filters = [];
+        }
+        if (!config.debug) {
+            config.debug = false;
         }
         config.preload = [
             {
@@ -237,53 +329,12 @@
         config.loaded = 0;
     };
 
-    BootstrapUI.tools.range = function (from, to, current, show) {
-        if (!to) {
-            to = from + 1;
-        }
-        if (!current) {
-            current = from;
-        }
-        if (!show) {
-            show = to - from + 1;
-        }
-        if (show > to - from + 1) {
-            show = to - from + 1;
-        }
-        from = parseInt(from);
-        to = parseInt(to);
-        current = parseInt(current);
-        show = parseInt(show);
-        var before = Math.floor(show / 2);
-        var after = Math.ceil(show / 2) - 1;
-        if (current + after + 1 > to) {
-            before += current + after - to;
-            after = to - current;
-        }
-        if (current - before < from) {
-            after += before - current + 1;
-            before = current - from;
-        }
-        var output = {
-            from: current - before,
-            to: current + after,
-            expand: function () {
-                var result = [];
-                for (var i = output.from; i < output.to + 1; i++) {
-                    result.push(i);
-                }
-                return result;
-            }
-        };
-        return output;
-    };
-
     /**
      * Will bootstrap the UI on the given root element
      * @param root optional, assumed to be `document` if not provided
      */
     BootstrapUI.bootstrap = function (root) {
-        console.debug("Bootstrapping the UI");
+        BootstrapUI.tools.console.debug("Bootstrapping the UI");
         if (!root) {
             root = document;
         }
@@ -326,10 +377,10 @@
                     //noinspection JSUnfilteredForInLoop
                     BootstrapUI.filters[obj] = filter.factory;
                 }
-                console.debug("UI ready");
+                BootstrapUI.tools.console.debug("UI ready");
                 new BootstrapUI.classes.State({
                     bind: function (module, callback) {
-                        console.debug("Binding the directives");
+                        BootstrapUI.tools.console.debug("Binding the directives");
                         module.directive(BootstrapUI.directives);
                         module.filter(BootstrapUI.filters);
                         angular.bootstrap(this.applicationRoot, [module.name]);
@@ -348,9 +399,9 @@
     BootstrapUI.configure(config);
     $(function () {
         $("html[data-bootstrapui]").each(function () {
-            console.debug("Auto-bootstrap in progress");
+            BootstrapUI.tools.console.debug("Auto-bootstrap in progress");
             BootstrapUI.bootstrap(this);
-            console.debug("Auto-bootstrap done.");
+            BootstrapUI.tools.console.debug("Auto-bootstrap done.");
         });
     });
-})(typeof jQuery != "undefined" ? jQuery : null, typeof angular != "undefined" ? angular : null, typeof BootstrapUIConfig != "undefined" ? BootstrapUIConfig : null);
+})(ifDefined("jQuery"), ifDefined("angular"), ifDefined("BootstrapUIConfig"));
