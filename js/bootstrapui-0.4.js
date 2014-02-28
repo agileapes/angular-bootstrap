@@ -353,4 +353,4 @@
             console.debug("Auto-bootstrap done.");
         });
     });
-})(jQuery, angular, BootstrapUIConfig);
+})(typeof jQuery != "undefined" ? jQuery : null, typeof angular != "undefined" ? angular : null, typeof BootstrapUIConfig != "undefined" ? BootstrapUIConfig : null);
