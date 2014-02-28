@@ -31,5 +31,12 @@
         <x:section title="Second">This is the second one</x:section>
     </x:container>
 </div>
+<script>
+    $(function () {
+        $("x\\:container").on("changed", function (event, state) {
+            state.sections()[state.to].$content.html(Math.random());
+        });
+    });
+</script>
 </body>
 </html>

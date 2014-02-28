@@ -1,26 +1,45 @@
 <!DOCTYPE html>
 <!--suppress CheckTagEmptyBody -->
-<html xmlns:x="http://www.agileapes.com/ui" ng-app="demoApp">
+<html xmlns:ui="http://www.agileapes.com/ui" data-bootstrapui>
 <head>
-    <title>Angular Bootstrap</title>
+    <title>Angular Bootstrap :: Icons</title>
     <meta charset="UTF-8"/>
     <link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.css"/>
     <link rel="stylesheet" type="text/css" href="../css/theme.css"/>
     <script src="../js/config.js"></script>
     <script src="../js/jquery-1.11.0.js"></script>
     <script src="../bootstrap/js/bootstrap.min.js"></script>
-    <script src="../js/bootstrap-ui.js"></script>
     <script src="../js/angular.js"></script>
+    <script src="../js/bootstrapui-0.4.js"></script>
     <script src="../js/demo.js"></script>
 </head>
 <body>
 <div class="container">
-    <x:breadcrumbs>
-        <x:breadcrumb glyph="home" href="javascript:alert('home');">Home</x:breadcrumb>
-        <x:breadcrumb glyph="list" href="javascript:alert('library');">Library</x:breadcrumb>
-        <x:breadcrumb glyph="book" href="javascript:alert('books');">Books</x:breadcrumb>
-        <x:breadcrumb glyph="eye-open" href="javascript:alert('view book');">View Book</x:breadcrumb>
-    </x:breadcrumbs>
+    <ol class="breadcrumb">
+        <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
+        <li><span class="glyphicon glyphicon-list"></span> Breadcrumbs</li>
+    </ol>
+    <h1>Breadcrumbs</h1>
+    <p>Creating breadcrumbs for navigating through nested pages is absolutely essential.</p>
+    <p>Here is a sample for a breadcrumb component:</p>
+    <ui:breadcrumbs>
+        <ui:breadcrumb glyph="home" href="javascript:alert('home');">Home</ui:breadcrumb>
+        <ui:breadcrumb glyph="list" href="javascript:alert('library');">Library</ui:breadcrumb>
+        <ui:breadcrumb glyph="book" href="javascript:alert('books');">Books</ui:breadcrumb>
+        <ui:breadcrumb glyph="eye-open" href="javascript:alert('view book');">View Book</ui:breadcrumb>
+    </ui:breadcrumbs>
+    <p>Which directly results from the code:</p>
+<pre>
+&lt;ui:breadcrumbs&gt;
+    &lt;ui:breadcrumb glyph="home" href="javascript:alert('home');"&gt;Home&lt;/ui:breadcrumb&gt;
+    &lt;ui:breadcrumb glyph="list" href="javascript:alert('library');"&gt;Library&lt;/ui:breadcrumb&gt;
+    &lt;ui:breadcrumb glyph="book" href="javascript:alert('books');"&gt;Books&lt;/ui:breadcrumb&gt;
+    &lt;ui:breadcrumb glyph="eye-open" href="javascript:alert('view book');"&gt;View Book&lt;/ui:breadcrumb&gt;
+&lt;/ui:breadcrumbs&gt;
+</pre>
+    <p>If you try, you will notice that the <code>href</code> attribute on the last breadcrumb will be completely
+    ignored, as it is currently the state in which the application resides, and will not be allowed to elicit any
+    sorts of hyperlinks.</p>
 </div>
 </body>
 </html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Layout Decipher Tool</title>
+    <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css"/>
+    <script src="../js/jquery-1.11.0.js"></script>
+</head>
+<body style="margin: 10px;">
+<pre>
+    .---.---.---.---.---.---.
+    |   | B |           | D |
+    .   .---.     C     .---.
+    | A | E |           | F |
+    .   .---.---.---.---.---.
+    |   |   G   |     H     |
+    .---.-------.-----------.
+    |           I           |
+    .-----------------------.
+</pre>
+<pre data-role="json">
+    [
+        [
+            {
+                target: "A",
+                rowSpan: 3
+            },
+            {
+                target: "B"
+            },
+            {
+                target: "C",
+                rowSpan: 2,
+                colSpan: 3
+            },
+            {
+                target: "D"
+            }
+        ],
+        [
+            {
+                target: "E"
+            },
+            {
+                target: "F"
+            }
+        ],
+        [
+            {
+                target: "G",
+                colSpan: 2
+            },
+            {
+                target: "H",
+                colSpan: 3
+            }
+        ],
+        [
+            {
+                target: "I",
+                colSpan: 6
+            }
+        ]
+    ]
+</pre>
+<pre>
+&lt;grid&gt;
+    &lt;row&gt;
+        &lt;cell rowspan="3"&gt;A&lt;/cell&gt;
+        &lt;cell&gt;B&lt;/cell&gt;
+        &lt;cell rowspan="2" colspan="3"&gt;C&lt;/cell&gt;
+        &lt;cell&gt;D&lt;/cell&gt;
+    &lt;/row&gt;
+    &lt;row&gt;
+        &lt;cell&gt;E&lt;/cell&gt;
+        &lt;cell&gt;F&lt;/cell&gt;
+    &lt;/row&gt;
+    &lt;row&gt;
+        &lt;cell colspan="2"&gt;G&lt;/cell&gt;
+        &lt;cell colspan="3"&gt;H&lt;/cell&gt;
+    &lt;/row&gt;
+    &lt;row&gt;
+        &lt;cell colspan="6"&gt;I&lt;/cell&gt;
+    &lt;/row&gt;
+&lt;/grid&gt;
+</pre>
+<script>
+    $("pre[data-role=json]").each(function () {
+        var json = $(this).html();
+        var raw = eval(json);
+        var table = [];
+        var rows = 0, cols = 0;
+        var i, j, m, n, localCols = 0, cell;
+        for (i = 0; i < raw.length; i ++) {
+            localCols = 0;
+            for (j = 0; j < raw[i].length; j ++) {
+                cell = raw[i][j];
+                if (!cell.colSpan) {
+                    cell.colSpan = 1;
+                }
+                if (!cell.rowSpan) {
+                    cell.rowSpan = 1;
+                }
+                rows = Math.max(i + cell.rowSpan, rows);
+                localCols += cell.colSpan;
+            }
+            cols = Math.max(cols, localCols);
+        }
+        for (i = 0; i < rows; i ++) {
+            table[i] = [];
+            for (j = 0; j < cols; j ++) {
+                table[i][j] = null;
+            }
+        }
+        for (i = 0; i < raw.length; i ++) {
+            for (j = 0; j < raw[i].length; j ++) {
+                cell = {
+                    x: j, y: i, toString: function () {return "[" + this.x + "," + this.y + "]";}
+                };
+                for (m = 0; m < raw[i].rowSpan; m ++) {
+                    for (n = 0; n < raw[i].colSpan; n ++) {
+
+                    }
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

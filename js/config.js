@@ -1,4 +1,4 @@
 BootstrapUIConfig = {
-    namespace: "x",
+    namespace: "ui",
     base: ".."
 };

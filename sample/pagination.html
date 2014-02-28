@@ -22,12 +22,12 @@
             }
         };
         $(function () {
-            $("x\\:pagination").on('changing', function (e, to, from, stop) {
-                if (from % 2 == to % 2) {
+            $("x\\:pagination").on('changing', function (e, state) {
+                if (state.from % 2 == state.to % 2) {
                     console.log("---- Stopped");
-                    stop();
+                    state.stop();
                 } else {
-                    console.log('changing: ' + from + " -> " + to);
+                    console.log('changing: ' + state.from + " -> " + state.to);
                 }
             });
         });

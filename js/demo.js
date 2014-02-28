@@ -1,1 +1,4 @@
-BootstrapUI.bind(angular.module("demoApp", [], null));
+$(document).on("ui.ready", function (e, state) {
+    var module = angular.module("demoApplication", [], null);
+    state.bind(module);
+});
