@@ -189,6 +189,18 @@
                 name: "breadcrumb"
             },
             {
+                type: "directive",
+                name: "dropdown"
+            },
+            {
+                type: "directive",
+                name: "buttonGroup"
+            },
+            {
+                type: "directive",
+                name: "inputGroup"
+            },
+            {
                 type: "filter",
                 name: "capitalize"
             },

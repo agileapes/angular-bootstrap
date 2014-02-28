@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<!--suppress CheckTagEmptyBody -->
+<html xmlns:ui="http://www.agileapes.com/ui" data-bootstrapui>
+<head>
+    <title>Angular Bootstrap :: Form</title>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/theme.css"/>
+    <script src="../js/config.js"></script>
+    <script src="../js/jquery-1.11.0.js"></script>
+    <script src="../bootstrap/js/bootstrap.min.js"></script>
+    <script src="../js/angular.js"></script>
+    <script src="../js/bootstrapui-0.4.js"></script>
+    <script src="../js/demo.js"></script>
+</head>
+<body>
+<div class="container">
+    <ol class="breadcrumb">
+        <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
+        <li><span class="glyphicon glyphicon-edit"></span> Form</li>
+    </ol>
+    <h1 class="page-header">Form Inputs</h1>
+    <p>For form inputs, not much added markup is required. Generally speaking, the underlying frameworks provide
+        quite a set of tools for accomplishing this. Therefore, what we deliver here, is mostly for the sake of
+        unification and providing a uniform interface for creating forms across different frameworks.</p>
+    <ui:form-container orientation="horizontal" label-size="3">
+        <ui:form-group>
+            <ui:form-input type="static" id="userName" label="Username" value="somebody"></ui:form-input>
+        </ui:form-group>
+        <ui:form-group>
+            <ui:form-input type="email" id="emailAddress" placeholder="Enter email" validation="" state="valid" feedback="print" label="Email address"></ui:form-input>
+        </ui:form-group>
+        <ui:form-group>
+            <ui:form-input type="password" id="password" placeholder="Enter password" validation="" state="error" feedback="print" label="Password"></ui:form-input>
+        </ui:form-group>
+        <ui:form-group>
+            <ui:form-input type="checkbox" id="remember" validation="" label="Remember me"></ui:form-input>
+        </ui:form-group>
+        <ui:form-group>
+            <ui:form-select type="combo" id="gender" validation="" label="Gender">
+                <ui:form-select-item value="male">Male</ui:form-select-item>
+                <ui:form-select-item value="female">Female</ui:form-select-item>
+            </ui:form-select>
+        </ui:form-group>
+        <ui:form-group>
+            <ui:form-select type="checkbox" selection="multiple"  id="preference" validation="" label="Choose what you would like to know about">
+                <ui:form-select-item value="computer">Computer</ui:form-select-item>
+                <ui:form-select-item value="science">Science</ui:form-select-item>
+                <ui:form-select-item value="travel">Travel</ui:form-select-item>
+            </ui:form-select>
+        </ui:form-group>
+        <ui:form-group>
+            <ui:form-select type="checkbox" selection="single" id="description" validation="" label="Which item describes you the best">
+                <ui:form-select-item value="developer">Software developer</ui:form-select-item>
+                <ui:form-select-item value="user">Software end-user</ui:form-select-item>
+            </ui:form-select>
+        </ui:form-group>
+    </ui:form-container>
+    <!--<form class="form-horizontal">-->
+        <!--<div class="form-group">-->
+            <!--<label class="col-sm-2" for="exampleInputEmail2">Email address</label>-->
+            <!--<div class="col-sm-10">-->
+                <!--<input type="email" class="form-control" id="exampleInputEmail2" placeholder="Enter email">-->
+            <!--</div>-->
+        <!--</div>-->
+        <!--<div class="form-group">-->
+            <!--<label class="col-sm-2" for="exampleInputEmail3">Email address</label>-->
+            <!--<div class="col-sm-10">-->
+                <!--<input type="email" class="form-control" id="exampleInputEmail3" placeholder="Enter email">-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</form>-->
+</div>
+</body>
+</html>
