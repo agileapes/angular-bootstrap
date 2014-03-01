@@ -350,12 +350,16 @@ function ifDefined(variable) {
                 return config.base + "/" + config.filtersBase + "/" + filter + ".js";
             }
         };
+        if (!BootstrapUI.pending) {
+            BootstrapUI.pending = {};
+        }
         var state = {
             total: config.preload.length,
             count: 0
         };
         $(config.preload).each(function () {
             var component = this;
+            BootstrapUI.pending[component.name] = true;
             BootstrapUI.tools.console.debug("Loading " + component.type + " " + component.name);
             $.getScript(qualify[component.type](component.name)).then(function () {
                 state.count ++;
@@ -367,6 +371,7 @@ function ifDefined(variable) {
         });
         var promise = deferred.promise();
         promise.progress(function (state) {
+            delete BootstrapUI.pending[state.name];
             BootstrapUI.tools.console.debug("[" + state.count + "/" + state.total + "] Loaded " + state.type + " " + state.name);
             if (state.count == state.total) {
                 deferred.resolve();
