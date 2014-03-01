@@ -27,7 +27,6 @@ function ifDefined(variable) {
 
     BootstrapUI = {
         version: "0.4",
-        dynamic: {},
         tools: {},
         classes: {},
         directives: {},
@@ -272,6 +271,9 @@ function ifDefined(variable) {
         if (!config.debug) {
             config.debug = false;
         }
+        if (!config.ext) {
+            config.ext = {};
+        }
         config.preload = [
             {
                 type: "directive",
@@ -335,48 +337,63 @@ function ifDefined(variable) {
         BootstrapUI.config = config;
     };
 
+    var loader = $.Deferred();
+
     BootstrapUI.load = function () {
         BootstrapUI.tools.console.debug("Loading components ...");
-        for (var i = 0; i < config.preload.length; i++) {
-            BootstrapUI.tools.console.debug("[" + (i + 1) + "/" + config.preload.length + "] Loading " + config.preload[i].type + " " + config.preload[i].name);
-            if (config.preload[i].type == "directive") {
-                $.getScript(config.base + "/" + config.directivesBase + "/" + config.preload[i].name + ".js", function () {
-                    config.loaded ++;
-                });
-            } else if (config.preload[i].type == "filter") {
-                $.getScript(config.base + "/" + config.filtersBase + "/" + config.preload[i].name + ".js", function () {
-                    config.loaded ++;
-                });
+        var deferred = loader;
+        var qualify = {
+            directive: function (directive) {
+                return config.base + "/" + config.directivesBase + "/" + directive + ".js";
+            },
+            filter: function (filter) {
+                return config.base + "/" + config.filtersBase + "/" + filter + ".js";
+            }
+        };
+        var state = {
+            total: config.preload.length,
+            count: 0
+        };
+        $(config.preload).each(function () {
+            var component = this;
+            BootstrapUI.tools.console.debug("Loading " + component.type + " " + component.name);
+            $.getScript(qualify[component.type](component.name)).then(function () {
+                state.count ++;
+                deferred.notify($.extend({
+                    name: component.name,
+                    type: component.type
+                }, state));
+            });
+        });
+        var promise = deferred.promise();
+        promise.progress(function (state) {
+            BootstrapUI.tools.console.debug("[" + state.count + "/" + state.total + "] Loaded " + state.type + " " + state.name);
+            if (state.count == state.total) {
+                deferred.resolve();
+            }
+        });
+        promise.then(function () {
+            BootstrapUI.tools.console.debug("Components loaded and pre-configured on namespace '" + config.namespace + "'.");
+        }, function () {
+            BootstrapUI.tools.console.error("Failed to load components");
+        });
+        return  promise;
+    };
+
+    BootstrapUI.register = function (factory) {
+        var registry = {};
+        factory.apply(registry, [registry, BootstrapUI.classes, BootstrapUI.tools]);
+        $.each(registry, function (simpleName, value) {
+            if (value.isDirective) {
+                BootstrapUI.directives[BootstrapUI.classes.Directive.qualify(simpleName)] = value.factory;
+                BootstrapUI.tools.console.debug("Registered directive: " + simpleName);
+            } else if (value.isFilter) {
+                BootstrapUI.filters[simpleName] = value.factory;
+                BootstrapUI.tools.console.debug("Registered filter: " + simpleName);
             } else {
-                throw "Unknown preload content type: " + config.preload[i].type;
+                BootstrapUI.tools.console.error("Unknown component discovered " + simpleName);
             }
-        }
-        config.waiting = setInterval(function () {
-            if (config.loaded == config.preload.length) {
-                clearInterval(config.waiting);
-                var obj;
-                for (obj in BootstrapUI.dynamic) {
-                    //noinspection JSUnfilteredForInLoop
-                    var directive = BootstrapUI.dynamic[obj];
-                    if (!directive.isDirective) {
-                        continue;
-                    }
-                    //noinspection JSUnfilteredForInLoop
-                    BootstrapUI.directives[BootstrapUI.classes.Directive.qualify(obj)] = directive.factory;
-                }
-                for (obj in BootstrapUI.dynamic) {
-                    //noinspection JSUnfilteredForInLoop
-                    var filter = BootstrapUI.dynamic[obj];
-                    if (!filter.isFilter) {
-                        continue;
-                    }
-                    //noinspection JSUnfilteredForInLoop
-                    BootstrapUI.filters[obj] = filter.factory;
-                }
-                BootstrapUI.tools.console.debug("Components loaded and pre-configured on namespace '" + config.namespace + "'.");
-                config.loadingDone = true;
-            }
-        }, 10);
+        });
     };
 
     /**
@@ -392,29 +409,26 @@ function ifDefined(variable) {
             throw "This element has been already bootstrapped";
         }
         root.uiBootstrapped = true;
-        var waiting = setInterval(function () {
-            if (config.loadingDone) {
-                clearInterval(waiting);
-                new BootstrapUI.classes.State({
-                    bind: function (module, callback) {
-                        BootstrapUI.tools.console.debug("Binding the directives ...");
-                        module.directive(BootstrapUI.directives);
-                        BootstrapUI.tools.console.debug("Binding the filters ...");
-                        module.filter(BootstrapUI.filters);
-                        BootstrapUI.tools.console.debug("Bootstrapping AngularJS for module '" + module.name + "' ...");
-                        angular.bootstrap(this.applicationRoot, [module.name]);
-                        BootstrapUI.tools.console.debug("All ready.");
-                        if ($.isFunction(callback)) {
-                            callback.apply(this, [module]);
-                        }
+        loader.then(function () {
+            new BootstrapUI.classes.State({
+                bind: function (module, callback) {
+                    BootstrapUI.tools.console.debug("Binding the directives ...");
+                    module.directive(BootstrapUI.directives);
+                    BootstrapUI.tools.console.debug("Binding the filters ...");
+                    module.filter(BootstrapUI.filters);
+                    BootstrapUI.tools.console.debug("Bootstrapping AngularJS for module '" + module.name + "' ...");
+                    angular.bootstrap(this.applicationRoot, [module.name]);
+                    BootstrapUI.tools.console.debug("All ready.");
+                    if ($.isFunction(callback)) {
+                        callback.apply(this, [module]);
                     }
-                }, {
-                    directives: BootstrapUI.directives,
-                    filters: BootstrapUI.filters,
-                    applicationRoot: root
-                }).trigger(root, "ui.ready");
-            }
-        }, 1);
+                }
+            }, {
+                directives: BootstrapUI.directives,
+                filters: BootstrapUI.filters,
+                applicationRoot: root
+            }).trigger(root, "ui.ready");
+        });
     };
     BootstrapUI.configure(config);
     BootstrapUI.load();

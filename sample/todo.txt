@@ -1,0 +1,2 @@
+Textbox:
+    text-alignment=left,right,center,justify

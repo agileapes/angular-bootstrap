@@ -1,0 +1,25 @@
+<div ng-if="parent.parent.orientation == 'inline'">
+    <div class="checkbox">
+        <label>
+            <input id="{{id}}" type="checkbox" /> {{label}}
+        </label>
+    </div>
+</div>
+<div ng-if="parent.parent.orientation == 'horizontal'">
+    <div class="form-group">
+        <div class="col-sm-offset-{{parent.parent.labelSize}} col-sm-{{12 - parent.parent.labelSize}}">
+            <div class="checkbox">
+                <label>
+                    <input id="{{id}}" type="checkbox" /> {{label}}
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+<div ng-if="!parent.parent.orientation || parent.parent.orientation == 'vertical'">
+    <div class="checkbox">
+        <label>
+            <input id="{{id}}" type="checkbox"> {{label}}
+        </label>
+    </div>
+</div>

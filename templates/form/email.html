@@ -1,0 +1,7 @@
+<label for="{{id}}-input" ng-class="{'col-sm-{{parent.parent.labelSize}}': parent.parent.orientation == 'horizontal', 'sr-only': parent.parent.orientation == 'inline'}">{{label}}</label>
+<div ng-if="parent.parent.orientation != 'inline'">
+    <div ng-class="{'col-sm-{{12 - parent.parent.labelSize}}': parent.parent.orientation == 'horizontal'}">
+        <input data-input id="{{id}}-input" class="form-control" type="{{type}}" placeholder="{{placeholder}}" value="{{value}}"/>
+    </div>
+</div>
+<div ng-if="parent.parent.orientation == 'inline'"><input data-input id="{{id}}-input" class="form-control" type="{{type}}" placeholder="{{placeholder}}" value="{{value}}"/></div>
