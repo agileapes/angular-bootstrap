@@ -31,7 +31,8 @@ function ifDefined(variable) {
         tools: {},
         classes: {},
         directives: {},
-        filters: {}
+        filters: {},
+        ext: {}
     };
 
     //*****
