@@ -1,5 +1,5 @@
 (function (toolkit) {
-    toolkit.register(function (registry) {
+    toolkit.register("icon", function (registry) {
         registry.icon = new toolkit.classes.Directive("1.0", "icon", function () {
             return {
                 restrict: "E",

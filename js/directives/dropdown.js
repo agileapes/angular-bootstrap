@@ -1,5 +1,5 @@
 (function (toolkit) {
-    toolkit.register(function (registry) {
+    toolkit.register("dropdown", function (registry) {
         registry.dropdown = new toolkit.classes.Directive("1.0", "dropdown", function () {
             return  {
                 restrict: "E",

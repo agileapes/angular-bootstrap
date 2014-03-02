@@ -1,5 +1,5 @@
 (function (toolkit) {
-    toolkit.register(function (registry) {
+    toolkit.register("buttonGroup", function (registry) {
         registry.buttonGroup = new toolkit.classes.Directive("1.0", "button-group", function () {
             return {
                 restrict: "E",

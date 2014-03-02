@@ -205,15 +205,6 @@ function ifDefined(variable) {
     BootstrapUI.tools.console = {
         preserve: false,
         messages: [],
-        clear: function () {
-            if (!config.debug) {
-                return;
-            }
-            BootstrapUI.tools.console.messages.length = 0;
-            if (console) {
-                console.clear();
-            }
-        },
         handler: function (logger) {
             logger = BootstrapUI.tools.console.proxy("console." + logger);
             return function () {
@@ -274,125 +265,219 @@ function ifDefined(variable) {
         if (!config.ext) {
             config.ext = {};
         }
-        config.preload = [
-            {
-                type: "directive",
-                name: "icon"
-            },
-            {
-                type: "directive",
-                name: "breadcrumb"
-            },
-            {
-                type: "directive",
-                name: "dropdown"
-            },
-            {
-                type: "directive",
-                name: "buttonGroup"
-            },
-            {
-                type: "directive",
-                name: "inputGroup"
-            },
-            {
-                type: "directive",
-                name: "container"
-            },
-            {
-                type: "directive",
-                name: "pagination"
-            },
-            {
-                type: "directive",
-                name: "form"
-            },
-            {
-                type: "filter",
-                name: "capitalize"
-            },
-            {
-                type: "filter",
-                name: "capitalizeFirst"
-            },
-            {
-                type: "filter",
-                name: "range"
-            }
-        ];
-        var i;
-        for (i = 0; i < config.directives.length; i++) {
-            config.preload.push({
-                type: "directive",
-                name: config.directives[i]
-            });
+        if (typeof config.preloadAll == "undefined") {
+            config.preloadAll = true;
         }
-        for (i = 0; i < config.filters.length; i++) {
-            config.preload.push({
-                type: "filter",
-                name: config.filters[i]
-            });
+        BootstrapUI.preloader.directive(config.directives);
+        BootstrapUI.preloader.filter(config.filters);
+        if (config.preloadAll) {
+            BootstrapUI.preloader.directive("breadcrumb", "buttonGroup", "container", "dropdown", "form", "icon", "inputGroup", "pagination");
+            BootstrapUI.preloader.filter("range", "capitalize", "capitalizeFirst");
         }
-        config.loaded = 0;
         BootstrapUI.config = config;
     };
 
-    var loader = $.Deferred();
-
-    BootstrapUI.load = function () {
-        BootstrapUI.tools.console.debug("Loading components ...");
-        var deferred = loader;
-        var qualify = {
-            directive: function (directive) {
-                return config.base + "/" + config.directivesBase + "/" + directive + ".js";
-            },
-            filter: function (filter) {
-                return config.base + "/" + config.filtersBase + "/" + filter + ".js";
+    BootstrapUI.preloader = {
+        items: {},
+        qualify: function (component) {
+            if (component.type == "directive") {
+                return config.base + "/" + config.directivesBase + "/" + component.name + ".js";
+            } else if (component.type == "filter") {
+                return config.base + "/" + config.filtersBase + "/" + component.name + ".js";
+            } else {
+                BootstrapUI.tools.console.error("Failed to resolve path for unknown component " + component.name);
+                return null;
             }
-        };
-        if (!BootstrapUI.pending) {
-            BootstrapUI.pending = {};
-        }
-        var state = {
-            total: config.preload.length,
-            count: 0
-        };
-        $(config.preload).each(function () {
-            var component = this;
-            BootstrapUI.pending[component.name] = true;
-            BootstrapUI.tools.console.debug("Loading " + component.type + " " + component.name);
-            $.getScript(qualify[component.type](component.name)).then(function () {
-                state.count ++;
-                deferred.notify($.extend({
-                    name: component.name,
-                    type: component.type
-                }, state));
+        },
+        add: function (item) {
+            if ($.isArray(item)) {
+                $(item).each(function () {
+                    BootstrapUI.preloader.add(this);
+                });
+                return BootstrapUI.preloader;
+            }
+            if (BootstrapUI.preloader.items[item.name]) {
+                BootstrapUI.preloader.items[item.name] = $.extend(BootstrapUI.preloader.items[item.name], item);
+            } else {
+                BootstrapUI.preloader.items[item.name] = item;
+            }
+            return BootstrapUI.preloader;
+        },
+        directive: function (name, _) {
+            if ($.isArray(name)) {
+                $(name).each(function () {
+                    BootstrapUI.preloader.directive(this);
+                });
+                return BootstrapUI.preloader;
+            } else if (arguments.length > 1) {
+                $(arguments).each(function () {
+                    BootstrapUI.preloader.directive(this);
+                });
+                return BootstrapUI.preloader;
+            }
+            return BootstrapUI.preloader.add({
+                name: name,
+                type: "directive"
             });
-        });
-        var promise = deferred.promise();
-        promise.progress(function (state) {
-            delete BootstrapUI.pending[state.name];
-            BootstrapUI.tools.console.debug("[" + state.count + "/" + state.total + "] Loaded " + state.type + " " + state.name);
-            if (state.count == state.total) {
-                deferred.resolve();
+        },
+        filter: function (name, _) {
+            if ($.isArray(name)) {
+                $(name).each(function () {
+                    BootstrapUI.preloader.filter(this);
+                });
+                return BootstrapUI.preloader;
+            } else if (arguments.length > 1) {
+                $(arguments).each(function () {
+                    BootstrapUI.preloader.filter(this);
+                });
+                return BootstrapUI.preloader;
             }
-        });
-        promise.then(function () {
-            BootstrapUI.tools.console.debug("Components loaded and pre-configured on namespace '" + config.namespace + "'.");
-        }, function () {
-            BootstrapUI.tools.console.error("Failed to load components");
-        });
-        return  promise;
+            return BootstrapUI.preloader.add({
+                name: name,
+                type: "filter"
+            });
+        },
+        get: function (name) {
+            if (BootstrapUI.preloader.items[name]) {
+                return BootstrapUI.preloader.items[name];
+            } else {
+                BootstrapUI.preloader.items[name] = {
+                    name: name
+                };
+                return BootstrapUI.preloader.items[name];
+            }
+        },
+        load: function (name) {
+            var deferred = $.Deferred();
+            var promise = deferred.promise;
+            deferred.promise = function () {
+                var result = promise();
+                var then = promise.then;
+                promise.then = function (done, failed, progress) {
+                    then(done, failed, progress);
+                    return BootstrapUI.preloader;
+                };
+                return result;
+            };
+            if (typeof name == "undefined") {
+                var components = [];
+                $.each(BootstrapUI.preloader.items, function (name) {
+                    components.push(name);
+                });
+                return BootstrapUI.preloader.load(components);
+            } else if ($.isArray(name)) {
+                var pending = {};
+                var result = {};
+                var resolved = name.length;
+                var remaining = name.length;
+                if (name.length == 0) {
+                    deferred.resolve(result);
+                }
+                $(name).each(function () {
+                    pending[this] = BootstrapUI.preloader.get(this);
+                    BootstrapUI.preloader.load(this).done(function (name, loaded) {
+                        remaining --;
+                        resolved --;
+                        deferred.notify({
+                            name: name,
+                            loaded: loaded,
+                            remaining: remaining,
+                            resolved: resolved
+                        });
+                        result[name] = {
+                            name: name,
+                            loaded: loaded
+                        };
+                        delete pending[name];
+                    }).fail(function (name, reason) {
+                        remaining --;
+                        deferred.notify({
+                            name: name,
+                            remaining: remaining,
+                            resolved: resolved,
+                            error: reason
+                        });
+                        pending[name].error = reason;
+                    }).always(function () {
+                        if (remaining == 0) {
+                            if (resolved == 0) {
+                                deferred.resolve(result);
+                            } else {
+                                deferred.reject(pending);
+                            }
+                        }
+                    });
+                });
+                return deferred.promise();
+            }
+            if (!BootstrapUI.preloader.items[name]) {
+                deferred.reject(name, "Unknown component");
+            } else {
+                var component = BootstrapUI.preloader.items[name];
+                if (component.loaded) {
+                    if (component.loading) {
+                        BootstrapUI.tools.console.log("Component already scheduled to be loaded: " + name);
+                        component.loading.success(function () {
+                            if (component.loaded) {
+                                deferred.resolve(name, false);
+                            } else {
+                                deferred.reject(name, component.loadError);
+                            }
+                        });
+                    } else {
+                        BootstrapUI.tools.console.log("Component already loaded: " + name);
+                        deferred.resolve(name, false);
+                    }
+                } else {
+                    component.loaded = true;
+                    component.loading = $.ajax({
+                        url: BootstrapUI.preloader.qualify(component),
+                        dataType: "text",
+                        global: false,
+                        success: function (data) {
+                            try {
+                                eval(data);
+                            } catch (e) {
+                                component.loadError = e.message ? e.message : e;
+                                component.loaded = false;
+                                delete component.loading;
+                                deferred.reject(name, component.loadError);
+                                return;
+                            }
+                            deferred.resolve(name, true);
+                            delete component.loading;
+                        },
+                        error: function (xhr, error) {
+                            deferred.reject(name, error);
+                        }
+                    });
+                }
+            }
+            return  deferred.promise();
+        }
     };
 
-    BootstrapUI.register = function (factory) {
+    BootstrapUI.register = function (component, factory) {
+        if (!factory && $.isFunction(component)) {
+            factory = component;
+            component = null;
+        } else if ($.isFunction(component)) {
+            component = component();
+        }
+        BootstrapUI.preloader.get(component).loaded = true;
         var registry = {};
         factory.apply(registry, [registry, BootstrapUI.classes, BootstrapUI.tools]);
         $.each(registry, function (simpleName, value) {
             if (value.isDirective) {
+                if (BootstrapUI.directives[BootstrapUI.classes.Directive.qualify(simpleName)]) {
+                    return;
+                }
                 BootstrapUI.directives[BootstrapUI.classes.Directive.qualify(simpleName)] = value.factory;
                 BootstrapUI.tools.console.debug("Registered directive: " + simpleName);
             } else if (value.isFilter) {
+                if (BootstrapUI.filters[simpleName]) {
+                    return;
+                }
                 BootstrapUI.filters[simpleName] = value.factory;
                 BootstrapUI.tools.console.debug("Registered filter: " + simpleName);
             } else {
@@ -414,7 +499,7 @@ function ifDefined(variable) {
             throw "This element has been already bootstrapped";
         }
         root.uiBootstrapped = true;
-        loader.then(function () {
+        loader.done(function () {
             new BootstrapUI.classes.State({
                 bind: function (module, callback) {
                     BootstrapUI.tools.console.debug("Binding the directives ...");
@@ -436,11 +521,14 @@ function ifDefined(variable) {
         });
     };
     BootstrapUI.configure(config);
-    BootstrapUI.load();
-    $(function () {
-        $("html[data-bootstrapui]").each(function () {
-            BootstrapUI.tools.console.debug("Auto-bootstrap starting ...");
-            BootstrapUI.bootstrap(this);
+    var loader;
+    setTimeout(function () {
+        loader = BootstrapUI.preloader.load();
+        $(function () {
+            $("html[data-bootstrapui]").each(function () {
+                BootstrapUI.tools.console.debug("Auto-bootstrap starting ...");
+                BootstrapUI.bootstrap(this);
+            });
         });
-    });
+    }, 0);
 })(ifDefined("jQuery"), ifDefined("angular"), ifDefined("BootstrapUIConfig"));

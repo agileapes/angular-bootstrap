@@ -1,5 +1,5 @@
 (function (toolkit) {
-    toolkit.register(function (registry) {
+    toolkit.register("inputGroup", function (registry) {
         registry.inputGroup = new toolkit.classes.Directive("1.0", "input-group", function () {
             return {
                 restrict: "E",

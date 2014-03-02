@@ -1,5 +1,6 @@
 BootstrapUIConfig = {
     namespace: "ui",
     base: "..",
-    debug: true
+    debug: true,
+    preloadAll: false
 };

@@ -1,5 +1,5 @@
 (function (toolkit) {
-    toolkit.register(function (registry) {
+    toolkit.register("container", function (registry) {
         registry.container = new toolkit.classes.Directive("1.0", "container", function () {
             return {
                 restrict: "E",

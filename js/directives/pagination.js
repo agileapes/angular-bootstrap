@@ -1,5 +1,5 @@
 (function (toolkit) {
-    toolkit.register(function (registry) {
+    toolkit.register("pagination", function (registry) {
         registry.pagination = new toolkit.classes.Directive("1.0", "pagination", function () {
             return {
                 restrict: "E",

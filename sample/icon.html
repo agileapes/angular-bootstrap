@@ -11,6 +11,8 @@
     <script src="../bootstrap/js/bootstrap.min.js"></script>
     <script src="../js/angular.js"></script>
     <script src="../js/bootstrapui-0.4.js"></script>
+    <script src="../js/directives/icon.js"></script>
+    <script src="../js/filters/capitalizeFirst.js"></script>
     <script src="../js/demo.js"></script>
 </head>
 <body>
@@ -22,6 +24,7 @@
 <h1 class="page-header">Icons</h1>
 <h4><ui:icon glyph="{{icon}}"></ui:icon> <code>{{icon | capitalizeFirst}}</code> icon</h4>
 <h4>Rendered as:</h4>
+<pre>&lt;ui:icon glyph="{{icon}}"&gt;&lt;/ui:icon&gt;</pre>
 <pre>&lt;span class="glyphicon glyphicon-{{icon}}"&gt;&lt;/span&gt;</pre>
 <label>
 Icon:

@@ -1,5 +1,5 @@
 (function (toolkit, $) {
-    toolkit.register(function (registry) {
+    toolkit.register("capitalize", function (registry) {
         registry.capitalize = new toolkit.classes.Filter("1.0", function () {
             var capitalize = function (input) {
                 if (input === null) {

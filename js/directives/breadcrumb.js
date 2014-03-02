@@ -1,5 +1,5 @@
 (function (toolkit) {
-    toolkit.register(function (registry) {
+    toolkit.register("breadcrumb", function (registry) {
         registry.breadcrumbs = new toolkit.classes.Directive("1.0", "breadcrumb", function () {
             return {
                 restrict: "E",
