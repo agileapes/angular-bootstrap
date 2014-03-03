@@ -87,6 +87,48 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="form-container">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element name="form-input">
+                        <xs:complexType>
+                            <xs:attribute name="type" type="xs:string" use="optional" default="text"/>
+                            <xs:attribute name="id" type="xs:string" use="required"/>
+                            <xs:attribute name="placeholder" type="xs:string" use="optional" default=""/>
+                            <xs:attribute name="validation" type="xs:string" use="optional" default=""/>
+                            <xs:attribute name="state" type="inputState" use="optional" default=""/>
+                            <xs:attribute name="feedback" type="glyph" use="optional" default=""/>
+                            <xs:attribute name="label" type="xs:string" use="optional" default=""/>
+                            <xs:attribute name="value" type="xs:string" use="optional" default=""/>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element name="form-select">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element name="form-select-item">
+                                    <xs:complexType mixed="true">
+                                        <xs:attribute name="value" type="xs:string"/>
+                                    </xs:complexType>
+                                </xs:element>
+                            </xs:sequence>
+                            <xs:attribute name="type" type="selectType" use="required"/>
+                            <xs:attribute name="id" type="xs:string" use="required"/>
+                            <xs:attribute name="selection" type="selectMode" use="optional" default="single"/>
+                            <xs:attribute name="validation" type="xs:string" use="optional" default=""/>
+                            <xs:attribute name="state" type="inputState" use="optional" default=""/>
+                            <xs:attribute name="label" type="xs:string" use="optional" default=""/>
+                            <xs:attribute name="value" type="xs:string" use="optional" default=""/>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:choice>
+                <xs:element name="form-action" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
+            <xs:attribute name="orientation" use="optional" default="vertical" type="orientation" />
+            <xs:attribute name="label-size" use="optional" default="3" type="xs:nonNegativeInteger" />
+        </xs:complexType>
+    </xs:element>
+
     <xs:complexType name="dropdown">
         <xs:sequence>
             <xs:choice minOccurs="1" maxOccurs="unbounded">
@@ -337,6 +379,7 @@
         <xs:restriction base="xs:string">
             <xs:enumeration value="horizontal"/>
             <xs:enumeration value="vertical"/>
+            <xs:enumeration value="inline"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="size">
@@ -363,6 +406,27 @@
         <xs:restriction base="xs:string">
             <xs:enumeration value="tab"/>
             <xs:enumeration value="pill"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="inputState">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="valid"/>
+            <xs:enumeration value="invalid"/>
+            <xs:enumeration value="warning"/>
+            <xs:enumeration value="notice"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="selectType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="combo"/>
+            <xs:enumeration value="checkList"/>
+            <xs:enumeration value="itemList"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="selectMode">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="single"/>
+            <xs:enumeration value="multiple"/>
         </xs:restriction>
     </xs:simpleType>
 </xs:schema>

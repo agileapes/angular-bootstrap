@@ -1,0 +1,9 @@
+<div class="form-group">
+    <div ng-class="{'col-sm-offset-{{parent.labelSize}} col-sm-{{12 - parent.labelSize}}': parent.orientation == 'horizontal'}">
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" ng-model="scope.value"> {{scope.label}}
+            </label>
+        </div>
+    </div>
+</div>

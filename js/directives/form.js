@@ -36,6 +36,7 @@
                             args.push(arguments[i]);
                         }
                     }
+                    console.error(proxy.jquery);
                     $(proxy).trigger(event, args);
                 });
             });
@@ -65,6 +66,23 @@
             } else {
                 definition.templateLoader.reject();
                 definition.templateAvailable.reject();
+            }
+            if (!definition.link) {
+                definition.link = function () {};
+            }
+            if ($.isFunction(definition.link)) {
+                definition.link = {
+                    post: definition.link
+                };
+            }
+            if (!definition.link.pre || !$.isFunction(definition.link.pre)) {
+                definition.link.pre = function () {};
+            }
+            if (!definition.link.post || !$.isFunction(definition.link.post)) {
+                definition.link.post = function () {};
+            }
+            if (!definition.controller || !$.isFunction(definition.controller)) {
+                definition.controller = function () {};
             }
             return definition;
         };
@@ -148,10 +166,40 @@
             components: {}
         };
         registry.formInput = new toolkit.classes.Directive("1.0", "form-placeholder", function ($compile, $http, $templateCache) {
+            var renderQueue = {
+                requests: {},
+                notify: function (type) {
+                    if (!renderQueue.requests[type]) {
+                        return;
+                    }
+                    var queue = renderQueue.requests[type];
+                    toolkit.tools.console.debug("Running actions associated with component type <" + type + "/>");
+                    delete renderQueue.requests[type];
+                    for (var i = 0; i < queue.length; i++) {
+                        var func = queue[i];
+                        func.postpone();
+                    }
+                },
+                perform: function (type, action) {
+                    if (toolkit.ext.formInput.components[type]) {
+                        action.postpone();
+                        return;
+                    }
+                    toolkit.tools.console.debug("Postponing action until component of type <" + type + "/> becomes available");
+                    if (!renderQueue.requests[type]) {
+                        renderQueue.requests[type] = [];
+                    }
+                    renderQueue.requests[type].push(action);
+                }
+            };
             init("formInput", function (type, definition) {
+                toolkit.tools.console.debug("Registered form component " + type);
                 toolkit.ext.formInput.components[type] = definition;
                 if (definition.templateUrl) {
-                    $http.get(definition.templateUrl).success(function (data) {
+                    renderQueue.notify(type);
+                    $http.get(definition.templateUrl, {
+                        cache: $templateCache
+                    }).success(function (data) {
                         definition.templateLoader.resolve(data);
                     });
                     definition.templateLoader.promise().done(function (template) {
@@ -175,83 +223,63 @@
                     state: "@"
                 },
                 link: function ($scope, $element, $attributes, formController) {
-//                    $($element).get(0).removeAttribute('type');
-//                    $($element).get(0).removeAttribute('id');
-//                    $($element).get(0).removeAttribute('label');
-//                    $($element).get(0).removeAttribute('value');
-//                    $($element).get(0).removeAttribute('feedback');
-//                    $($element).get(0).removeAttribute('state');
-//                    $($element).get(0).removeAttribute('placeholder');
+                    $($element).get(0).removeAttribute('type');
+                    $($element).get(0).removeAttribute('id');
+                    $($element).get(0).removeAttribute('label');
+                    $($element).get(0).removeAttribute('value');
+                    $($element).get(0).removeAttribute('feedback');
+                    $($element).get(0).removeAttribute('state');
+                    $($element).get(0).removeAttribute('placeholder');
                     $scope.parent = formController.$scope;
                     if (!$scope.type) {
                         $scope.type = "text";
                     }
                     var self = this;
                     loaded.done(function () {
-                        if (!toolkit.ext.formInput.components[$scope.type]) {
-                            toolkit.tools.console.error("Invalid component type: " + $scope.type);
-                            return;
-                        }
-                        var component = toolkit.ext.formInput.components[$scope.type];
-                        if (!component.link) {
-                            component.link = {
-                                pre: function () {},
-                                post: function () {}
-                            };
-                        }
-                        if ($.isFunction(component.link)) {
-                            component.link = {
-                                pre: function () {},
-                                post: component.link
-                            };
-                        } else {
-                            if ((!component.link.pre || !$.isFunction(component.link.pre))) {
-                                component.link.pre = function () {}
+                        renderQueue.perform($scope.type, function () {
+                            if (!toolkit.ext.formInput.components[$scope.type]) {
+                                toolkit.tools.console.error("Invalid component type: " + $scope.type);
+                                return;
                             }
-                            if ((!component.link.post || !$.isFunction(component.link.post))) {
-                                component.link.post = function () {}
-                            }
-                        }
-                        var postlink = component.link.post;
-                        component.link.post = function ($scope, $element, $attributes, formController, event) {
-                            (function () {
-                                if ($scope.id) {
-                                    $($element).each(function () {
-                                        console.error(this);
-                                    });
-                                    $("#" + $scope.id).on.forward($element, "keypress", "keydown", "keyup", "focus", "blur",
-                                        "enter", "leave", "click", "dblclick", "mousemove", "mouseover", "mouseout", "mousedown",
-                                        "mouseup", "change", "contextmenu", "formchange", "forminput", "input", "invalid",
-                                        "reset", "select", "drag", "dragend", "dragenter", "dragleave", "dragover", "dragstart",
-                                        "drop");
-                                }
-                            }).postpone(null, [], 0);
-                            postlink.apply(this, arguments);
-                        };
-                        var event = function (scope) {
-                            if (!scope) {
-                                scope = $scope;
-                            }
-                            return function (type) {
-                                return {
-                                    element: $element,
-                                    scope: scope,
-                                    target: scope.id ? $("#" + scope.id) : $element,
-                                    type: type
-                                };
-                            }
-                        };
-                        component.link.pre.apply(self, [$scope, $element, $attributes, formController, event($scope)]);
-                        (function () {
-                            $scope.$apply();
-                        }).postpone();
-                        component.templateAvailable.then(function (compiled) {
-                            compiled($scope, function ($clone, $localScope) {
-                                $element.replaceWith($clone);
-                                component.link.post.apply(self, [$localScope, $element, $attributes, formController, event($localScope)]);
+                            var component = toolkit.ext.formInput.components[$scope.type];
+                            var postlink = component.link.post;
+                            component.link.post = function ($scope, $element, $attributes, formController, event) {
                                 (function () {
-                                    $scope.$apply();
-                                }).postpone();
+                                    if ($scope.id) {
+                                        $("#" + $scope.id).on.forward($element, "keypress", "keydown", "keyup", "focus", "blur",
+                                            "enter", "leave", "click", "dblclick", "mousemove", "mouseover", "mouseout", "mousedown",
+                                            "mouseup", "change", "contextmenu", "formchange", "forminput", "input", "invalid",
+                                            "reset", "select", "drag", "dragend", "dragenter", "dragleave", "dragover", "dragstart",
+                                            "drop");
+                                    }
+                                }).postpone(null, [], 0);
+                                postlink.apply(this, arguments);
+                            };
+                            var event = function (scope) {
+                                if (!scope) {
+                                    scope = $scope;
+                                }
+                                return function (type) {
+                                    return {
+                                        element: $element,
+                                        scope: scope,
+                                        target: scope.id ? $("#" + scope.id) : $element,
+                                        type: type
+                                    };
+                                }
+                            };
+                            component.link.pre.apply(self, [$scope, $element, $attributes, formController, event($scope)]);
+                            (function () {
+                                $scope.$apply();
+                            }).postpone();
+                            component.templateAvailable.then(function (compiled) {
+                                compiled($scope, function ($clone, $localScope) {
+                                    $element.replaceWith($clone);
+                                    component.link.post.apply(self, [$localScope, $element, $attributes, formController, event($localScope)]);
+                                    (function () {
+                                        $scope.$apply();
+                                    }).postpone();
+                                });
                             });
                         });
                     });
@@ -259,17 +287,16 @@
                 controller: function ($scope, $element) {
                     var self = this;
                     loaded.done(function () {
-                        if (!toolkit.ext.formInput.components[$scope.type]) {
-                            return;
-                        }
                         $scope.scope = $scope;
-                        var component = toolkit.ext.formInput.components[$scope.type];
-                        if (component.controller && $.isFunction(component.controller)) {
-                            component.controller.apply(self, [$scope, $element]);
-                            (function () {
-                                $scope.$apply();
-                            }).postpone();
-                        }
+                        renderQueue.perform($scope.type, function () {
+                            var component = toolkit.ext.formInput.components[$scope.type];
+                            if (component.controller && $.isFunction(component.controller)) {
+                                component.controller.apply(self, [$scope, $element]);
+                                (function () {
+                                    $scope.$apply();
+                                }).postpone();
+                            }
+                        });
                     });
                 }
             };

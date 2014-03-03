@@ -1,16 +1,20 @@
 (function (toolkit, $) {
     toolkit.register("formInput.simple", function (registry) {
         registry.text = toolkit.ext.formInput.define({
-            templateUrl: "simple",
-            link: function ($scope, $element, $attributes, controller, event) {
-            },
-            controller: function ($scope, $element) {
-            }
+            templateUrl: "simple"
         });
         registry.email = $.extend({}, registry.text);
         registry.password = $.extend({}, registry.text);
-        registry.static = $.extend({}, registry.text);
-        registry.checkbox = $.extend({}, registry.text);
-        registry.textarea = $.extend({}, registry.text);
+        registry.static = toolkit.ext.formInput.define({
+            templateUrl: "static"
+        });
+        registry.textarea = toolkit.ext.formInput.define({
+            templateUrl: "textarea"
+        });
+        registry.checkbox = toolkit.ext.formInput.define({
+            templateUrl: "checkbox"
+        });
     });
-})(BootstrapUI, jQuery);
+}).postpone(null, [BootstrapUI, jQuery], function () {
+        return  typeof BootstrapUI.ext.formInput != "undefined" && !BootstrapUI.ext.formInput.components.text;
+    }, 10000);

@@ -8,14 +8,32 @@ function ifDefined(variable) {
 
 (function ($, angular, config) {
 
-    Function.prototype.postpone = function (thisArg, args, delay) {
+    Function.prototype.postpone = function (thisArg, args, delay, timeout) {
         if (typeof delay == "undefined") {
             delay = 0;
         }
         var func = this;
-        setTimeout(function () {
-            func.apply(thisArg, args);
-        }, delay);
+        if ($.isFunction(delay)) {
+            var controller;
+            var interval = setInterval(function () {
+                if (delay()) {
+                    clearInterval(interval);
+                    clearTimeout(controller);
+                    func.postpone(thisArg, args);
+                }
+            }, 10);
+            if (timeout) {
+                controller = setTimeout(function () {
+                    clearInterval(interval);
+                    clearTimeout(controller);
+                    BootstrapUI.tools.console.debug("Abandoning action after " + timeout);
+                }, timeout);
+            }
+        } else {
+            setTimeout(function () {
+                func.apply(thisArg, args);
+            }, delay);
+        }
         return this;
     };
 
@@ -482,6 +500,7 @@ function ifDefined(variable) {
                                 deferred.reject(name, component.loadError);
                                 return;
                             }
+                            BootstrapUI.tools.console.log("Loaded component " + name);
                             deferred.resolve(name, true);
                             delete component.loading;
                         },

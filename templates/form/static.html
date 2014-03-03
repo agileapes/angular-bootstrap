@@ -2,8 +2,8 @@
     <span ng-if="label"><label for="{{id}}" ng-class="{'col-sm-{{parent.labelSize}}': parent.orientation == 'horizontal' && label, 'sr-only': parent.orientation == 'inline'}" class="control-label"><span ng-if="label">{{label}}</span><span ng-if="!label && parent.orientation == 'vertical'">&nbsp;</span></label></span>
     <div ng-if="parent.orientation != 'inline'">
         <div ng-class="{'col-sm-{{12 - parent.labelSize}}': parent.orientation == 'horizontal' && label, 'col-sm-12': parent.orientation == 'horizontal' && !label}">
-            <input ng-keypress="keyPressed($event)" id="{{id}}" class="form-control" type="{{type}}" placeholder="{{placeholder}}" ng-model="scope.value"/>
+            <input ng-keypress="keyPressed($event)" id="{{id}}" disabled class="form-control" type="{{type}}" placeholder="{{placeholder}}" value="{{scope.value}}"/>
         </div>
     </div>
-    <input ng-if="parent.orientation == 'inline'" id="{{id}}" class="form-control" type="{{type}}" placeholder="{{placeholder}}" ng-model="scope.value"/>
+    <input ng-if="parent.orientation == 'inline'" id="{{id}}" disabled class="form-control" type="{{type}}" placeholder="{{placeholder}}" value="{{scope.value}}"/>
 </div>
