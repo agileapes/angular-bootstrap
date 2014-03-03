@@ -168,9 +168,13 @@
         registry.formInput = new toolkit.classes.Directive("1.0", "form-placeholder", function ($compile, $http, $templateCache) {
             var renderQueue = {
                 requests: {},
+                timeouts: {},
                 notify: function (type) {
                     if (!renderQueue.requests[type]) {
                         return;
+                    }
+                    if (renderQueue.timeouts[type]) {
+                        clearTimeout(renderQueue.timeouts[type]);
                     }
                     var queue = renderQueue.requests[type];
                     toolkit.tools.console.debug("Running actions associated with component type <" + type + "/>");
@@ -188,6 +192,12 @@
                     toolkit.tools.console.debug("Postponing action until component of type <" + type + "/> becomes available");
                     if (!renderQueue.requests[type]) {
                         renderQueue.requests[type] = [];
+                    }
+                    if (!renderQueue.timeouts[type]) {
+                        renderQueue.timeouts[type] = setTimeout(function () {
+                            toolkit.tools.console.error("Timeout waiting for component of type <" + type + "/> to become available.");
+                            renderQueue.requests[type] = [];
+                        }, 5000);
                     }
                     renderQueue.requests[type].push(action);
                 }

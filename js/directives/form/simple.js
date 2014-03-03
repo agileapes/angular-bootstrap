@@ -17,4 +17,4 @@
     });
 }).postpone(null, [BootstrapUI, jQuery], function () {
         return  typeof BootstrapUI.ext.formInput != "undefined" && !BootstrapUI.ext.formInput.components.text;
-    }, 10000);
+    }, 10000, "loading simple form inputs");

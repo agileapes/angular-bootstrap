@@ -8,7 +8,7 @@ function ifDefined(variable) {
 
 (function ($, angular, config) {
 
-    Function.prototype.postpone = function (thisArg, args, delay, timeout) {
+    Function.prototype.postpone = function (thisArg, args, delay, timeout, action) {
         if (typeof delay == "undefined") {
             delay = 0;
         }
@@ -26,7 +26,12 @@ function ifDefined(variable) {
                 controller = setTimeout(function () {
                     clearInterval(interval);
                     clearTimeout(controller);
-                    BootstrapUI.tools.console.debug("Abandoning action after " + timeout);
+                    if (action) {
+                        action = " '" + action + "'";
+                    } else {
+                        action = "";
+                    }
+                    BootstrapUI.tools.console.debug("Abandoning action" + action + " after " + timeout);
                 }, timeout);
             }
         } else {
@@ -35,6 +40,33 @@ function ifDefined(variable) {
             }, delay);
         }
         return this;
+    };
+
+    Function.prototype.repeat = function (thisArg, args, delay) {
+        var func = this;
+        var handler = {
+            interval: null,
+            count: 0,
+            stop: function () {
+                clearInterval(handler.interval);
+                delete handler.interval;
+                delete handler.count;
+                delete handler.stop;
+                handler = null;
+            }
+        };
+        handler.interval = setInterval(function () {
+            handler.count ++;
+            var context = thisArg, parameters = args;
+            if ($.isFunction(context)) {
+                context = context(handler);
+            }
+            if ($.isFunction(parameters)) {
+                parameters = parameters(handler);
+            }
+            func.postpone(context, parameters);
+        }, delay);
+        return handler;
     };
 
     //*****
@@ -238,9 +270,45 @@ function ifDefined(variable) {
     };
 
     BootstrapUI.tools.console = {
-        preserve: false,
-        messages: [],
+        preserve: true,
+        output: false,
+        messages: {
+            log: [],
+            debug: [],
+            warn: [],
+            info: [],
+            error: [],
+            flush: function () {
+                if (console) {
+                    var messages = [];
+                    $(["log", "debug", "warn", "info", "error"]).each(function () {
+                        var level = this;
+                        $(BootstrapUI.tools.console.messages[level]).each(function () {
+                            messages.push($.extend(this, {
+                                level: level
+                            }));
+                        });
+                        BootstrapUI.tools.console.messages[level].length = 0;
+                    });
+                    messages.sort(function (first, second) {
+                        return first.time < second.time;
+                    });
+                    var loggers = {};
+                    $(messages).each(function () {
+                        var message = this;
+                        if (!loggers[message.level]) {
+                            loggers[message.level] = BootstrapUI.tools.console.proxy("console." + message.level);
+                        }
+                        var logger = loggers[message.level];
+                        logger(message.time + " - " + message.message);
+                    });
+                } else {
+                    throw "No console to flush to";
+                }
+            }
+        },
         handler: function (logger) {
+            var level = logger;
             logger = BootstrapUI.tools.console.proxy("console." + logger);
             return function () {
                 if (!config.debug) {
@@ -249,9 +317,12 @@ function ifDefined(variable) {
                 for (var i = 0; i < arguments.length; i++) {
                     var argument = arguments[i];
                     if (BootstrapUI.tools.console.preserve) {
-                        BootstrapUI.tools.console.messages.push(argument);
+                        BootstrapUI.tools.console.messages[level].push({
+                            time: $.now(),
+                            message: argument
+                        });
                     }
-                    if (logger) {
+                    if (BootstrapUI.tools.console.output && logger) {
                         logger(argument);
                     }
                 }
