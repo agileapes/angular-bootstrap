@@ -270,8 +270,10 @@ function ifDefined(variable) {
     };
 
     BootstrapUI.tools.console = {
-        preserve: true,
-        output: false,
+        browserConsole: console,
+        preserve: false,
+        output: true,
+        replaced: false,
         messages: {
             log: [],
             debug: [],
@@ -279,7 +281,7 @@ function ifDefined(variable) {
             info: [],
             error: [],
             flush: function () {
-                if (console) {
+                if (BootstrapUI.tools.console.browserConsole) {
                     var messages = [];
                     $(["log", "debug", "warn", "info", "error"]).each(function () {
                         var level = this;
@@ -297,35 +299,44 @@ function ifDefined(variable) {
                     $(messages).each(function () {
                         var message = this;
                         if (!loggers[message.level]) {
-                            loggers[message.level] = BootstrapUI.tools.console.proxy("console." + message.level);
+                            loggers[message.level] = BootstrapUI.tools.console.proxy("BootstrapUI.tools.console.browserConsole." + message.level);
                         }
                         var logger = loggers[message.level];
-                        logger(message.time + " - " + message.message);
+                        logger(message.toString());
                     });
                 } else {
                     throw "No console to flush to";
                 }
             }
         },
+        replace: function () {
+            BootstrapUI.tools.console.replaced = true;
+            window.console = BootstrapUI.tools.console;
+        },
         handler: function (logger) {
             var level = logger;
-            logger = BootstrapUI.tools.console.proxy("console." + logger);
+            logger = BootstrapUI.tools.console.proxy("BootstrapUI.tools.console.browserConsole." + logger);
             return function () {
                 if (!config.debug) {
-                    return;
+                    return arguments;
                 }
                 for (var i = 0; i < arguments.length; i++) {
                     var argument = arguments[i];
                     if (BootstrapUI.tools.console.preserve) {
-                        BootstrapUI.tools.console.messages[level].push({
-                            time: $.now(),
-                            message: argument
-                        });
+                        var message = {
+                            time: new Date(),
+                            message: argument,
+                            toString: function () {
+                                return this.message;
+                            }
+                        };
+                        BootstrapUI.tools.console.messages[level].push(message);
                     }
-                    if (BootstrapUI.tools.console.output && logger) {
-                        logger(argument);
+                    if (!BootstrapUI.tools.console.replaced && BootstrapUI.tools.console.output && logger) {
+                        logger(message.toString());
                     }
                 }
+                return arguments.length == 1 ? arguments[0] : arguments;
             }
         },
         proxy: function (target) {
@@ -373,6 +384,23 @@ function ifDefined(variable) {
         }
         if (typeof config.preloadAll == "undefined") {
             config.preloadAll = true;
+        }
+        if (!config.console) {
+            config.console = {};
+        }
+        if (typeof config.console.replace == "undefined") {
+            config.console.replace = false;
+        }
+        if (typeof config.console.preserve == "undefined") {
+            config.console.preserve = config.console.replace;
+        }
+        if (typeof config.console.output == "undefined") {
+            config.console.output = true;
+        }
+        BootstrapUI.tools.console.preserve = config.console.preserve;
+        BootstrapUI.tools.console.output = config.console.output;
+        if (config.console.replace) {
+            BootstrapUI.tools.console.replace();
         }
         BootstrapUI.preloader.directive(config.directives);
         BootstrapUI.preloader.filter(config.filters);
