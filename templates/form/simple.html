@@ -1,7 +1,9 @@
-<label for="{{id}}" ng-class="{'col-sm-{{parent.parent.labelSize}}': parent.parent.orientation == 'horizontal', 'sr-only': parent.parent.orientation == 'inline'}">{{label}}</label>
-<div ng-if="parent.parent.orientation != 'inline'">
-    <div ng-class="{'col-sm-{{12 - parent.parent.labelSize}}': parent.parent.orientation == 'horizontal'}">
-        <input ng-keypress="keyPressed($event)" id="{{id}}" class="form-control" type="{{type}}" placeholder="{{placeholder}}" ng-model="value"/>
+<div class="form-group">
+    <label for="{{id}}" ng-class="{'col-sm-{{parent.labelSize}}': parent.orientation == 'horizontal', 'sr-only': parent.orientation == 'inline'}"><span ng-if="label">{{label}}</span><span ng-if="!label">&nbsp;</span></label>
+    <div ng-if="parent.parent.orientation != 'inline'">
+        <div ng-class="{'col-sm-{{12 - parent.labelSize}}': parent.orientation == 'horizontal'}">
+            <input ng-keypress="keyPressed($event)" id="{{id}}" class="form-control" type="{{type}}" placeholder="{{placeholder}}" ng-model="scope.value"/>
+        </div>
     </div>
+    <div ng-if="parent.orientation == 'inline'"><input id="{{id}}" class="form-control" type="{{type}}" placeholder="{{placeholder}}" ng-model="scope.value"/></div>
 </div>
-<div ng-if="parent.parent.orientation == 'inline'"><input id="{{id}}" class="form-control" type="{{type}}" placeholder="{{placeholder}}" value="{{value}}"/></div>

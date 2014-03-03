@@ -8,6 +8,17 @@ function ifDefined(variable) {
 
 (function ($, angular, config) {
 
+    Function.prototype.postpone = function (thisArg, args, delay) {
+        if (typeof delay == "undefined") {
+            delay = 0;
+        }
+        var func = this;
+        setTimeout(function () {
+            func.apply(thisArg, args);
+        }, delay);
+        return this;
+    };
+
     //*****
     // Preconfiguring the scope
     //*****
@@ -27,6 +38,7 @@ function ifDefined(variable) {
 
     BootstrapUI = {
         version: "0.4",
+        types: {},
         tools: {},
         classes: {},
         directives: {},
@@ -40,8 +52,8 @@ function ifDefined(variable) {
 
     /**
      * State class which is quite handy in creating complex event objects and allowing for conditional behaviour
-     * @param initializer the public fields and methods of the state object
-     * @param privates the private fields and methods of the state object
+     * @param [initializer] the public fields and methods of the state object
+     * @param [privates] the private fields and methods of the state object
      * @constructor
      */
     BootstrapUI.classes.State = function (initializer, privates) {
@@ -124,14 +136,19 @@ function ifDefined(variable) {
     /**
      * A class representing a new directive
      * @param version the version of the directive
-     * @param url the URL to the template
-     * @param factory the directive calculation lambda (optional)
+     * @param [url] the URL to the template
+     * @param [factory] the directive calculation lambda (optional)
      * @constructor
      */
     BootstrapUI.classes.Directive = function (version, url, factory) {
         this.isDirective = true;
         this.version = version;
         this.templateUrl = config.base + "/" + config.templateBase + "/" + url + ".html";
+        if ($.isFunction(url) && typeof factory == "undefined") {
+            factory = url;
+            url = null;
+            this.templateUrl = null;
+        }
         this.factory = factory ? factory : function () {
             return {};
         };
@@ -279,13 +296,22 @@ function ifDefined(variable) {
 
     BootstrapUI.preloader = {
         items: {},
+        qualifiers: {
+            directive: function (name) {
+                return config.base + "/" + config.directivesBase + "/" + name + ".js";
+            },
+            filter: function (name) {
+                return config.base + "/" + config.filtersBase + "/" + name + ".js";
+            }
+        },
         qualify: function (component) {
-            if (component.type == "directive") {
-                return config.base + "/" + config.directivesBase + "/" + component.name + ".js";
-            } else if (component.type == "filter") {
-                return config.base + "/" + config.filtersBase + "/" + component.name + ".js";
+            if (component.path) {
+                return component.path;
+            } else if (BootstrapUI.preloader.qualifiers[component.type]) {
+                component.path = BootstrapUI.preloader.qualifiers[component.type](component.name);
+                return component.path;
             } else {
-                BootstrapUI.tools.console.error("Failed to resolve path for unknown component " + component.name);
+                BootstrapUI.tools.console.error("Failed to resolve path for component " + component.name);
                 return null;
             }
         },
@@ -359,8 +385,19 @@ function ifDefined(variable) {
                 };
                 return result;
             };
+            var components;
+            if (/\.\*$/.test(name)) {
+                name = name.substring(0, name.length - 2);
+                components = [];
+                $.each(BootstrapUI.preloader.items, function (current) {
+                    if (current.length > name.length && current.substring(0, name.length) == name) {
+                        components.push(current);
+                    }
+                });
+                return BootstrapUI.preloader.load(components);
+            }
             if (typeof name == "undefined") {
-                var components = [];
+                components = [];
                 $.each(BootstrapUI.preloader.items, function (name) {
                     components.push(name);
                 });
@@ -441,6 +478,7 @@ function ifDefined(variable) {
                                 component.loadError = e.message ? e.message : e;
                                 component.loaded = false;
                                 delete component.loading;
+                                BootstrapUI.tools.console.debug(e);
                                 deferred.reject(name, component.loadError);
                                 return;
                             }
@@ -480,6 +518,9 @@ function ifDefined(variable) {
                 }
                 BootstrapUI.filters[simpleName] = value.factory;
                 BootstrapUI.tools.console.debug("Registered filter: " + simpleName);
+            } else if (value.getType && $.isFunction(value.getType) && BootstrapUI.types[value.getType()] && $.isFunction(BootstrapUI.types[value.getType()])) {
+                BootstrapUI.types[value.getType()].apply(null, [simpleName, value]);
+//                BootstrapUI.types[value.getType](simpleName, value);
             } else {
                 BootstrapUI.tools.console.error("Unknown component discovered " + simpleName);
             }
@@ -522,7 +563,7 @@ function ifDefined(variable) {
     };
     BootstrapUI.configure(config);
     var loader;
-    setTimeout(function () {
+    (function () {
         loader = BootstrapUI.preloader.load();
         $(function () {
             $("html[data-bootstrapui]").each(function () {
@@ -530,5 +571,5 @@ function ifDefined(variable) {
                 BootstrapUI.bootstrap(this);
             });
         });
-    }, 0);
+    }).postpone();
 })(ifDefined("jQuery"), ifDefined("angular"), ifDefined("BootstrapUIConfig"));

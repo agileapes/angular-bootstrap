@@ -13,6 +13,17 @@
     <script src="../js/bootstrapui-0.4.js"></script>
     <script src="../js/directives/form.js"></script>
     <script src="../js/demo.js"></script>
+    <script>
+        $(function () {
+            $("#emailAddress").on("keyup", function () {
+                console.error(" >> FOUND: " + event.target.value);
+            });
+            $(document).on.proxy("keyup", "#password", function (event) {
+                console.error(event);
+                console.error(" -- FOUND: " + event.target.value);
+            });
+        });
+    </script>
 </head>
 <body>
 <div class="container">
@@ -25,10 +36,11 @@
         quite a set of tools for accomplishing this. Therefore, what we deliver here, is mostly for the sake of
         unification and providing a uniform interface for creating forms across different frameworks.</p>
     <ui:form-container orientation="horizontal" label-size="3">
-        <ui:form-input type="static" id="userName" label="Username" value="somebody"></ui:form-input>
         <ui:form-input type="email" id="emailAddress" placeholder="Enter email" validation="" state="valid" feedback="print" label="Email address" value="somebody@example.com"></ui:form-input>
         <ui:form-input type="password" id="password" placeholder="Enter password" validation="" state="error" feedback="print" label="Password"></ui:form-input>
         <ui:form-input type="checkbox" id="remember" validation="" label="Remember me"></ui:form-input>
+        <ui:form-input type="text"></ui:form-input>
+        <ui:form-input type="textarea" id="bio" validation="" label="Write a short biography" value="This is a test"></ui:form-input>
         <ui:form-select type="combo" id="gender" validation="" label="Gender">
             <ui:form-select-item value="male">Male</ui:form-select-item>
             <ui:form-select-item value="female">Female</ui:form-select-item>
@@ -42,32 +54,10 @@
             <ui:form-select-item value="developer">Software developer</ui:form-select-item>
             <ui:form-select-item value="user">Software end-user</ui:form-select-item>
         </ui:form-select>
-        <ui:form-input type="textarea" id="bio" validation="" label="Write a short biography" value="This is a test"></ui:form-input>
-        <ui:form-buttons>
+        <ui:form-action>
             <button class="btn btn-primary" type="button">Button</button>
-        </ui:form-buttons>
+        </ui:form-action>
     </ui:form-container>
-    <!--<form class="form-horizontal">-->
-        <!--<div class="form-group">-->
-            <!--<label class="col-sm-2" for="exampleInputEmail2">Email address</label>-->
-            <!--<div class="col-sm-10">-->
-                <!--<input type="email" class="form-control" id="exampleInputEmail2" placeholder="Enter email">-->
-            <!--</div>-->
-        <!--</div>-->
-        <!--<div class="form-group">-->
-            <!--<label class="col-sm-2" for="exampleInputEmail3">Email address</label>-->
-            <!--<div class="col-sm-10">-->
-                <!--<input type="email" class="form-control" id="exampleInputEmail3" placeholder="Enter email">-->
-            <!--</div>-->
-        <!--</div>-->
-    <!--</form>-->
-    <script>
-        $(function () {
-            $("#emailAddress").on('xyz', function () {
-                console.log($("#emailAddress").val());
-            });
-        })
-    </script>
 </div>
 </body>
 </html>

@@ -1,8 +1,7 @@
-<!DOCTYPE html>
-<!--suppress CheckTagEmptyBody -->
-<html ng-app="myApp">
+<html data-bootstrapui xmlns:ui="http://cxf.apache.org/schemas/jaxws.xsd">
+
 <head>
-    <title>Angular Bootstrap :: Test</title>
+    <title>title</title>
     <meta charset="UTF-8"/>
     <link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.css"/>
     <link rel="stylesheet" type="text/css" href="../css/theme.css"/>
@@ -10,67 +9,73 @@
     <script src="../js/jquery-1.11.0.js"></script>
     <script src="../bootstrap/js/bootstrap.min.js"></script>
     <script src="../js/angular.js"></script>
-    <script>
-        $(function () {
-            $("body").on("myEvent", "", function () {
-                console.log("My event!");
-            });
-        });
-    </script>
+    <script src="../js/bootstrapui-0.4.js"></script>
+    <script src="../js/directives/form.js"></script>
+    <script src="../js/demo.js"></script>
+
 </head>
 <body>
-<div class="container">
-    <ol class="breadcrumb">
-        <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
-        <li><span class="glyphicon glyphicon-wrench"></span> Test</li>
-    </ol>
-    <h1>Test</h1>
-    <p>Testing something cool.</p>
-    <sample id="x1" type="first" data="1"></sample>
-    <sample id="x2" type="second" data="2"></sample>
-    <another id="x3" data="2"></another>
-    <script><!--
-    var first = "<p>This is the first: {{data}}<input type='text' ng-model='data'/></p>";
-    var second = "<p>This is the second: {{data}}</p>";
-    angular.module("myApp", [], null)
-            .directive("sample", function ($compile) {
-                return {
-                    restrict: "E",
-                    replace: true,
-                    scope: {
-                        type: "@",
-                        data: "@"
-                    },
-                    link: function ($scope, $element, $attributes) {
-                        console.log("Found element of type: " + $scope.type);
-                        $compile($scope.type == "first" ? first : second)($scope, function ($clone) {
-                            $element.html($clone);
-                            $scope.$watch("data", function (newValue, oldValue) {
-                                console.log(oldValue + " -> " + newValue);
-                                $($element).trigger("myEvent");
-                            });
-                        });
-                    }
-                }
-            })
-            .directive("another", function () {
-                return {
-                    restrict: "E",
-                    replace: true,
-                    scope: {
-                        data: "@"
-                    },
-                    template: "<p>Here is another: {{data}}</p>",
-                    controller: function ($scope) {
-                        setTimeout(function () {
-                            $scope.data = parseInt($scope.data) * 5;
-                            console.log("Data: " + $scope.data);
-                            $scope.$apply();
-                        }, 1000);
-                    }
-                };
-            });
-    //--></script>
+
+
+<div class="row">
+
+    <div class='col-lg-4'>
+        <ui:form-input type='text' label='@firstName' id='btn1'></ui:form-input>
+    </div>
+
+    <div class='col-lg-4'>
+        <ui:form-input tabindex='1' id='btn3' type='text' label='No Label' visible='false'></ui:form-input>
+    </div>
+
+    <div class='col-lg-4'>
+        <ui:form-input id='btn4' disabled type='text' label='No Label'></ui:form-input>
+    </div>
+
 </div>
+<div class="row">
+
+    <div class='col-lg-8'>
+        <ui:form-input type='text' label='No Label' id='btn5'></ui:form-input>
+    </div>
+
+    <div class='col-lg-4'>
+        <ui:form-input type='text' label='No Label' id='btn6'></ui:form-input>
+    </div>
+
+</div>
+<div class="row">
+
+    <div class='col-lg-12'>
+        <ui:form-input type='text' label='No Label' id='btn7'></ui:form-input>
+    </div>
+
+</div>
+<div class="row">
+
+    <div class='col-lg-4'>
+
+
+        <div class="row">
+
+            <div class='col-lg-12'>
+                <ui:form-input type='text' id='something'></ui:form-input>
+            </div>
+
+        </div>
+
+
+    </div>
+
+    <div class='col-lg-4'>
+        <ui:form-input type='text' label='No Label' id='btn7'></ui:form-input>
+    </div>
+
+    <div class='col-lg-4'>
+        <ui:form-input type='text' label='No Label' id='btn7'></ui:form-input>
+    </div>
+
+</div>
+
+
 </body>
 </html>
