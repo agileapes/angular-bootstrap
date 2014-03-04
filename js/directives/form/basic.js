@@ -1,7 +1,7 @@
 (function (toolkit, $) {
-    toolkit.register("formInput.simple", function (registry) {
+    toolkit.register("formInput.basic", function (registry) {
         registry.text = toolkit.ext.formInput.define({
-            templateUrl: "simple"
+            templateUrl: "basic"
         });
         registry.email = $.extend({}, registry.text);
         registry.password = $.extend({}, registry.text);
@@ -17,4 +17,4 @@
     });
 }).postpone(null, [BootstrapUI, jQuery], function () {
         return  typeof BootstrapUI.ext.formInput != "undefined" && !BootstrapUI.ext.formInput.components.text;
-    }, 10000, "loading simple form inputs");
+    }, 10000, "loading basic form inputs");

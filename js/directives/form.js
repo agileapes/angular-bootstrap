@@ -217,7 +217,7 @@
                     });
                 }
             });
-            var loaded = load("formInput", ["simple"]);
+            var loaded = load("formInput", ["basic"]);
             return {
                 restrict: "E",
                 require: "^" + toolkit.classes.Directive.qualify("formContainer"),
