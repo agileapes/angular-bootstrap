@@ -13,19 +13,53 @@ function ifDefined(variable) {
             delay = 0;
         }
         var func = this;
+        var successQueue = [];
+        var failureQueue = [];
+        var done = function (func, result) {
+            for (var i = 0; i < successQueue.length; i++) {
+                var obj = successQueue[i];
+                obj(func, result);
+            }
+        };
+        var fail = function (failure) {
+            for (var i = 0; i < failureQueue.length; i++) {
+                var obj = failureQueue[i];
+                obj(func, failure);
+            }
+        };
+        func.then = function (success, failure) {
+            if ($.isFunction(success)) {
+                successQueue.push(success);
+            }
+            if ($.isFunction(failure)) {
+                failureQueue.push(failure);
+            }
+            return func;
+        };
         if ($.isFunction(delay)) {
+            var stopped = false;
             var controller;
+            func.stop = function () {
+                stopped = true;
+            };
             var interval = setInterval(function () {
+                if (stopped) {
+                    clearInterval(interval);
+                    clearTimeout(controller);
+                    fail("Stopped by user");
+                    return;
+                }
                 if (delay()) {
                     clearInterval(interval);
                     clearTimeout(controller);
-                    func.postpone(thisArg, args);
+                    func.postpone(thisArg, args).then(done);
                 }
             }, 10);
             if (timeout) {
                 controller = setTimeout(function () {
                     clearInterval(interval);
                     clearTimeout(controller);
+                    fail("Action timed out after " + timeout);
                     if (action) {
                         action = " '" + action + "'";
                     } else {
@@ -35,8 +69,16 @@ function ifDefined(variable) {
                 }, timeout);
             }
         } else {
-            setTimeout(function () {
-                func.apply(thisArg, args);
+            func.stop = function () {
+                clearTimeout(controller);
+                fail("Stopped by user");
+            };
+            controller = setTimeout(function () {
+                try {
+                    done(func, func.apply(thisArg, args));
+                } catch (e) {
+                    fail(e.message ? e.message : e);
+                }
             }, delay);
         }
         return this;
@@ -267,6 +309,43 @@ function ifDefined(variable) {
             }
         };
         return output;
+    };
+
+    BootstrapUI.tools.actionQueue = {
+        requests: {},
+        timeouts: {},
+        notify: function (type) {
+            if (!BootstrapUI.tools.actionQueue.requests[type]) {
+                return;
+            }
+            if (BootstrapUI.tools.actionQueue.timeouts[type]) {
+                clearTimeout(BootstrapUI.tools.actionQueue.timeouts[type]);
+            }
+            var queue = BootstrapUI.tools.actionQueue.requests[type];
+            BootstrapUI.tools.console.debug("Running actions associated with queue <" + type + "/>");
+            delete BootstrapUI.tools.actionQueue.requests[type];
+            for (var i = 0; i < queue.length; i++) {
+                var func = queue[i];
+                func.postpone();
+            }
+        },
+        perform: function (controller, type, action) {
+            if (!$.isFunction(controller) || controller(type)) {
+                action.postpone();
+                return;
+            }
+            BootstrapUI.tools.console.debug("Postponing action until queue trigger <" + type + "/> becomes available");
+            if (!BootstrapUI.tools.actionQueue.requests[type]) {
+                BootstrapUI.tools.actionQueue.requests[type] = [];
+            }
+            if (!BootstrapUI.tools.actionQueue.timeouts[type]) {
+                BootstrapUI.tools.actionQueue.timeouts[type] = setTimeout(function () {
+                    BootstrapUI.tools.console.error("Timeout waiting for queue <" + type + "/> to be triggered.");
+                    BootstrapUI.tools.actionQueue.requests[type] = [];
+                }, 5000);
+            }
+            BootstrapUI.tools.actionQueue.requests[type].push(action);
+        }
     };
 
     BootstrapUI.tools.console = {

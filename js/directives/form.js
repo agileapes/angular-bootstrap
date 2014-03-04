@@ -166,47 +166,11 @@
             components: {}
         };
         registry.formInput = new toolkit.classes.Directive("1.0", "form-placeholder", function ($compile, $http, $templateCache) {
-            var renderQueue = {
-                requests: {},
-                timeouts: {},
-                notify: function (type) {
-                    if (!renderQueue.requests[type]) {
-                        return;
-                    }
-                    if (renderQueue.timeouts[type]) {
-                        clearTimeout(renderQueue.timeouts[type]);
-                    }
-                    var queue = renderQueue.requests[type];
-                    toolkit.tools.console.debug("Running actions associated with component type <" + type + "/>");
-                    delete renderQueue.requests[type];
-                    for (var i = 0; i < queue.length; i++) {
-                        var func = queue[i];
-                        func.postpone();
-                    }
-                },
-                perform: function (type, action) {
-                    if (toolkit.ext.formInput.components[type]) {
-                        action.postpone();
-                        return;
-                    }
-                    toolkit.tools.console.debug("Postponing action until component of type <" + type + "/> becomes available");
-                    if (!renderQueue.requests[type]) {
-                        renderQueue.requests[type] = [];
-                    }
-                    if (!renderQueue.timeouts[type]) {
-                        renderQueue.timeouts[type] = setTimeout(function () {
-                            toolkit.tools.console.error("Timeout waiting for component of type <" + type + "/> to become available.");
-                            renderQueue.requests[type] = [];
-                        }, 5000);
-                    }
-                    renderQueue.requests[type].push(action);
-                }
-            };
             init("formInput", function (type, definition) {
                 toolkit.tools.console.debug("Registered form component " + type);
                 toolkit.ext.formInput.components[type] = definition;
                 if (definition.templateUrl) {
-                    renderQueue.notify("input." + type);
+                    toolkit.tools.actionQueue.notify("input." + type);
                     $http.get(definition.templateUrl, {
                         cache: $templateCache
                     }).success(function (data) {
@@ -246,7 +210,9 @@
                     }
                     var self = this;
                     loaded.done(function () {
-                        renderQueue.perform("input." + $scope.type, function () {
+                        toolkit.tools.actionQueue.perform(function (type) {
+                            return typeof toolkit.ext.formInput.components[type] != "undefined";
+                        }, "input." + $scope.type, function () {
                             if (!toolkit.ext.formInput.components[$scope.type]) {
                                 toolkit.tools.console.error("Invalid component type: " + $scope.type);
                                 return;
@@ -298,7 +264,9 @@
                     var self = this;
                     loaded.done(function () {
                         $scope.scope = $scope;
-                        renderQueue.perform($scope.type, function () {
+                        toolkit.tools.actionQueue.perform(function (type) {
+                            return typeof toolkit.ext.formInput.components[type] != "undefined";
+                        }, $scope.type, function () {
                             var component = toolkit.ext.formInput.components[$scope.type];
                             if (component.controller && $.isFunction(component.controller)) {
                                 component.controller.apply(self, [$scope, $element]);
