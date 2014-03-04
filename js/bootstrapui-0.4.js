@@ -134,6 +134,45 @@ function ifDefined(variable) {
         return handler;
     };
 
+    String.prototype.repeat = function (times) {
+        if (!times || times < 1) {
+            times = 0;
+        }
+        var result = "";
+        for (var i = 0; i < times; i ++) {
+            result += this;
+        }
+        return result;
+    };
+
+    String.prototype.fix = function (length, filler, prepend) {
+        if (typeof length != "number") {
+            length = this.length;
+        }
+        if (typeof filler == "undefined") {
+            filler = " ";
+        }
+        if (typeof prepend == "undefined") {
+            prepend = true;
+        }
+        var str = this;
+        if (str.length > length) {
+            str = str.substring(0, length);
+        } else if (str.length < length) {
+            filler = filler.repeat(length - str.length);
+            str = (prepend ? filler : "") + str + (!prepend ? filler : "");
+        }
+        return str;
+    };
+
+    String.prototype.center = function (length) {
+        var str = this;
+        if (str.length >= length) {
+            return str;
+        }
+        return " ".repeat(Math.floor((length - str.length) / 2)) + str + " ".repeat(Math.ceil((length - str.length) / 2));
+    };
+
     //*****
     // Preconfiguring the scope
     //*****
@@ -374,6 +413,7 @@ function ifDefined(variable) {
     BootstrapUI.tools.console = {
         browserConsole: console,
         preserve: false,
+        format: "%s",
         output: true,
         replaced: false,
         messages: {
@@ -428,13 +468,24 @@ function ifDefined(variable) {
                         time: new Date(),
                         message: argument,
                         toString: function () {
-                            return this.message;
+                            return BootstrapUI.tools.console.format
+                                .replace("%s", this.message)
+                                .replace("%t", this.time.getTime())
+                                .replace("%y", this.time.getYear() + 1900)
+                                .replace("%m", this.time.getMonth().toString().fix(2, "0"))
+                                .replace("%d", this.time.getDate().toString().fix(2, "0"))
+                                .replace("%H", this.time.getHours().toString().fix(2, "0"))
+                                .replace("%M", this.time.getMinutes().toString().fix(2, "0"))
+                                .replace("%S", this.time.getSeconds().toString().fix(2, "0"))
+                                .replace("%l", this.time.getMilliseconds().toString().fix(3, "0"))
+                                .replace("%l", this.time.getMilliseconds().toString().fix(2, "0"))
+                                .replace("%L", level.toUpperCase().center(5))
                         }
                     };
                     if (BootstrapUI.tools.console.preserve) {
                         BootstrapUI.tools.console.messages[level].push(message);
                     }
-                    if (!BootstrapUI.tools.console.replaced && BootstrapUI.tools.console.output && logger) {
+                    if (BootstrapUI.tools.console.output && BootstrapUI.tools.console.browserConsole) {
                         logger(message.toString());
                     }
                 }
@@ -499,8 +550,12 @@ function ifDefined(variable) {
         if (typeof config.console.output == "undefined") {
             config.console.output = true;
         }
+        if (!config.console.format) {
+            config.console.format = "%s";
+        }
         BootstrapUI.tools.console.preserve = config.console.preserve;
         BootstrapUI.tools.console.output = config.console.output;
+        BootstrapUI.tools.console.format = config.console.format;
         if (config.console.replace) {
             BootstrapUI.tools.console.replace();
         }
