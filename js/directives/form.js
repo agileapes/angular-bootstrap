@@ -206,7 +206,7 @@
                 toolkit.tools.console.debug("Registered form component " + type);
                 toolkit.ext.formInput.components[type] = definition;
                 if (definition.templateUrl) {
-                    renderQueue.notify(type);
+                    renderQueue.notify("input." + type);
                     $http.get(definition.templateUrl, {
                         cache: $templateCache
                     }).success(function (data) {
@@ -246,7 +246,7 @@
                     }
                     var self = this;
                     loaded.done(function () {
-                        renderQueue.perform($scope.type, function () {
+                        renderQueue.perform("input." + $scope.type, function () {
                             if (!toolkit.ext.formInput.components[$scope.type]) {
                                 toolkit.tools.console.error("Invalid component type: " + $scope.type);
                                 return;

@@ -322,14 +322,14 @@ function ifDefined(variable) {
                 }
                 for (var i = 0; i < arguments.length; i++) {
                     var argument = arguments[i];
+                    var message = {
+                        time: new Date(),
+                        message: argument,
+                        toString: function () {
+                            return this.message;
+                        }
+                    };
                     if (BootstrapUI.tools.console.preserve) {
-                        var message = {
-                            time: new Date(),
-                            message: argument,
-                            toString: function () {
-                                return this.message;
-                            }
-                        };
                         BootstrapUI.tools.console.messages[level].push(message);
                     }
                     if (!BootstrapUI.tools.console.replaced && BootstrapUI.tools.console.output && logger) {
