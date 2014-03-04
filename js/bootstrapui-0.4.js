@@ -86,15 +86,38 @@ function ifDefined(variable) {
 
     Function.prototype.repeat = function (thisArg, args, delay) {
         var func = this;
+        var successQueue = [];
+        var failureQueue = [];
+        var done = function (func, result) {
+            for (var i = 0; i < successQueue.length; i++) {
+                var obj = successQueue[i];
+                obj(func, result);
+            }
+        };
+        var fail = function (func, reason) {
+            for (var i = 0; i < failureQueue.length; i++) {
+                var obj = failureQueue[i];
+                obj(func, reason);
+            }
+        };
         var handler = {
             interval: null,
             count: 0,
             stop: function () {
                 clearInterval(handler.interval);
+                fail(func, "Stopped by user");
                 delete handler.interval;
                 delete handler.count;
                 delete handler.stop;
                 handler = null;
+            },
+            then: function (success, failure) {
+                if ($.isFunction(success)) {
+                    successQueue.push(success);
+                }
+                if ($.isFunction(failure)) {
+                    failureQueue.push(failure);
+                }
             }
         };
         handler.interval = setInterval(function () {
@@ -106,7 +129,7 @@ function ifDefined(variable) {
             if ($.isFunction(parameters)) {
                 parameters = parameters(handler);
             }
-            func.postpone(context, parameters);
+            func.postpone(context, parameters).then(done, fail);
         }, delay);
         return handler;
     };
