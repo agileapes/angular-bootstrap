@@ -2,7 +2,7 @@
     <div ng-class="{'col-sm-offset-{{parent.labelSize}} col-sm-{{12 - parent.labelSize}}': parent.orientation == 'horizontal'}">
         <div class="radio">
             <label>
-                <input type="radio" value="{{scope.value}}" name="{{scope.group}}" ng-checked="scope.checked"> {{scope.label}}
+                <input id="{{id}}" type="radio" value="{{scope.value}}" name="{{scope.group}}" ng-checked="scope.checked"> {{scope.label}}
                 <span ng-if="parent.orientation != 'inline' && feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
             </label>
         </div>

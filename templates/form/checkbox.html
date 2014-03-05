@@ -2,7 +2,7 @@
     <div ng-class="{'col-sm-offset-{{parent.labelSize}} col-sm-{{12 - parent.labelSize}}': parent.orientation == 'horizontal'}">
         <div class="checkbox">
             <label>
-                <input type="checkbox" ng-model="scope.value"> {{scope.label}}
+                <input id="{{id}}" type="checkbox" ng-model="scope.value"> {{scope.label}}
                 <span ng-if="parent.orientation != 'inline' && feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
             </label>
         </div>
