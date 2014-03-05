@@ -1,8 +1,9 @@
-<div class="form-group">
+<div class="form-group" ng-class="{'has-feedback': scope.feedback, 'has-success': scope.state == 'valid', 'has-error': scope.state == 'invalid', 'has-warning': scope.state == 'warning', 'has-info': scope.state == 'notice'}">
     <div ng-class="{'col-sm-offset-{{parent.labelSize}} col-sm-{{12 - parent.labelSize}}': parent.orientation == 'horizontal'}">
         <div class="checkbox">
             <label>
                 <input type="checkbox" ng-model="scope.value"> {{scope.label}}
+                <span ng-if="feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
             </label>
         </div>
     </div>

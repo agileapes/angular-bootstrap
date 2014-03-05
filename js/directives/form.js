@@ -313,7 +313,8 @@
                     value: "@",
                     placeholder: "@",
                     state: "@",
-                    selection: "@"
+                    selection: "@",
+                    feedback: "@"
                 },
                 link: initializer.link(loaded, function ($scope) {
                     if (!$scope.type) {

@@ -118,6 +118,7 @@
                             <xs:attribute name="selection" type="selectMode" use="optional" default="single"/>
                             <xs:attribute name="validation" type="xs:string" use="optional" default=""/>
                             <xs:attribute name="state" type="inputState" use="optional" default=""/>
+                            <xs:attribute name="feedback" type="glyph" use="optional" default=""/>
                             <xs:attribute name="label" type="xs:string" use="optional" default=""/>
                             <xs:attribute name="value" type="xs:string" use="optional" default=""/>
                         </xs:complexType>

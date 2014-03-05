@@ -31,11 +31,13 @@
     </div>
     <ui:form-container orientation="horizontal" label-size="3">
         <ui:form-input type="static" id="username" label="Username" value="somebody"></ui:form-input>
-        <ui:form-input type="email" id="emailAddress" placeholder="Enter email" validation="" state="valid" feedback="print" label="Email address" value="somebody@example.com"></ui:form-input>
-        <ui:form-input type="password" id="password" placeholder="Enter password" validation="" state="invalid" feedback="print" label="Password"></ui:form-input>
-        <ui:form-input type="checkbox" id="remember" validation="" label="Remember me" value=""></ui:form-input>
-        <ui:form-input type="textarea" id="bio" validation="" label="Write a short biography" value="This is a test"></ui:form-input>
-        <ui:form-select type="combo" id="gender" validation="" label="Gender" value="male" ng-model="gender">
+        <ui:form-input type="email" id="emailAddress" placeholder="Enter email" validation="" state="valid" feedback="envelope" label="Email address" value="somebody@example.com"></ui:form-input>
+        <ui:form-input type="password" id="password" placeholder="Enter password" validation="" state="warning" feedback="lock" label="Password"></ui:form-input>
+        <ui:form-input type="password" id="confirm" placeholder="Confirm password" validation="" state="invalid" feedback="lock" label="Confirm"></ui:form-input>
+        <ui:form-input type="text" id="phone" placeholder="Phone number" validation="" state="notice" feedback="phone-alt" label="Phone"></ui:form-input>
+        <ui:form-input type="checkbox" id="remember" validation="" label="Remember me" value="true" feedback="user" state="invalid"></ui:form-input>
+        <ui:form-input type="textarea" id="bio" validation="" label="Write a short biography" value="This is a test" feedback="book" state="warning"></ui:form-input>
+        <ui:form-select type="combo" id="gender" validation="" label="Gender" value="male" ng-model="gender" feedback="print" state="warning">
             <ui:form-select-item value="male" caption="Male"></ui:form-select-item>
             <ui:form-select-item value="female" caption="Female"></ui:form-select-item>
         </ui:form-select>
