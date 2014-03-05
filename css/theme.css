@@ -66,3 +66,7 @@ body {
 .has-feedback .checkbox .form-control-feedback, .has-feedback .radio .form-control-feedback {
     top: 0;
 }
+
+.hljs {
+    background: none;
+}

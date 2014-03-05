@@ -29,6 +29,10 @@
         <option value="vertical">Vertical</option>
         <option value="inline">Inline</option>
     </select></p>
+    <div class="alert alert-warning alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>Warning!</strong> There are problems with the form below
+    </div>
     <ui:form-container orientation="{{orientation}}" label-size="3">
         <ui:form-input type="static" id="username" label="Username" value="somebody"></ui:form-input>
         <ui:form-input type="email" id="emailAddress" placeholder="Enter email" validation="" state="valid" feedback="envelope" label="Email address" value="somebody@example.com"></ui:form-input>
@@ -48,13 +52,14 @@
             <ui:form-select-item value="male" caption="Male"></ui:form-select-item>
             <ui:form-select-item value="female" caption="Female"></ui:form-select-item>
         </ui:form-select>
-        <!--<ui:form-select type="checkList" selection="single" id="description" validation="" label="Which item describes you the best">-->
-            <!--<ui:form-select-item value="developer">Software developer</ui:form-select-item>-->
-            <!--<ui:form-select-item value="user">Software end-user</ui:form-select-item>-->
-        <!--</ui:form-select>-->
-        <!--<ui:form-action>-->
-            <!--<button class="btn btn-primary" type="button">Button</button>-->
-        <!--</ui:form-action>-->
+        <ui:form-select type="checkList" selection="single" id="description" validation="" label="Which item describes you the best">
+            <ui:form-select-item value="developer">Software developer</ui:form-select-item>
+            <ui:form-select-item value="user">Software end-user</ui:form-select-item>
+        </ui:form-select>
+        <ui:form-action>
+            <button class="btn btn-primary" type="button"><span class="glyphicon glyphicon-save"></span> Save</button>
+            <button class="btn btn-danger" type="button"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+        </ui:form-action>
     </ui:form-container>
 </div>
 </body>

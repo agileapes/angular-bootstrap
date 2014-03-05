@@ -77,5 +77,13 @@ Browser Compatibility
 that any inconsistencies with the minimum requirements imposed by [AngularJS][1] can be fixed, given that I am made aware
 of it.
 
+Disclaimer
+----------
+
+At this stage, I consider this very much a work in progress, and encourage you to not adapt this framework **without
+first understanding how it works** and also, please do use it by noting if and how it adds to your software.
+
+I would be very much interested to know how people would use this.
+
   [1]: http://angularjs.org/        "AngularJS's Homepage"
   [2]: http://getbootstrap.com/     "Twitter Bootstrap Homepage"

@@ -5,6 +5,7 @@
     <title>Angular Bootstrap :: Containers</title>
     <meta charset="UTF-8"/>
     <link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" href="../highlight/styles/xcode.css"/>
     <link rel="stylesheet" type="text/css" href="../css/theme.css"/>
     <script src="../js/config.js"></script>
     <script src="../js/jquery-1.11.0.js"></script>
@@ -13,6 +14,14 @@
     <script src="../js/bootstrapui-0.4.js"></script>
     <script src="../js/directives/container.js"></script>
     <script src="../js/demo.js"></script>
+    <script src="../highlight/highlight.pack.js"></script>
+    <script type="text/javascript"><!--
+    $(function () {
+        $("pre code").each(function () {
+            hljs.highlightBlock(this);
+        });
+    });
+    //--></script>
 </head>
 <body>
 <div class="container">
@@ -21,24 +30,52 @@
         <li><span class="glyphicon glyphicon-inbox"></span> Containers</li>
     </ol>
     <h1 class="page-header">Containers</h1>
-    <ui:container type="tab">
-        <ui:section title="My Home" glyph="home">
-            This is my home
-        </ui:section>
-        <ui:section glyph="paperclip" active="true" title="Profile">
-            Here goes the profile. This is the tab that is <strong>active</strong> by default.
-        </ui:section>
-        <ui:section glyph="envelope" title="Messages">Some messages might be here</ui:section>
-        <ui:section glyph="wrench" title="Settings">And this is the settings</ui:section>
-        <ui:section glyph="wrench" title="Random"></ui:section>
-    </ui:container>
-    <hr/>
-    <ui:container type="pill" id="firstSection">
-        <ui:section title="First" active="true">This is the first one</ui:section>
-        <ui:section title="Second">This is the second one</ui:section>
-    </ui:container>
-</div>
-<script>
+    <p>Containers can serve to compartmentalize your content, hiding away those that do not require immediate
+    attention.</p>
+    <p>Containers can be presented in two ways: <strong>tabs</strong> and <strong>pills</strong>.</p>
+    <h2>Tabs</h2>
+    <p>Tabs are generally used to indicate main sections of an application.</p>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Example</h3>
+        </div>
+        <div class="panel-body">
+            <ui:container type="tab">
+                <ui:section title="My Home" glyph="home">
+                    This is my home
+                </ui:section>
+                <ui:section glyph="paperclip" active="true" title="Profile">
+                    Here goes the profile. This is the tab that is <strong>active</strong> by default.
+                </ui:section>
+                <ui:section glyph="envelope" title="Messages">Some messages might be here</ui:section>
+                <ui:section glyph="wrench" title="Settings">And this is the settings</ui:section>
+                <ui:section glyph="qrcode" title="Random"></ui:section>
+            </ui:container>
+            <script type="text/javascript"><!--
+            $(function () {
+                $("ui\\:container").on("changed", function (event, state) {
+                    if (state.sections()[state.to].title.toLowerCase() == "random") {
+                        state.sections()[state.to].$content.html(Math.random());
+                    }
+                });
+            });
+            //--></script>
+        </div>
+        <div class="panel-footer">
+            <h5>HTML</h5>
+            <pre><code>&lt;ui:container type="tab"&gt;
+    &lt;ui:section title="My Home" glyph="home"&gt;
+        This is my home
+    &lt;/ui:section&gt;
+    &lt;ui:section glyph="paperclip" active="true" title="Profile"&gt;
+        Here goes the profile. This is the tab that is &lt;strong&gt;active&lt;/strong&gt; by default.
+    &lt;/ui:section&gt;
+    &lt;ui:section glyph="envelope" title="Messages"&gt;Some messages might be here&lt;/ui:section&gt;
+    &lt;ui:section glyph="wrench" title="Settings"&gt;And this is the settings&lt;/ui:section&gt;
+    &lt;ui:section glyph="qrcode" title="Random"&gt;&lt;/ui:section&gt;
+&lt;/ui:container&gt;</code></pre>
+            <h5>JavaScript</h5>
+<pre><code>&lt;script type="text/javascript"&gt;&lt;!--
     $(function () {
         $("ui\\:container").on("changed", function (event, state) {
             if (state.sections()[state.to].title.toLowerCase() == "random") {
@@ -46,6 +83,28 @@
             }
         });
     });
-</script>
+//--&gt;&lt;/script&gt;</code></pre>
+        </div>
+    </div>
+    <h2>Pills</h2>
+    <p>Using pills, you can separate minor sections of your logic from each other.</p>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Example</h3>
+        </div>
+        <div class="panel-body">
+            <ui:container type="pill">
+                <ui:section title="First" active="true">This is the first one</ui:section>
+                <ui:section title="Second">This is the second one</ui:section>
+            </ui:container>
+        </div>
+        <div class="panel-footer">
+<pre><code>&lt;ui:container type="pill"&gt;
+    &lt;ui:section title="First" active="true"&gt;This is the first one&lt;/ui:section&gt;
+    &lt;ui:section title="Second"&gt;This is the second one&lt;/ui:section&gt;
+&lt;/ui:container&gt;</code></pre>
+        </div>
+    </div>
+</div>
 </body>
 </html>
