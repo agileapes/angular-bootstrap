@@ -2,9 +2,9 @@
     <span ng-if="label"><label for="{{id}}" ng-class="{'col-sm-{{parent.labelSize}}': parent.orientation == 'horizontal' && label, 'sr-only': parent.orientation == 'inline'}" class="control-label"><span ng-if="label">{{label}}</span><span ng-if="!label && parent.orientation == 'vertical'">&nbsp;</span></label></span>
     <div ng-if="parent.orientation != 'inline'">
         <div ng-class="{'col-sm-{{12 - parent.labelSize}}': parent.orientation == 'horizontal' && label, 'col-sm-12': parent.orientation == 'horizontal' && !label}">
-            <textarea id="{{id}}" class="form-control" rows="3" placeholder="{{placeholder}}" ng-model="scope.value"></textarea>
+            <textarea id="{{id}}" class="form-control" rows="scope.rows" ng-model="scope.value"></textarea>
             <span ng-if="feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
         </div>
     </div>
-    <input type="text" ng-if="parent.orientation == 'inline'" id="{{id}}" class="form-control" placeholder="{{placeholder}}" ng-model="scope.value"/>
+    <input type="text" ng-if="parent.orientation == 'inline'" id="{{id}}" class="form-control" placeholder="{{label}}" ng-model="scope.value"/><span ng-if="parent.orientation == 'inline' && feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
 </div>

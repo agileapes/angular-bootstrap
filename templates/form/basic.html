@@ -6,5 +6,5 @@
             <span ng-if="feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
         </div>
     </div>
-    <input ng-if="parent.orientation == 'inline'" id="{{id}}" class="form-control" type="{{type}}" placeholder="{{placeholder}}" ng-model="scope.value"/>
+    <input ng-if="parent.orientation == 'inline'" id="{{id}}" class="form-control" type="{{type}}" placeholder="{{placeholder}}" ng-model="scope.value"/><span ng-if="parent.orientation == 'inline' && feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
 </div>

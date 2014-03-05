@@ -9,7 +9,15 @@
             templateUrl: "static"
         });
         registry.textarea = toolkit.ext.formInput.define({
-            templateUrl: "textarea"
+            templateUrl: "textarea",
+            controller: function ($scope, $element, $attrs) {
+                if ($attrs.rows) {
+                    $scope.rows = parseInt($attrs.rows);
+                }
+                if (!$scope.rows) {
+                    $scope.rows = 3;
+                }
+            }
         });
         registry.checkbox = toolkit.ext.formInput.define({
             templateUrl: "checkbox",

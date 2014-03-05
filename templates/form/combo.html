@@ -9,5 +9,7 @@
             <span ng-if="feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
         </div>
     </div>
-    <input ng-if="parent.orientation == 'inline'" id="{{id}}" class="form-control" type="{{type}}" placeholder="{{placeholder}}" ng-model="scope.value"/>
+    <select ng-if="parent.orientation == 'inline'" id="{{id}}" ng-model="scope.value" class="form-control">
+        <option ng-repeat="item in scope.items" value="{{item.value}}">{{item.caption}}</option>
+    </select><span ng-if="parent.orientation == 'inline' && feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
 </div>
