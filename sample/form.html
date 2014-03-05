@@ -15,7 +15,7 @@
     <script src="../js/demo.js"></script>
 </head>
 <body>
-<div class="container" ng-init="newsletter='yes'">
+<div class="container" ng-init="orientation='horizontal'">
     <ol class="breadcrumb">
         <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
         <li><span class="glyphicon glyphicon-edit"></span> Form</li>
@@ -24,14 +24,12 @@
     <p>For form inputs, not much added markup is required. Generally speaking, the underlying frameworks provide
         quite a set of tools for accomplishing this. Therefore, what we deliver here, is mostly for the sake of
         unification and providing a uniform interface for creating forms across different frameworks.</p>
-    <p><input type="text" ng-model="name" /></p>
-    <p><input type="text" ng-model="newsletter" /></p>
-    <div>
-        <div>{{name}}</div>
-        <div>{{newsletter}}</div>
-        <div>{{gender}}</div>
-    </div>
-    <ui:form-container orientation="horizontal" label-size="3">
+    <p>Orientation: <select ng-model="orientation">
+        <option value="horizontal">Horizontal</option>
+        <option value="vertical">Vertical</option>
+        <option value="inline">Inline</option>
+    </select></p>
+    <ui:form-container orientation="{{orientation}}" label-size="3">
         <ui:form-input type="static" id="username" label="Username" value="somebody"></ui:form-input>
         <ui:form-input type="email" id="emailAddress" placeholder="Enter email" validation="" state="valid" feedback="envelope" label="Email address" value="somebody@example.com"></ui:form-input>
         <ui:form-input type="password" id="password" placeholder="Enter password" validation="" state="warning" feedback="lock" label="Password"></ui:form-input>

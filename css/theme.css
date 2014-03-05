@@ -28,3 +28,37 @@ body {
 .has-info .form-control-feedback {
     color: #5b738a;
 }
+
+.form-group.placeholder {
+    border: 1px dashed #808080;
+    padding: 10px;
+    text-align: center;
+    background: #f5f5f5;
+    border-radius: 5px;
+    font-family: "Courier New", monospace;
+    font-weight: bold;
+    opacity: 0.4;
+    transition: opacity .5s, box-shadow 0.25s, color 3s;
+    -moz-transition: opacity .5s, box-shadow 0.25s, color 3s;
+    -webkit-transition: opacity .5s, box-shadow 0.25s, color 3s;
+    margin: 10px 5px;
+}
+
+.form-group.placeholder span:before {
+    font-family: "Glyphicons Halflings",fantasy;
+    content: "\e031";
+    float: right;
+}
+
+.form-group.placeholder.failed span:before {
+    content: "\e090";
+}
+
+.form-group.placeholder.failed {
+    border-color: #ff0000;
+    background: #ffcdd3;
+    color: #b70001;
+    opacity: 1;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #c0434e;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #c0434e;
+}

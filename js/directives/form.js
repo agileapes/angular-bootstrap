@@ -181,6 +181,9 @@
                                 });
                             });
                         });
+                        toolkit.tools.actionQueue.fail(prefix + "." + $scope.type, function () {
+                            $($element).addClass("failed");
+                        });
                     });
                 };
             },
@@ -197,7 +200,9 @@
                                 if (!initializer.templateAvailable[$scope.type]) {
                                     initializer.templateAvailable[$scope.type] = $.Deferred();
                                 }
-                                initializer.templateAvailable[$scope.type].resolve($compile(angular.element(template), transclude ? $transclude : null));
+                                setTimeout(function () {
+                                    initializer.templateAvailable[$scope.type].resolve($compile(angular.element(template), transclude ? $transclude : null));
+                                }, 1000 + Math.random() * 1000);
                             });
                             if (component.controller && $.isFunction(component.controller)) {
                                 component.controller.apply(self, [$scope, $element, $attrs, $transclude]);
@@ -279,6 +284,7 @@
                 restrict: "E",
                 require: "^" + toolkit.classes.Directive.qualify("formContainer"),
                 transclude: false,
+                templateUrl: registry.formInput.templateUrl,
                 replace: false,
                 scope: {
                     type: "@",

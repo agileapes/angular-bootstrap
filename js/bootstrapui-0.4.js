@@ -375,6 +375,7 @@ function ifDefined(variable) {
 
     BootstrapUI.tools.actionQueue = {
         requests: {},
+        failures: {},
         timeouts: {},
         notify: function (type) {
             if (!BootstrapUI.tools.actionQueue.requests[type]) {
@@ -404,9 +405,22 @@ function ifDefined(variable) {
                 BootstrapUI.tools.actionQueue.timeouts[type] = setTimeout(function () {
                     BootstrapUI.tools.console.error("Timeout waiting for queue <" + type + "/> to be triggered.");
                     BootstrapUI.tools.actionQueue.requests[type] = [];
+                    delete BootstrapUI.tools.actionQueue.requests[type];
+                    if (BootstrapUI.tools.actionQueue.failures[type]) {
+                        $(BootstrapUI.tools.actionQueue.failures[type]).each(function () {
+                            this();
+                        });
+                    }
+                    delete BootstrapUI.tools.actionQueue.failures[type];
                 }, 5000);
             }
             BootstrapUI.tools.actionQueue.requests[type].push(action);
+        },
+        fail: function (type, handler) {
+            if (!BootstrapUI.tools.actionQueue.failures[type]) {
+                BootstrapUI.tools.actionQueue.failures[type] = [];
+            }
+            BootstrapUI.tools.actionQueue.failures[type].push(handler);
         }
     };
 
