@@ -109,6 +109,7 @@
                                 <xs:element name="form-select-item">
                                     <xs:complexType mixed="true">
                                         <xs:attribute name="value" type="xs:string"/>
+                                        <xs:attribute name="caption" type="xs:string"/>
                                     </xs:complexType>
                                 </xs:element>
                             </xs:sequence>

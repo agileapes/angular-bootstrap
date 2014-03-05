@@ -44,23 +44,20 @@
         return $this;
     };
 
-    var init = function (prefix, $http, $templateCache, $compile, registryCallback) {
+    var init = function (prefix, $http, $templateCache, $compile, transclude, registryCallback) {
         if (!registryCallback) {
             registryCallback = function (name, item) {};
         }
         var _registryCallback = registryCallback;
         registryCallback = function (type, definition) {
             toolkit.tools.actionQueue.notify(prefix + "." + type);
-            toolkit.tools.console.debug("Registered form component <" + prefix + type + "/>");
+            toolkit.tools.console.debug("Registered form component <" + prefix + "." + type + "/>");
             toolkit.ext[prefix].components[type] = definition;
             if (definition.templateUrl) {
                 $http.get(definition.templateUrl, {
                     cache: $templateCache
                 }).success(function (data) {
-                    definition.templateLoader.resolve(data);
-                });
-                definition.templateLoader.promise().done(function (template) {
-                    definition.templateAvailable.resolve($compile(angular.element(template)));
+                    definition.templateLoader.resolve(data, type);
                 });
             }
             _registryCallback(type, definition);
@@ -122,7 +119,8 @@
             return toolkit.preloader;
         };
         toolkit.types[prefix] = registryCallback;
-        return {
+        var initializer = {
+            templateAvailable: {},
             link: function (loaded, scopePreparator) {
                 return function ($scope, $element, $attributes, formController) {
                     $.each($scope.$$isolateBindings, function (binding, attribute) {
@@ -170,7 +168,10 @@
                             (function () {
                                 $scope.$apply();
                             }).postpone();
-                            component.templateAvailable.then(function (compiled) {
+                            if (!initializer.templateAvailable[$scope.type]) {
+                                initializer.templateAvailable[$scope.type] = $.Deferred();
+                            }
+                            initializer.templateAvailable[$scope.type].then(function (compiled) {
                                 compiled($scope, function ($clone, $localScope) {
                                     $element.replaceWith($clone);
                                     component.link.post.apply(self, [$localScope, $element, $attributes, formController, event($localScope)]);
@@ -184,7 +185,7 @@
                 };
             },
             controller: function (loaded) {
-                return function ($scope, $element) {
+                return ["$scope", "$element", "$attrs", "$transclude", function ($scope, $element, $attrs, $transclude) {
                     var self = this;
                     loaded.done(function () {
                         $scope.scope = $scope;
@@ -192,17 +193,24 @@
                             return typeof toolkit.ext[prefix].components[type] != "undefined";
                         }, prefix + "." + $scope.type, function () {
                             var component = toolkit.ext[prefix].components[$scope.type];
+                            component.templateLoader.promise().done(function (template, type) {
+                                if (!initializer.templateAvailable[$scope.type]) {
+                                    initializer.templateAvailable[$scope.type] = $.Deferred();
+                                }
+                                initializer.templateAvailable[$scope.type].resolve($compile(angular.element(template), transclude ? $transclude : null));
+                            });
                             if (component.controller && $.isFunction(component.controller)) {
-                                component.controller.apply(self, [$scope, $element, $attributes, $transclude]);
+                                component.controller.apply(self, [$scope, $element, $attrs, $transclude]);
                                 (function () {
                                     $scope.$apply();
                                 }).postpone();
                             }
                         });
                     });
-                };
+                }];
             }
         };
+        return  initializer;
     };
     var configure = function () {
         if (!toolkit.config.form) {
@@ -261,13 +269,16 @@
         toolkit.ext.formInput = {
             components: {}
         };
+        toolkit.ext.formSelect = {
+            components: {}
+        };
         registry.formInput = new toolkit.classes.Directive("1.0", "form-placeholder", function ($compile, $http, $templateCache) {
             var initializer = init("formInput", $http, $templateCache, $compile);
             var loaded = load("formInput", ["basic"]);
             return {
                 restrict: "E",
                 require: "^" + toolkit.classes.Directive.qualify("formContainer"),
-                transclude: true,
+                transclude: false,
                 replace: false,
                 scope: {
                     type: "@",
@@ -286,14 +297,71 @@
                 controller: initializer.controller(loaded)
             };
         });
-        registry.formSelect = new toolkit.classes.Directive("1.0", "form-placeholder", function () {
+        registry.formSelect = new toolkit.classes.Directive("1.0", "form-placeholder", function ($compile, $http, $templateCache) {
+            var initializer = init("formSelect", $http, $templateCache, $compile, true);
+            var loaded = load("formSelect", ["select"]);
             return {
                 restrict: "E",
                 require: "^" + toolkit.classes.Directive.qualify("formContainer"),
                 transclude: true,
-                replace: false,
+                replace: true,
                 templateUrl: registry.formSelect.templateUrl,
-                scope: {}
+                scope: {
+                    type: "@",
+                    id: "@",
+                    label: "@",
+                    value: "@",
+                    placeholder: "@",
+                    state: "@",
+                    selection: "@"
+                },
+                link: initializer.link(loaded, function ($scope) {
+                    if (!$scope.type) {
+                        $scope.type = "combo";
+                    }
+                    if (!$scope.selection) {
+                        $scope.selection = "single";
+                    }
+                }),
+                controller: ["$scope", "$element", "$attrs", "$transclude", function ($scope, $element, $attrs, $transclude) {
+                    $scope.items = [];
+                    $scope.controller = this;
+                    this.add = function (value, caption) {
+                        $scope.items.push({
+                            value: value,
+                            caption: caption
+                        });
+                    };
+                    this.count = function () {
+                        return $scope.items.length;
+                    };
+                    var controller = initializer.controller(loaded);
+                    controller[controller.length - 1].apply(this, [$scope, $element, $attrs, $transclude]);
+                }]
+            };
+        });
+        registry.formSelectItem = new toolkit.classes.Directive("1.0", "", function () {
+            return {
+                restrict: "E",
+                transclude: true,
+                replace: true,
+                template: "",
+                scope: {
+                    value: "@",
+                    caption: "@"
+                },
+                link: function (scope, element, attributes) {
+                    var selectController = scope.$parent.controller;
+                    if (!scope.caption && scope.value) {
+                        scope.caption = scope.value;
+                    } else if (scope.caption && !scope.value) {
+                        scope.value = scope.caption;
+                    } else if (!scope.caption && !scope.value) {
+                        scope.caption = selectController.count() + 1;
+                        scope.val = selectController.count();
+                    }
+                    selectController.add(scope.value, scope.caption);
+                }
             };
         });
         registry.formAction = new toolkit.classes.Directive("1.0", "form-buttons", function () {
