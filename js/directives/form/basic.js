@@ -28,6 +28,9 @@
                 if ($attrs.group) {
                     $scope.group = $attrs.group;
                 }
+                if ($attrs.checked) {
+                    $scope.checked = $attrs.checked;
+                }
             }
         });
     });
