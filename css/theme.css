@@ -1,3 +1,30 @@
 body {
     margin: 10px;
 }
+
+.has-info .help-block,
+.has-info .control-label,
+.has-info .radio,
+.has-info .checkbox,
+.has-info .radio-inline,
+.has-info .checkbox-inline {
+    color: #5b8ba5;
+}
+.has-info .form-control {
+    border-color: #7bbde0;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+}
+.has-info .form-control:focus {
+    border-color: #385566;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #82a6c0;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #7ba3c0;
+}
+.has-info .input-group-addon {
+    color: #5b738a;
+    background-color: #fcf8e3;
+    border-color: #5b738a;
+}
+.has-info .form-control-feedback {
+    color: #5b738a;
+}
