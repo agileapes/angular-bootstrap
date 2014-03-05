@@ -37,6 +37,8 @@
         <ui:form-input type="text" id="phone" placeholder="Phone number" validation="" state="notice" feedback="phone-alt" label="Phone"></ui:form-input>
         <ui:form-input type="checkbox" id="remember" validation="" label="Remember me" value="true" feedback="user" state="invalid"></ui:form-input>
         <ui:form-input type="textarea" id="bio" validation="" label="Write a short biography" value="This is a test" feedback="book" state="warning"></ui:form-input>
+        <ui:form-input type="radio" id="sendMeYes" validation="" label="Send me newsletters" value="yes" feedback="check" group="newsletter"></ui:form-input>
+        <ui:form-input type="radio" id="sendMeNo" validation="" label="I would rather not receive anything" value="no" feedback="unchecked" group="newsletter"></ui:form-input>
         <ui:form-select type="combo" id="gender" validation="" label="Gender" value="male" ng-model="gender" feedback="print" state="warning">
             <ui:form-select-item value="male" caption="Male"></ui:form-select-item>
             <ui:form-select-item value="female" caption="Female"></ui:form-select-item>

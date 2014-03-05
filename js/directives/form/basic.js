@@ -12,7 +12,23 @@
             templateUrl: "textarea"
         });
         registry.checkbox = toolkit.ext.formInput.define({
-            templateUrl: "checkbox"
+            templateUrl: "checkbox",
+            controller: function ($scope) {
+                if (typeof $scope.value == "string") {
+                    $scope.value = $scope.value == "true";
+                }
+                if (!$scope.value) {
+                    $scope.value = false;
+                }
+            }
+        });
+        registry.radio = toolkit.ext.formInput.define({
+            templateUrl: "radio",
+            controller: function ($scope, $element, $attrs) {
+                if ($attrs.group) {
+                    $scope.group = $attrs.group;
+                }
+            }
         });
     });
 }).postpone(null, [BootstrapUI, jQuery], function () {

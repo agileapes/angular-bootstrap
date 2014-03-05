@@ -1,0 +1,10 @@
+<div class="form-group" ng-class="{'has-feedback': scope.feedback, 'has-success': scope.state == 'valid', 'has-error': scope.state == 'invalid', 'has-warning': scope.state == 'warning', 'has-info': scope.state == 'notice'}">
+    <div ng-class="{'col-sm-offset-{{parent.labelSize}} col-sm-{{12 - parent.labelSize}}': parent.orientation == 'horizontal'}">
+        <div class="radio">
+            <label>
+                <input type="radio" value="{{scope.value}}" name="{{scope.group}}"> {{scope.label}}
+                <span ng-if="feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
+            </label>
+        </div>
+    </div>
+</div>
