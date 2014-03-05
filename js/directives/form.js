@@ -200,9 +200,7 @@
                                 if (!initializer.templateAvailable[$scope.type]) {
                                     initializer.templateAvailable[$scope.type] = $.Deferred();
                                 }
-                                setTimeout(function () {
-                                    initializer.templateAvailable[$scope.type].resolve($compile(angular.element(template), transclude ? $transclude : null));
-                                }, 1000 + Math.random() * 1000);
+                                initializer.templateAvailable[$scope.type].resolve($compile(angular.element(template), transclude ? $transclude : null));
                             });
                             if (component.controller && $.isFunction(component.controller)) {
                                 component.controller.apply(self, [$scope, $element, $attrs, $transclude]);
