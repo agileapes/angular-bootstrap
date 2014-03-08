@@ -131,6 +131,15 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="image">
+        <xs:complexType>
+            <xs:attribute name="src" use="required" type="xs:anyURI" />
+            <xs:attribute name="alt" use="required" type="xs:string" />
+            <xs:attribute name="border" use="optional" type="imageBorder" />
+            <xs:attribute name="responsive" use="optional" type="true" />
+        </xs:complexType>
+    </xs:element>
+
     <xs:complexType name="dropdown">
         <xs:sequence>
             <xs:choice minOccurs="1" maxOccurs="unbounded">
@@ -429,6 +438,14 @@
         <xs:restriction base="xs:string">
             <xs:enumeration value="single"/>
             <xs:enumeration value="multiple"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="imageBorder">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="none"/>
+            <xs:enumeration value="round"/>
+            <xs:enumeration value="circle"/>
+            <xs:enumeration value="thumbnail"/>
         </xs:restriction>
     </xs:simpleType>
 </xs:schema>
