@@ -37,6 +37,11 @@
     <h1>Button</h1>
     <p>Buttons are essential for navigating through your application, as well as creating visual landmarks for
     user actions.</p>
+    <div class="alert alert-info alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong><ui:icon glyph="eye-open"></ui:icon></strong> Take a look at the <a href="icon.html"><code>icon</code></a>
+        directive, which goes nicely with buttons.
+    </div>
     <div class="panel panel-default">
         <div class="panel-heading">
             <h3 class="panel-title">Example</h3>
@@ -44,12 +49,16 @@
         <div class="panel-body">
             <ui:button id="button1" type="primary" size="small"><ui:icon glyph="print"></ui:icon> Print</ui:button>
             <ui:button ng-controller="mainCtrl" action="clickIt" id="button2" type="warning" size="small"><ui:icon glyph="ban-circle"></ui:icon> Ignore</ui:button>
+            <hr/>
+            <ui:button type="success" block="true" size="large" disabled><ui:icon glyph="check"></ui:icon> Blocking Button</ui:button>
         </div>
         <div class="panel-footer">
             <h4>HTML</h4>
             <pre><code>&lt;ui:button id="button1" type="primary" size="small"&gt;&lt;ui:icon glyph="print"&gt;&lt;/ui:icon&gt; Print&lt;/ui:button&gt;
 &lt;ui:button ng-controller="mainCtrl" action="clickIt" id="button2" type="warning" size="small"&gt;
-                &lt;ui:icon glyph="ban-circle"&gt;&lt;/ui:icon&gt;Ignore&lt;/ui:button&gt;</code></pre>
+                &lt;ui:icon glyph="ban-circle"&gt;&lt;/ui:icon&gt;Ignore&lt;/ui:button&gt;
+&lt;hr/&gt;
+&lt;ui:button type="success" block="true" size="large" disabled&gt;&lt;ui:icon glyph="check"&gt;&lt;/ui:icon&gt; Blocking Button&lt;/ui:button&gt;</code></pre>
             <h4>JavaScript</h4>
             <pre><code>&lt;script type="text/javascript"&gt;
     mainCtrl = function ($scope) {

@@ -70,3 +70,7 @@ body {
 .hljs {
     background: none;
 }
+
+.alert strong {
+    vertical-align: middle;
+}

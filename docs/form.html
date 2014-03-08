@@ -36,10 +36,6 @@
         <option value="vertical">Vertical</option>
         <option value="inline">Inline</option>
     </select></p>
-    <div class="alert alert-warning alert-dismissable">
-        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-        <strong>Warning!</strong> There are problems with the form below
-    </div>
     <ui:form-container orientation="{{orientation}}" label-size="3">
         <ui:form-input type="static" id="username" label="Username" value="somebody"></ui:form-input>
         <ui:form-input type="email" ng-model="test.email" id="emailAddress" placeholder="Enter email" validation="" state="valid" feedback="envelope" label="Email address" value="somebody@example.com"></ui:form-input>
