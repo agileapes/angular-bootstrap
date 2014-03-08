@@ -1,7 +1,9 @@
 (function (toolkit, $) {
     toolkit.register("formInput.basic", function (registry) {
         registry.text = toolkit.ext.formInput.define({
-            templateUrl: "basic"
+            templateUrl: "basic",
+            link: function ($scope, $element, $attrs) {
+            }
         });
         registry.email = $.extend({}, registry.text);
         registry.password = $.extend({}, registry.text);
@@ -21,12 +23,15 @@
         });
         registry.checkbox = toolkit.ext.formInput.define({
             templateUrl: "checkbox",
-            controller: function ($scope) {
-                if (typeof $scope.value == "string") {
-                    $scope.value = $scope.value == "true";
+            controller: function ($scope, $element, $attrs) {
+                if (angular.isDefined($attrs.checked)) {
+                    $scope.ngModel = $scope.value = true;
                 }
-                if (!$scope.value) {
-                    $scope.value = false;
+                if (typeof $scope.ngModel == "string") {
+                    $scope.ngModel = $scope.ngModel == "true";
+                }
+                if (!$scope.ngModel) {
+                    $scope.ngModel = false;
                 }
             }
         });

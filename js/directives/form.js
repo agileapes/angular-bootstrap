@@ -171,6 +171,9 @@
                             if (!initializer.templateAvailable[$scope.type]) {
                                 initializer.templateAvailable[$scope.type] = $.Deferred();
                             }
+                            if (angular.isUndefined($scope.ngModel) && angular.isDefined($scope.value)) {
+                                $scope.ngModel = $scope.value;
+                            }
                             initializer.templateAvailable[$scope.type].then(function (compiled) {
                                 compiled($scope, function ($clone, $localScope) {
                                     $element.replaceWith($clone);
@@ -188,8 +191,9 @@
                 };
             },
             controller: function (loaded) {
-                return ["$scope", "$element", "$attrs", "$transclude", function ($scope, $element, $attrs, $transclude) {
+                return ["$scope", "$element", "$attrs", "$transclude", "$timeout", function ($scope, $element, $attrs, $transclude, $timeout) {
                     var self = this;
+                    $scope.$timeout = $timeout;
                     loaded.done(function () {
                         $scope.scope = $scope;
                         toolkit.tools.actionQueue.perform(function (type) {
@@ -203,7 +207,7 @@
                                 initializer.templateAvailable[$scope.type].resolve($compile(angular.element(template), transclude ? $transclude : null));
                             });
                             if (component.controller && $.isFunction(component.controller)) {
-                                component.controller.apply(self, [$scope, $element, $attrs, $transclude]);
+                                component.controller.apply(self, [$scope, $element, $attrs, $transclude, $timeout]);
                                 (function () {
                                     $scope.$apply();
                                 }).postpone();
@@ -291,7 +295,8 @@
                     value: "@",
                     feedback: "@",
                     placeholder: "@",
-                    state: "@"
+                    state: "@",
+                    ngModel: "=?"
                 },
                 link: initializer.link(loaded, function ($scope) {
                     if (!$scope.type) {
@@ -318,7 +323,8 @@
                     placeholder: "@",
                     state: "@",
                     selection: "@",
-                    feedback: "@"
+                    feedback: "@",
+                    ngModel: "=?"
                 },
                 link: initializer.link(loaded, function ($scope) {
                     if (!$scope.type) {
@@ -328,7 +334,7 @@
                         $scope.selection = "single";
                     }
                 }),
-                controller: ["$scope", "$element", "$attrs", "$transclude", function ($scope, $element, $attrs, $transclude) {
+                controller: ["$scope", "$element", "$attrs", "$transclude", "$timeout", function ($scope, $element, $attrs, $transclude, $timeout) {
                     $scope.items = [];
                     $scope.controller = this;
                     this.add = function (value, caption) {
@@ -341,7 +347,7 @@
                         return $scope.items.length;
                     };
                     var controller = initializer.controller(loaded);
-                    controller[controller.length - 1].apply(this, [$scope, $element, $attrs, $transclude]);
+                    controller[controller.length - 1].apply(this, [$scope, $element, $attrs, $transclude, $timeout]);
                 }]
             };
         });

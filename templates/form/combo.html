@@ -3,13 +3,13 @@
     <span ng-if="label"><label for="{{id}}" ng-class="{'col-sm-{{parent.labelSize}}': parent.orientation == 'horizontal' && label, 'sr-only': parent.orientation == 'inline'}" class="control-label"><span ng-if="label">{{label}}</span><span ng-if="!label && parent.orientation == 'vertical'">&nbsp;</span></label></span>
     <div ng-if="parent.orientation != 'inline'">
         <div ng-class="{'col-sm-{{12 - parent.labelSize}}': parent.orientation == 'horizontal' && label, 'col-sm-12': parent.orientation == 'horizontal' && !label}">
-            <select id="{{id}}" ng-model="scope.value" class="form-control">
+            <select id="{{id}}" ng-model="scope.ngModel" class="form-control">
                 <option ng-repeat="item in scope.items" value="{{item.value}}">{{item.caption}}</option>
             </select>
             <span ng-if="feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
         </div>
     </div>
-    <select ng-if="parent.orientation == 'inline'" id="{{id}}" ng-model="scope.value" class="form-control">
+    <select ng-if="parent.orientation == 'inline'" id="{{id}}" ng-model="scope.ngModel" class="form-control">
         <option ng-repeat="item in scope.items" value="{{item.value}}">{{item.caption}}</option>
     </select><span ng-if="parent.orientation == 'inline' && feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
 </div>

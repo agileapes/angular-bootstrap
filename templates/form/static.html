@@ -2,8 +2,8 @@
     <span ng-if="label"><label ng-class="{'col-sm-{{parent.labelSize}}': parent.orientation == 'horizontal' && label, 'sr-only': parent.orientation == 'inline'}" class="control-label"><span ng-if="label">{{label}}</span><span ng-if="!label && parent.orientation == 'vertical'">&nbsp;</span></label></span>
     <div ng-if="parent.orientation != 'inline'">
         <div ng-class="{'col-sm-{{12 - parent.labelSize}}': parent.orientation == 'horizontal' && label, 'col-sm-12': parent.orientation == 'horizontal' && !label}">
-            <p class="form-control-static">{{scope.value}}</p>
+            <p class="form-control-static">{{scope.ngModel}}</p>
         </div>
     </div>
-    <p ng-if="parent.orientation == 'inline'" class="form-control-static">{{scope.value}}</p>
+    <p ng-if="parent.orientation == 'inline'" class="form-control-static">{{scope.ngModel}}</p>
 </div>

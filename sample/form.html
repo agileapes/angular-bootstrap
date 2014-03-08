@@ -15,15 +15,22 @@
     <script src="../js/demo.js"></script>
 </head>
 <body>
-<div class="container" ng-init="orientation='horizontal'">
+<div class="container" ng-init="orientation='horizontal'; test={email: 'm.m.naseri@gmail.com', gender: 'male'}">
     <ol class="breadcrumb">
         <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
         <li><span class="glyphicon glyphicon-edit"></span> Form</li>
     </ol>
     <h1 class="page-header">Form Inputs</h1>
+
     <p>For form inputs, not much added markup is required. Generally speaking, the underlying frameworks provide
         quite a set of tools for accomplishing this. Therefore, what we deliver here, is mostly for the sake of
         unification and providing a uniform interface for creating forms across different frameworks.</p>
+    <p><input type="text" ng-model="test.email"/></p>
+    <p><input type="text" ng-model="test.phone"/></p>
+    <p><input type="text" ng-model="test.gender"/></p>
+    <p><input type="text" ng-model="test.newsletter"/></p>
+    <p><input type="text" ng-model="test.remember"/></p>
+    <p><input type="text" ng-model="test.bio"/></p>
     <p>Orientation: <select ng-model="orientation">
         <option value="horizontal">Horizontal</option>
         <option value="vertical">Vertical</option>
@@ -35,30 +42,32 @@
     </div>
     <ui:form-container orientation="{{orientation}}" label-size="3">
         <ui:form-input type="static" id="username" label="Username" value="somebody"></ui:form-input>
-        <ui:form-input type="email" id="emailAddress" placeholder="Enter email" validation="" state="valid" feedback="envelope" label="Email address" value="somebody@example.com"></ui:form-input>
-        <ui:form-input type="password" id="password" placeholder="Enter password" validation="" state="warning" feedback="lock" label="Password"></ui:form-input>
-        <ui:form-input type="password" id="confirm" placeholder="Confirm password" validation="" state="invalid" feedback="lock" label="Confirm"></ui:form-input>
-        <ui:form-input type="text" id="phone" placeholder="Phone number" validation="" state="notice" feedback="phone-alt" label="Phone"></ui:form-input>
-        <ui:form-input type="checkbox" id="remember" validation="" label="Remember me" value="true" feedback="user" state="invalid"></ui:form-input>
-        <ui:form-input type="textarea" id="bio" validation="" label="Write a short biography" value="This is a test" feedback="book" state="warning"></ui:form-input>
-        <ui:form-input type="radio" id="sendMeYes" validation="" label="Send me newsletters" value="yes" feedback="check" group="newsletter" checked="{{newsletter=='yes' ? 'true' : ''}}"></ui:form-input>
-        <ui:form-input type="radio" id="sendMeNo" validation="" label="I would rather not receive anything" value="no" feedback="unchecked" group="newsletter" checked="{{newsletter=='no' ? 'true' : ''}}"></ui:form-input>
-        <ui:form-select type="checkList" selection="multiple"  id="preference" validation="" label="Choose what you would like to know about">
+        <ui:form-input type="email" ng-model="test.email" id="emailAddress" placeholder="Enter email" validation="" state="valid" feedback="envelope" label="Email address" value="somebody@example.com"></ui:form-input>
+        <ui:form-input type="password" ng-model="test.pass" id="password" placeholder="Enter password" validation="" state="warning" feedback="lock" label="Password"></ui:form-input>
+        <ui:form-input type="password" ng-model="test.pass" id="confirm" placeholder="Confirm password" validation="" state="invalid" feedback="lock" label="Confirm"></ui:form-input>
+        <ui:form-input type="text" ng-model="test.phone" id="phone" placeholder="Phone number" value="+9821118" validation="" state="notice" feedback="phone-alt" label="Phone"></ui:form-input>
+        <ui:form-input type="text" ng-model="test.gender" id="genderText" placeholder="Gender" validation="" state="notice" feedback="user" label="Gender"></ui:form-input>
+        <ui:form-input type="checkbox" ng-model="test.remember" checked="" id="remember" validation="" label="Remember me" value="true" feedback="user" state="invalid"></ui:form-input>
+        <ui:form-input type="textarea" ng-model="test.bio" id="bio" validation="" label="Write a short biography" value="This is a test" feedback="book" state="warning"></ui:form-input>
+        <ui:form-input type="radio" ng-model="test.newsletter" id="sendMeYes" validation="" label="Send me newsletters" value="yes" feedback="check" group="newsletter"></ui:form-input>
+        <ui:form-input type="radio" ng-model="test.newsletter" id="sendMeNo" validation="" label="I would rather not receive anything" value="no" feedback="unchecked" group="newsletter"></ui:form-input>
+        <ui:form-select type="combo" ng-model="test.gender" id="gender" validation="" label="Gender" value="male" feedback="print" state="warning">
+            <ui:form-select-item value="male" caption="Male"></ui:form-select-item>
+            <ui:form-select-item value="female" caption="Female"></ui:form-select-item>
+        </ui:form-select>
+        <ui:form-select type="checkList" selection="multiple" id="preference" validation="" label="Choose what you would like to know about">
             <ui:form-select-item value="computer" caption="Computer"></ui:form-select-item>
             <ui:form-select-item value="science" caption="Science"></ui:form-select-item>
             <ui:form-select-item value="travel" caption="Travel"></ui:form-select-item>
         </ui:form-select>
-        <ui:form-select type="combo" id="gender" validation="" label="Gender" value="male" ng-model="gender" feedback="print" state="warning">
-            <ui:form-select-item value="male" caption="Male"></ui:form-select-item>
-            <ui:form-select-item value="female" caption="Female"></ui:form-select-item>
-        </ui:form-select>
         <ui:form-select type="checkList" selection="single" id="description" validation="" label="Which item describes you the best">
-            <ui:form-select-item value="developer">Software developer</ui:form-select-item>
-            <ui:form-select-item value="user">Software end-user</ui:form-select-item>
+            <ui:form-select-item value="developer" caption="Software developer"></ui:form-select-item>
+            <ui:form-select-item value="user" caption="Software end-user"></ui:form-select-item>
         </ui:form-select>
         <ui:form-action>
             <button class="btn btn-primary" type="button"><span class="glyphicon glyphicon-save"></span> Save</button>
-            <button class="btn btn-danger" type="button"><span class="glyphicon glyphicon-remove"></span> Delete</button>
+            <button class="btn btn-danger" type="button"><span class="glyphicon glyphicon-remove"></span> Delete
+            </button>
         </ui:form-action>
     </ui:form-container>
 </div>
