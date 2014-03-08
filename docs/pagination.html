@@ -66,10 +66,10 @@
 <pre><code>&lt;script type="text/javascript"&gt;<!--
 $("ui\\:pagination").on('changing', function (e, state) {
     if (state.from % 2 == state.to % 2) {
-        demoConsole.log("---- Stopped");
+        console.log("---- Stopped");
         state.stop();
     } else {
-        demoConsole.log('changing: ' + state.from + " -> " + state.to);
+        console.log('changing: ' + state.from + " -> " + state.to);
     }
 });
 //-->&lt;/script&gt;</code></pre>

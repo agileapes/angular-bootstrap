@@ -1,49 +1,5 @@
 (function (toolkit, $) {
 
-    $.fn.on.proxy = function (event, selector, callback) {
-        if (!callback) {
-            if (!selector || !$.isFunction(selector)) {
-                callback = function () {};
-            } else if ($.isFunction (selector)) {
-                callback = selector;
-            }
-            selector = "*";
-        }
-        var $this = $(this);
-        $this.on(event, function (event) {
-            var args = arguments;
-            $(event.target).filter(selector).each(function () {
-                callback.apply(this, args);
-            });
-        });
-        return $this;
-    };
-
-    $.fn.on.forward = function (proxy, event, _) {
-        var $this = $(this);
-        var events = arguments;
-        $this.each(function () {
-            var target = $(this);
-            $(events).each(function (index) {
-                if (index == 0) {
-                    return;
-                }
-                target.on(this, function () {
-                    var args = [];
-                    var event = arguments[0];
-                    if (arguments.length > 1) {
-                        for (var i = 1; i < arguments.length; i ++) {
-                            args.push(arguments[i]);
-                        }
-                    }
-                    console.error(proxy.jquery);
-                    $(proxy).trigger(event, args);
-                });
-            });
-        });
-        return $this;
-    };
-
     var init = function (prefix, $http, $templateCache, $compile, transclude, registryCallback) {
         if (!registryCallback) {
             registryCallback = function (name, item) {};
