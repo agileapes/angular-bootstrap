@@ -20,6 +20,10 @@
     $(function () {
         $("pre code").each(function () {
             hljs.highlightBlock(this);
+            $("#button1").on('click', function (e) {
+                alert("Clicked from trigger!");
+                e.cancelBubble();
+            });
         });
     });
     //--></script>
@@ -53,8 +57,11 @@
             alert("Clicked from controller!");
         }
     };
-    $("#button1").on('click', function (e) {
-        alert("Clicked from trigger!");
+    $(function () {
+        $("#button1").on('click', function (e) {
+            alert("Clicked from trigger!");
+            e.cancelBubble();
+        });
     });
 &lt;/script&gt;</code></pre>
         </div>
@@ -66,9 +73,6 @@
             alert("Clicked from controller!");
         }
     };
-    $("#button1").on('click', function (e) {
-        alert("Clicked from trigger!");
-    });
 </script>
 </body>
 </html>
