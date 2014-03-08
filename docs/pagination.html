@@ -63,7 +63,7 @@
             <h4>HTML</h4>
             <pre><code>&lt;ui:pagination id="x1" first="1" last="20" current="7" navigation="true" show="6"&gt;&lt;/ui:pagination&gt;</code></pre>
             <h4>JavaScript</h4>
-<pre><code>&lt;script type="text/javascript"&gt;<!--
+<pre><code>&lt;script type="text/javascript"&gt;&lt;!--
 $("ui\\:pagination").on('changing', function (e, state) {
     if (state.from % 2 == state.to % 2) {
         console.log("---- Stopped");
@@ -72,7 +72,7 @@ $("ui\\:pagination").on('changing', function (e, state) {
         console.log('changing: ' + state.from + " -> " + state.to);
     }
 });
-//-->&lt;/script&gt;</code></pre>
+//--&gt;&lt;/script&gt;</code></pre>
         </div>
     </div>
 </div>
