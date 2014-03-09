@@ -13,6 +13,7 @@
     <script src="../js/angular.js"></script>
     <script src="../js/bootstrapui-0.4.js"></script>
     <script src="../js/directives/label.js"></script>
+    <script src="../js/directives/icon.js"></script>
     <script src="../js/demo.js"></script>
     <script src="../highlight/highlight.pack.js"></script>
     <script type="text/javascript"><!--
@@ -44,6 +45,7 @@
             <ui:label type="information">Information</ui:label>
             <ui:label type="warning">Warning</ui:label>
             <ui:label type="danger">Danger</ui:label>
+            <ui:label type="danger"><ui:icon glyph="ban-circle"></ui:icon> Danger</ui:label>
         </div>
         <div class="panel-footer">
 <pre><code>&lt;ui:label&gt;No type&lt;/ui:label&gt;
@@ -52,8 +54,14 @@
 &lt;ui:label type="success"&gt;Success&lt;/ui:label&gt;
 &lt;ui:label type="information"&gt;Information&lt;/ui:label&gt;
 &lt;ui:label type="warning"&gt;Warning&lt;/ui:label&gt;
+&lt;ui:label type="danger"&gt;&lt;ui:icon glyph="ban-circle"&gt;&lt;/ui:icon&gt; Danger&lt;/ui:label&gt;
 &lt;ui:label type="danger"&gt;Danger&lt;/ui:label&gt;</code></pre>
         </div>
+    </div>
+    <div class="alert alert-info alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong><ui:icon glyph="eye-open"></ui:icon></strong> Take a look at the <a href="icon.html"><code>icon</code></a>
+        directive, which goes nicely with buttons.
     </div>
 </div>
 </body>
