@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!--suppress CheckTagEmptyBody -->
+<html xmlns:ui="http://www.agileapes.com/ui" data-bootstrapui>
+<head>
+    <title>Angular Bootstrap :: Panel</title>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" href="../highlight/styles/xcode.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/theme.css"/>
+    <script src="../js/config.js"></script>
+    <script src="../js/jquery-1.11.0.js"></script>
+    <script src="../bootstrap/js/bootstrap.min.js"></script>
+    <script src="../js/angular.js"></script>
+    <script src="../js/bootstrapui-0.4.js"></script>
+    <script src="../js/directives/button.js"></script>
+    <script src="../js/directives/panel.js"></script>
+    <script src="../js/demo.js"></script>
+    <script src="../highlight/highlight.pack.js"></script>
+    <script type="text/javascript"><!--
+    $(function () {
+        $("pre code").each(function () {
+            hljs.highlightBlock(this);
+        });
+    });
+    //--></script>
+</head>
+<body>
+<div class="container">
+    <ol class="breadcrumb">
+        <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
+        <li><span class="glyphicon glyphicon-folder-close"></span> Panel</li>
+    </ol>
+    <h1>Panel</h1>
+    <p>Panels help you contextually separate sections of your code which out to be presented in their own place.</p>
+    <p>Compartmentalizing your content in a visually effective manner is done thus:</p>
+    <div class="panel panel-default" ng-init="panelType='normal'">
+        <div class="panel-heading">
+            <h3 class="panel-title">Example</h3>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="control-label">Types</label>
+                <select class="form-control" ng-model="panelType">
+                    <option value="none">none</option>
+                    <option value="normal">normal</option>
+                    <option value="primary">primary</option>
+                    <option value="success">success</option>
+                    <option value="information">information</option>
+                    <option value="warning">warning</option>
+                    <option value="danger">danger</option>
+                </select>
+            </div>
+            <ui:panel type="{{panelType}}" title="My Panel">
+                This is a sample panel
+            </ui:panel>
+            <ui:panel-attachment>
+                This is the first attachment
+            </ui:panel-attachment>
+            <ui:panel-attachment>
+                This is the second attachment
+            </ui:panel-attachment>
+        </div>
+        <div class="panel-footer">
+<pre><code>&lt;ui:panel type="{{panelType}}" title="My Panel"&gt;
+    This is a sample panel.
+&lt;/ui:panel&gt;
+&lt;ui:panel-attachment&gt;
+    This is the first attachment
+&lt;/ui:panel-attachment&gt;
+&lt;ui:panel-attachment&gt;
+    This is the second attachment
+&lt;/ui:panel-attachment&gt;</code></pre>
+        </div>
+    </div>
+</div>
+</body>
+</html>

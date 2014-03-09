@@ -22,7 +22,7 @@
                             <xs:attribute name="label" use="optional" type="xs:string"/>
                             <xs:attribute name="glyph" use="optional" type="glyph"/>
                             <xs:attribute name="position" use="optional" type="horizontalPosition"/>
-                            <xs:attribute name="kind" use="optional" default="none" type="buttonKind"/>
+                            <xs:attribute name="kind" use="optional" default="none" type="widgetKind"/>
                         </xs:complexType>
                     </xs:element>
                 </xs:choice>
@@ -146,11 +146,29 @@
                 <xs:any/>
             </xs:sequence>
             <xs:attribute name="action" type="xs:string" use="optional"/>
-            <xs:attribute name="type" type="buttonKind" use="optional" default="normal"/>
+            <xs:attribute name="type" type="widgetKind" use="optional" default="normal"/>
             <xs:attribute name="size" type="size" use="optional" default="normal"/>
             <xs:attribute name="block" type="true" use="optional" default="false"/>
             <xs:attribute name="active" type="true" use="optional" default="false"/>
             <xs:attribute name="disabled" type="true" use="optional" default="false"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="panel">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:any/>
+            </xs:sequence>
+            <xs:attribute name="title" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="type" type="widgetKind" use="optional" default="none"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="panel-attachment">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:any/>
+            </xs:sequence>
         </xs:complexType>
     </xs:element>
 
@@ -179,7 +197,7 @@
         <xs:attribute name="position" use="optional" type="horizontalPosition"/>
         <xs:attribute name="glyph" use="optional" type="glyph"/>
         <xs:attribute name="label" use="required" type="xs:string"/>
-        <xs:attribute name="kind" use="optional" default="none" type="buttonKind"/>
+        <xs:attribute name="kind" use="optional" default="none" type="widgetKind"/>
         <xs:attribute name="caret" use="optional" default="false" type="true"/>
         <xs:attribute name="size" use="optional" default="normal" type="size"/>
     </xs:complexType>
@@ -416,7 +434,7 @@
             <xs:enumeration value="tiny"/>
         </xs:restriction>
     </xs:simpleType>
-    <xs:simpleType name="buttonKind">
+    <xs:simpleType name="widgetKind">
         <xs:restriction base="xs:string">
             <xs:enumeration value="none"/>
             <xs:enumeration value="normal"/>

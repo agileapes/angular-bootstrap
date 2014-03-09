@@ -1,0 +1,6 @@
+<div class="panel" ng-class="{'panel-default': type == 'normal', 'panel-primary': type == 'primary', 'panel-success': type == 'success', 'panel-info': type == 'information', 'panel-warning': type == 'warning', 'panel-danger': type == 'danger'}">
+    <div class="panel-heading" ng-show="title">
+        <h3 class="panel-title">{{title}}</h3>
+    </div>
+    <div class="panel-body" ng-transclude></div>
+</div>
