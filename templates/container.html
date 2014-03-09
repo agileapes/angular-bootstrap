@@ -1,14 +1,14 @@
 <div class="contained">
-    <div ng-if="type != 'accordion'" data-section-type="normal">
-        <ul class="nav" ng-class="{'nav-tabs': type == 'tab', 'nav-pills': type == 'pill', 'nav-stacked': stacked}">
+    <div ng-if="typeModel != 'accordion'" data-section-type="normal">
+        <ul class="nav" ng-class="{'nav-tabs': typeModel == 'tab', 'nav-pills': typeModel == 'pill', 'nav-stacked': stacked}">
             <li ng-repeat="section in sections" ng-class="{'active': section.active}">
                 <a href="" ng-click="activate(section)"><span ng-class="{'glyphicon glyphicon-{{section.glyph}}': section.glyph}">&nbsp;</span>{{section.title}}</a>
             </li>
         </ul>
-        <hr ng-if="type == 'pill'"/>
+        <hr ng-if="typeModel == 'pill'"/>
         <div class="tab-content" ng-transclude></div>
     </div>
-    <div ng-if="type == 'accordion'" data-section-type="accordion">
+    <div ng-if="typeModel == 'accordion'" data-section-type="accordion">
         <div class="panel-group">
             <div class="panel panel-default" ng-repeat="section in sections" data-index="{{$index}}">
                 <div class="panel-heading">

@@ -7,10 +7,20 @@
                 transclude: true,
                 templateUrl: registry.container.templateUrl,
                 scope: {
-                    type: "=",
-                    stacked: "@"
+                    type: "@",
+                    stacked: "@",
+                    typeModel: "=?"
                 },
                 controller: function ($scope, $element) {
+                    if (typeof $scope.type == "undefined") {
+                        $scope.type = "tab";
+                    }
+                    if (typeof $scope.typeModel == "undefined") {
+                        $scope.typeModel = $scope.type;
+                    }
+                    if ($scope.typeModel != 'tab' && $scope.typeModel != 'pill' && $scope.typeModel != 'accordion') {
+                        $scope.typeModel = "tab";
+                    }
                     var sections = $scope.sections = [];
                     var current = null;
                     $scope.activate = function (section) {
@@ -55,7 +65,7 @@
                             $scope.activate(section);
                         }
                     };
-                    $scope.$watch("type", function (current, old) {
+                    $scope.$watch("typeModel", function (current, old) {
                         if (current != old && current == 'accordion' || old == 'accordion') {
                             sections.length = 0;
                         }
@@ -82,7 +92,7 @@
                     while (parentNode && !$(parentNode).hasClass('contained')) {
                         parentNode = parentNode.parentNode;
                     }
-                    if ($scope.$parent.type == 'accordion') {
+                    if ($scope.$parent.typeModel == 'accordion') {
                         var transposed = false;
                         var panelGroup = $($element.get(0).parentNode.parentNode).find(".panel-group");
                         var stop = $scope.$watch(function () {

@@ -57,6 +57,7 @@
                 </xs:element>
             </xs:sequence>
             <xs:attribute name="type" use="optional" default="tab" type="containerType"/>
+            <xs:attribute name="type-model" use="optional" default="" type="xs:string"/>
             <xs:attribute name="stacked" use="optional" default="false" type="true"/>
         </xs:complexType>
     </xs:element>
