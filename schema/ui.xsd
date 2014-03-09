@@ -486,6 +486,7 @@
         <xs:restriction base="xs:string">
             <xs:enumeration value="tab"/>
             <xs:enumeration value="pill"/>
+            <xs:enumeration value="accordion"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="inputState">

@@ -1,4 +1,4 @@
-(function (toolkit) {
+(function (toolkit, $) {
     toolkit.register("container", function (registry) {
         registry.container = new toolkit.classes.Directive("1.0", "container", function () {
             return {
@@ -7,7 +7,7 @@
                 transclude: true,
                 templateUrl: registry.container.templateUrl,
                 scope: {
-                    type: "@",
+                    type: "=",
                     stacked: "@"
                 },
                 controller: function ($scope, $element) {
@@ -55,6 +55,11 @@
                             $scope.activate(section);
                         }
                     };
+                    $scope.$watch("type", function (current, old) {
+                        if (current != old && current == 'accordion' || old == 'accordion') {
+                            sections.length = 0;
+                        }
+                    });
                 }
             };
         });
@@ -70,11 +75,31 @@
                     active: "@",
                     glyph: "@"
                 },
-                link: function (scope, element, attribute, containerController) {
-                    scope.$content = element;
-                    containerController.addSection(scope);
+                link: function ($scope, $element, $attrs, containerController) {
+                    $scope.$content = $element;
+                    containerController.addSection($scope);
+                    var parentNode = $element.get(0);
+                    while (parentNode && !$(parentNode).hasClass('contained')) {
+                        parentNode = parentNode.parentNode;
+                    }
+                    if ($scope.$parent.type == 'accordion') {
+                        var transposed = false;
+                        var panelGroup = $($element.get(0).parentNode.parentNode).find(".panel-group");
+                        var stop = $scope.$watch(function () {
+                            return panelGroup.find(".panel[data-index=" + $scope.index + "] .panel-body").get(0);
+                        }, function (panel) {
+                            if (!panel || transposed) {
+                                return;
+                            }
+                            transposed = true;
+                            $(panel).append($element);
+                            stop();
+                        })
+                    } else {
+
+                    }
                 }
             };
         });
     });
-})(BootstrapUI);
+})(BootstrapUI, jQuery);

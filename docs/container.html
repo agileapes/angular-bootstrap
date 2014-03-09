@@ -24,7 +24,7 @@
     //--></script>
 </head>
 <body>
-<div class="container">
+<div class="container" ng-init="type='tab'">
     <ol class="breadcrumb">
         <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
         <li><span class="glyphicon glyphicon-inbox"></span> Containers</li>
@@ -40,7 +40,15 @@
             <h3 class="panel-title">Example</h3>
         </div>
         <div class="panel-body">
-            <ui:container type="tab">
+            <div class="form-group">
+                <label class="control-label" for="type">Type</label>
+                <select id="type" ng-model="type">
+                    <option value="tab">Tabs</option>
+                    <option value="pill">Pills</option>
+                    <option value="accordion">Accordion</option>
+                </select>
+            </div>
+            <ui:container type="type">
                 <ui:section title="My Home" glyph="home">
                     This is my home
                 </ui:section>
@@ -84,25 +92,6 @@
         });
     });
 //--&gt;&lt;/script&gt;</code></pre>
-        </div>
-    </div>
-    <h2>Pills</h2>
-    <p>Using pills, you can separate minor sections of your logic from each other.</p>
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <h3 class="panel-title">Example</h3>
-        </div>
-        <div class="panel-body">
-            <ui:container type="pill">
-                <ui:section title="First" active="true">This is the first one</ui:section>
-                <ui:section title="Second">This is the second one</ui:section>
-            </ui:container>
-        </div>
-        <div class="panel-footer">
-<pre><code>&lt;ui:container type="pill"&gt;
-    &lt;ui:section title="First" active="true"&gt;This is the first one&lt;/ui:section&gt;
-    &lt;ui:section title="Second"&gt;This is the second one&lt;/ui:section&gt;
-&lt;/ui:container&gt;</code></pre>
         </div>
     </div>
 </div>
