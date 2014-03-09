@@ -5,6 +5,7 @@
     <title>Angular Bootstrap :: Form</title>
     <meta charset="UTF-8"/>
     <link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" href="../highlight/styles/xcode.css"/>
     <link rel="stylesheet" type="text/css" href="../css/theme.css"/>
     <script src="../js/config.js"></script>
     <script src="../js/jquery-1.11.0.js"></script>
@@ -12,60 +13,403 @@
     <script src="../js/angular.js"></script>
     <script src="../js/bootstrapui-0.4.js"></script>
     <script src="../js/directives/form.js"></script>
+    <script src="../js/directives/icon.js"></script>
+    <script src="../js/directives/panel.js"></script>
+    <script src="../js/filters/range.js"></script>
     <script src="../js/demo.js"></script>
+    <script src="../highlight/highlight.pack.js"></script>
+    <script type="text/javascript"><!--
+        $(function () {
+            $("[data-toggle=tooltip]").tooltip();
+            $("pre code").each(function () {
+                hljs.highlightBlock(this);
+            });
+        });
+    //--></script>
 </head>
 <body>
-<div class="container" ng-init="orientation='horizontal'; test={email: 'm.m.naseri@gmail.com', gender: 'male'}">
+<div class="container" ng-init="values = {}; options = {show: false, orientation: 'horizontal', state: 'normal', labelSize: 3, feedback: ''};">
     <ol class="breadcrumb">
         <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
         <li><span class="glyphicon glyphicon-edit"></span> Form</li>
     </ol>
-    <h1 class="page-header">Form Inputs</h1>
-
+    <div class="pull-right page-options" ng-click="options.show = !options.show;" data-toggle="tooltip" data-placement="left" title="Change display options for the rendered forms"><ui:icon glyph="wrench"></ui:icon></div>
+    <div class="panel panel-info" ng-show="options.show">
+    <div class="panel-heading">
+        <h3 class="panel-title">Options</h3>
+    </div>
+    <div class="panel-body">
+    <div class="form-group row">
+        <label class="control-label col-lg-4" for="settings-orientation">Form Orientation</label>
+        <div class="col-lg-8">
+            <select id="settings-orientation" class="form-control" ng-model="options.orientation">
+                <option value="horizontal">Horizontal</option>
+                <option value="vertical">Vertical</option>
+                <option value="inline">Inline</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="control-label col-lg-4" for="settings-label">Form Label Size</label>
+        <div class="col-lg-8">
+            <select id="settings-label" class="form-control" ng-model="options.labelSize">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="control-label col-lg-4" for="settings-state">Form State</label>
+        <div class="col-lg-8">
+            <select id="settings-state" class="form-control" ng-model="options.state">
+                <option value="normal">-</option>
+                <option value="valid">Valid</option>
+                <option value="invalid">Invalid</option>
+                <option value="warning">Warning</option>
+                <option value="notice">Notice</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group row">
+    <label for="icon" class="control-label col-lg-4">Feedback:</label>
+    <div class="col-lg-8">
+    <select id="icon" ng-model="options.feedback" class="form-control">
+    <option value="">-</option>
+    <option value="asterisk">asterisk</option>
+    <option value="plus">plus</option>
+    <option value="euro">euro</option>
+    <option value="minus">minus</option>
+    <option value="cloud">cloud</option>
+    <option value="envelope">envelope</option>
+    <option value="pencil">pencil</option>
+    <option value="glass">glass</option>
+    <option value="music">music</option>
+    <option value="search">search</option>
+    <option value="heart">heart</option>
+    <option value="star">star</option>
+    <option value="star-empty">star-empty</option>
+    <option value="user">user</option>
+    <option value="film">film</option>
+    <option value="th-large">th-large</option>
+    <option value="th">th</option>
+    <option value="th-list">th-list</option>
+    <option value="ok">ok</option>
+    <option value="remove">remove</option>
+    <option value="zoom-in">zoom-in</option>
+    <option value="zoom-out">zoom-out</option>
+    <option value="off">off</option>
+    <option value="signal">signal</option>
+    <option value="cog">cog</option>
+    <option value="trash">trash</option>
+    <option value="home">home</option>
+    <option value="file">file</option>
+    <option value="time">time</option>
+    <option value="road">road</option>
+    <option value="download-alt">download-alt</option>
+    <option value="download">download</option>
+    <option value="upload">upload</option>
+    <option value="inbox">inbox</option>
+    <option value="play-circle">play-circle</option>
+    <option value="repeat">repeat</option>
+    <option value="refresh">refresh</option>
+    <option value="list-alt">list-alt</option>
+    <option value="lock">lock</option>
+    <option value="flag">flag</option>
+    <option value="headphones">headphones</option>
+    <option value="volume-off">volume-off</option>
+    <option value="volume-down">volume-down</option>
+    <option value="volume-up">volume-up</option>
+    <option value="qrcode">qrcode</option>
+    <option value="barcode">barcode</option>
+    <option value="tag">tag</option>
+    <option value="tags">tags</option>
+    <option value="book">book</option>
+    <option value="bookmark">bookmark</option>
+    <option value="print">print</option>
+    <option value="camera">camera</option>
+    <option value="font">font</option>
+    <option value="bold">bold</option>
+    <option value="italic">italic</option>
+    <option value="text-height">text-height</option>
+    <option value="text-width">text-width</option>
+    <option value="align-left">align-left</option>
+    <option value="align-center">align-center</option>
+    <option value="align-right">align-right</option>
+    <option value="align-justify">align-justify</option>
+    <option value="list">list</option>
+    <option value="indent-left">indent-left</option>
+    <option value="indent-right">indent-right</option>
+    <option value="facetime-video">facetime-video</option>
+    <option value="picture">picture</option>
+    <option value="map-marker">map-marker</option>
+    <option value="adjust">adjust</option>
+    <option value="tint">tint</option>
+    <option value="edit">edit</option>
+    <option value="share">share</option>
+    <option value="check">check</option>
+    <option value="move">move</option>
+    <option value="step-backward">step-backward</option>
+    <option value="fast-backward">fast-backward</option>
+    <option value="backward">backward</option>
+    <option value="play">play</option>
+    <option value="pause">pause</option>
+    <option value="stop">stop</option>
+    <option value="forward">forward</option>
+    <option value="fast-forward">fast-forward</option>
+    <option value="step-forward">step-forward</option>
+    <option value="eject">eject</option>
+    <option value="chevron-left">chevron-left</option>
+    <option value="chevron-right">chevron-right</option>
+    <option value="plus-sign">plus-sign</option>
+    <option value="minus-sign">minus-sign</option>
+    <option value="remove-sign">remove-sign</option>
+    <option value="ok-sign">ok-sign</option>
+    <option value="question-sign">question-sign</option>
+    <option value="info-sign">info-sign</option>
+    <option value="screenshot">screenshot</option>
+    <option value="remove-circle">remove-circle</option>
+    <option value="ok-circle">ok-circle</option>
+    <option value="ban-circle">ban-circle</option>
+    <option value="arrow-left">arrow-left</option>
+    <option value="arrow-right">arrow-right</option>
+    <option value="arrow-up">arrow-up</option>
+    <option value="arrow-down">arrow-down</option>
+    <option value="share-alt">share-alt</option>
+    <option value="resize-full">resize-full</option>
+    <option value="resize-small">resize-small</option>
+    <option value="exclamation-sign">exclamation-sign</option>
+    <option value="gift">gift</option>
+    <option value="leaf">leaf</option>
+    <option value="fire">fire</option>
+    <option value="eye-open">eye-open</option>
+    <option value="eye-close">eye-close</option>
+    <option value="warning-sign">warning-sign</option>
+    <option value="plane">plane</option>
+    <option value="calendar">calendar</option>
+    <option value="random">random</option>
+    <option value="comment">comment</option>
+    <option value="magnet">magnet</option>
+    <option value="chevron-up">chevron-up</option>
+    <option value="chevron-down">chevron-down</option>
+    <option value="retweet">retweet</option>
+    <option value="shopping-cart">shopping-cart</option>
+    <option value="folder-close">folder-close</option>
+    <option value="folder-open">folder-open</option>
+    <option value="resize-vertical">resize-vertical</option>
+    <option value="resize-horizontal">resize-horizontal</option>
+    <option value="hdd">hdd</option>
+    <option value="bullhorn">bullhorn</option>
+    <option value="bell">bell</option>
+    <option value="certificate">certificate</option>
+    <option value="thumbs-up">thumbs-up</option>
+    <option value="thumbs-down">thumbs-down</option>
+    <option value="hand-right">hand-right</option>
+    <option value="hand-left">hand-left</option>
+    <option value="hand-up">hand-up</option>
+    <option value="hand-down">hand-down</option>
+    <option value="circle-arrow-right">circle-arrow-right</option>
+    <option value="circle-arrow-left">circle-arrow-left</option>
+    <option value="circle-arrow-up">circle-arrow-up</option>
+    <option value="circle-arrow-down">circle-arrow-down</option>
+    <option value="globe">globe</option>
+    <option value="wrench">wrench</option>
+    <option value="tasks">tasks</option>
+    <option value="filter">filter</option>
+    <option value="briefcase">briefcase</option>
+    <option value="fullscreen">fullscreen</option>
+    <option value="dashboard">dashboard</option>
+    <option value="paperclip">paperclip</option>
+    <option value="heart-empty">heart-empty</option>
+    <option value="link">link</option>
+    <option value="phone">phone</option>
+    <option value="pushpin">pushpin</option>
+    <option value="usd">usd</option>
+    <option value="gbp">gbp</option>
+    <option value="sort">sort</option>
+    <option value="sort-by-alphabet">sort-by-alphabet</option>
+    <option value="sort-by-alphabet-alt">sort-by-alphabet-alt</option>
+    <option value="sort-by-order">sort-by-order</option>
+    <option value="sort-by-order-alt">sort-by-order-alt</option>
+    <option value="sort-by-attributes">sort-by-attributes</option>
+    <option value="sort-by-attributes-alt">sort-by-attributes-alt</option>
+    <option value="unchecked">unchecked</option>
+    <option value="expand">expand</option>
+    <option value="collapse-down">collapse-down</option>
+    <option value="collapse-up">collapse-up</option>
+    <option value="log-in">log-in</option>
+    <option value="flash">flash</option>
+    <option value="log-out">log-out</option>
+    <option value="new-window">new-window</option>
+    <option value="record">record</option>
+    <option value="save">save</option>
+    <option value="open">open</option>
+    <option value="saved">saved</option>
+    <option value="import">import</option>
+    <option value="export">export</option>
+    <option value="send">send</option>
+    <option value="floppy-disk">floppy-disk</option>
+    <option value="floppy-saved">floppy-saved</option>
+    <option value="floppy-remove">floppy-remove</option>
+    <option value="floppy-save">floppy-save</option>
+    <option value="floppy-open">floppy-open</option>
+    <option value="credit-card">credit-card</option>
+    <option value="transfer">transfer</option>
+    <option value="cutlery">cutlery</option>
+    <option value="header">header</option>
+    <option value="compressed">compressed</option>
+    <option value="earphone">earphone</option>
+    <option value="phone-alt">phone-alt</option>
+    <option value="tower">tower</option>
+    <option value="stats">stats</option>
+    <option value="sd-video">sd-video</option>
+    <option value="hd-video">hd-video</option>
+    <option value="subtitles">subtitles</option>
+    <option value="sound-stereo">sound-stereo</option>
+    <option value="sound-dolby">sound-dolby</option>
+    <option value="sound-5-1">sound-5-1</option>
+    <option value="sound-6-1">sound-6-1</option>
+    <option value="sound-7-1">sound-7-1</option>
+    <option value="copyright-mark">copyright-mark</option>
+    <option value="registration-mark">registration-mark</option>
+    <option value="cloud-download">cloud-download</option>
+    <option value="cloud-upload">cloud-upload</option>
+    <option value="tree-conifer">tree-conifer</option>
+    <option value="tree-deciduous">tree-deciduous</option>
+    </select>
+    </div>
+    </div>
+    </div>
+    </div>
+    <h1 class="page-header">Forms</h1>
     <p>For form inputs, not much added markup is required. Generally speaking, the underlying frameworks provide
         quite a set of tools for accomplishing this. Therefore, what we deliver here, is mostly for the sake of
         unification and providing a uniform interface for creating forms across different frameworks.</p>
-    <p><input type="text" ng-model="test.email"/></p>
-    <p><input type="text" ng-model="test.phone"/></p>
-    <p><input type="text" ng-model="test.gender"/></p>
-    <p><input type="text" ng-model="test.newsletter"/></p>
-    <p><input type="text" ng-model="test.remember"/></p>
-    <p><input type="text" ng-model="test.bio"/></p>
-    <p>Orientation: <select ng-model="orientation">
-        <option value="horizontal">Horizontal</option>
-        <option value="vertical">Vertical</option>
-        <option value="inline">Inline</option>
-    </select></p>
-    <ui:form-container orientation="{{orientation}}" label-size="3">
-        <ui:form-input type="static" id="username" label="Username" value="somebody"></ui:form-input>
-        <ui:form-input type="email" ng-model="test.email" id="emailAddress" placeholder="Enter email" validation="" state="valid" feedback="envelope" label="Email address" value="somebody@example.com"></ui:form-input>
-        <ui:form-input type="password" ng-model="test.pass" id="password" placeholder="Enter password" validation="" state="warning" feedback="lock" label="Password"></ui:form-input>
-        <ui:form-input type="password" ng-model="test.pass" id="confirm" placeholder="Confirm password" validation="" state="invalid" feedback="lock" label="Confirm"></ui:form-input>
-        <ui:form-input type="text" ng-model="test.phone" id="phone" placeholder="Phone number" value="+9821118" validation="" state="notice" feedback="phone-alt" label="Phone"></ui:form-input>
-        <ui:form-input type="text" ng-model="test.gender" id="genderText" placeholder="Gender" validation="" state="notice" feedback="user" label="Gender"></ui:form-input>
-        <ui:form-input type="checkbox" ng-model="test.remember" checked="" id="remember" validation="" label="Remember me" value="true" feedback="user" state="invalid"></ui:form-input>
-        <ui:form-input type="textarea" ng-model="test.bio" id="bio" validation="" label="Write a short biography" value="This is a test" feedback="book" state="warning"></ui:form-input>
-        <ui:form-input type="radio" ng-model="test.newsletter" id="sendMeYes" validation="" label="Send me newsletters" value="yes" feedback="check" group="newsletter"></ui:form-input>
-        <ui:form-input type="radio" ng-model="test.newsletter" id="sendMeNo" validation="" label="I would rather not receive anything" value="no" feedback="unchecked" group="newsletter"></ui:form-input>
-        <ui:form-select type="combo" ng-model="test.gender" id="gender" validation="" label="Gender" value="male" feedback="print" state="warning">
+    <h2>Form Input</h2>
+    <p>A form input component is a component that offers a data entry point to the user. This is usually
+    not something that involves a choice.</p>
+    <p>For entry points which involve the user choosing from some predetermined set of options, see <a href="#form-select">form select</a></p>
+    <h3>Text Input</h3>
+    <p>Text inputs are used primarily for un-formatted input where the user is allowed to enter data without restrictions.</p>
+    <ui:panel type="information" title="Example" ng-init="values.sampleTextInput='text'">
+        <ui:form-input type="text" id="sampleTextInput" descriptor="options" label="Text input" placeholder="Text input" ng-model="values.sampleTextInput"></ui:form-input>
+        <div class="form-group row form-horizontal">
+            <label class="control-label col-sm-{{options.labelSize}}">Value:</label>
+            <div class="form-control-static col-sm-{{12 - options.labelSize}}"><code>{{values.sampleTextInput}} <span class="closer" ng-click="values.sampleTextInput = ''">&times;</span></code></div>
+        </div>
+    </ui:panel>
+    <ui:panel-attachment>
+        <pre><code>&lt;ui:form-input type="text" id="sampleTextInput" orientation="{{options.orientation}}" label-size="{{options.labelSize}}" state="{{options.state}}"
+            label="Text field" feedback="{{options.feedback}}" placeholder="Text input" ng-model="sampleTextInput"&gt;&lt;/ui:form-input&gt;</code></pre>
+    </ui:panel-attachment>
+    <h3>Password Field</h3>
+    <p>A password field is a field that masks the input and does not allow for copying the content for safety reasons.</p>
+    <ui:panel type="information" title="Example" ng-init="values.samplePasswordInput='password'">
+        <ui:form-input type="password" id="samplePasswordInput" descriptor="options" label="Password input" placeholder="Password input" ng-model="values.samplePasswordInput"></ui:form-input>
+        <div class="form-group row form-horizontal">
+            <label class="control-label col-sm-{{options.labelSize}}">Value:</label>
+            <div class="form-control-static col-sm-{{12 - options.labelSize}}"><code>{{values.samplePasswordInput}} <span class="closer" ng-click="values.samplePasswordInput=''">&times;</span></code></div>
+        </div>
+    </ui:panel>
+    <ui:panel-attachment>
+        <pre><code>&lt;ui:form-input type="password" id="samplePasswordInput" orientation="{{options.orientation}}" label-size="{{options.labelSize}}" state="{{options.state}}"
+            label="Password field" feedback="{{options.feedback}}" placeholder="Password input" ng-model="samplePasswordInput"&gt;&lt;/ui:form-input&gt;</code></pre>
+    </ui:panel-attachment>
+    <h3>Email Field</h3>
+    <p>An email field is much like the text input field, with some added validation benefits.</p>
+    <ui:panel type="information" title="Example" ng-init="values.sampleEmailInput='me@mysite.com'">
+        <ui:form-input type="email" id="sampleEmailInput" descriptor="options" label="Email input" placeholder="Email input" ng-model="values.sampleEmailInput"></ui:form-input>
+        <div class="form-group row form-horizontal">
+            <label class="control-label col-sm-{{options.labelSize}}">Value:</label>
+            <div class="form-control-static col-sm-{{12 - options.labelSize}}"><code>{{values.sampleEmailInput}} <span class="closer" ng-click="values.sampleEmailInput=''">&times;</span></code></div>
+        </div>
+    </ui:panel>
+    <ui:panel-attachment>
+        <pre><code>&lt;ui:form-input type="email" id="sampleEmailInput" orientation="{{options.orientation}}" label-size="{{options.labelSize}}" state="{{options.state}}"
+            label="Email field" feedback="{{options.feedback}}" placeholder="Email input" ng-model="sampleEmailInput"&gt;&lt;/ui:form-input&gt;</code></pre>
+    </ui:panel-attachment>
+    <h3>Static Field</h3>
+    <p>A static field is good for displaying items which have been preset and are not expected to be changed throughout the
+    data entry by the user.</p>
+    <ui:panel type="information" title="Example" ng-init="values.sampleStaticInput='username'">
+        <ui:form-input type="static" id="sampleStaticInput" descriptor="options" label="Static input" placeholder="Static input" ng-model="values.sampleStaticInput"></ui:form-input>
+        <div class="form-group row form-horizontal">
+            <label class="control-label col-sm-{{options.labelSize}}">Value:</label>
+            <div class="form-control-static col-sm-{{12 - options.labelSize}}"><code>{{values.sampleStaticInput}} <span class="closer" ng-click="values.sampleStaticInput=''">&times;</span></code></div>
+        </div>
+    </ui:panel>
+    <ui:panel-attachment>
+        <pre><code>&lt;ui:form-input type="static" id="sampleStaticInput" orientation="{{options.orientation}}" label-size="{{options.labelSize}}" state="{{options.state}}" label="Static field" feedback="{{options.feedback}}" placeholder="Static input" ng-model="sampleStaticInput"&gt;&lt;/ui:form-input&gt;</code></pre>
+    </ui:panel-attachment>
+    <h3>Text Area</h3>
+    <p>Text areas are very good for taking long input from your users.</p>
+    <ui:panel type="information" title="Example" ng-init="values.sampleTextAreaInput='a\nvery\nlooong\ntext is here'">
+        <ui:form-input type="textarea" id="sampleTextAreaInput" descriptor="options" label="TextArea input" placeholder="TextArea input" ng-model="values.sampleTextAreaInput"></ui:form-input>
+        <div class="form-group row form-horizontal">
+            <label class="control-label col-sm-{{options.labelSize}}">Value:</label>
+            <div class="form-control-static col-sm-{{12 - options.labelSize}}"><code>{{values.sampleTextAreaInput}} <span class="closer" ng-click="values.sampleTextAreaInput=''">&times;</span></code></div>
+        </div>
+    </ui:panel>
+    <ui:panel-attachment>
+        <pre><code>&lt;ui:form-input type="textarea" id="sampleTextAreaInput" orientation="{{options.orientation}}" label-size="{{options.labelSize}}" state="{{options.state}}"
+            label="TextArea field" feedback="{{options.feedback}}" placeholder="TextArea input" ng-model="sampleTextAreaInput"&gt;&lt;/ui:form-input&gt;</code></pre>
+    </ui:panel-attachment>
+    <h3>Checkbox</h3>
+    <p>You can take a single option from your user. This is useful whenever you want to ask your user for his preference
+    given that the choice is binary. If the options are more than one, use <a href="#form-select">form select components.</a></p>
+    <ui:panel type="information" title="Example" ng-init="values.sampleCheckboxInput=true">
+        <ui:form-input type="checkbox" id="sampleCheckboxInput" descriptor="options" label="Checkbox input" placeholder="Checkbox input" ng-model="values.sampleCheckboxInput"></ui:form-input>
+        <div class="form-group row form-horizontal">
+            <label class="control-label col-sm-{{options.labelSize}}">Value:</label>
+            <div class="form-control-static col-sm-{{12 - options.labelSize}}"><code>{{values.sampleCheckboxInput}} <span class="closer" ng-click="values.sampleCheckboxInput=''">&times;</span></code></div>
+        </div>
+    </ui:panel>
+    <ui:panel-attachment>
+        <pre><code>&lt;ui:form-input type="checkbox" id="sampleCheckboxInput" orientation="{{options.orientation}}" label-size="{{options.labelSize}}" state="{{options.state}}"
+            label="Checkbox field" feedback="{{options.feedback}}" ng-model="sampleCheckboxInput"&gt;&lt;/ui:form-input&gt;</code></pre>
+    </ui:panel-attachment>
+    <h3>Radio button</h3>
+    <p>Radio buttons are useful for giving a choice to your uses over multiple items, when only one is applicable. This input
+    field is specifically created because there might be times when the multiple options are scattered across your layout.</p>
+    <ui:panel type="information" title="Example" ng-init="values.sampleRadioInput='first'">
+        <ui:form-input type="radio" id="sampleRadioInputFirst" descriptor="options" label="First item" value="first" ng-model="values.sampleRadioInput"></ui:form-input>
+        <ui:form-input type="radio" id="sampleRadioInputSecond" descriptor="options" label="Second item" value="second" ng-model="values.sampleRadioInput"></ui:form-input>
+        <div class="form-group row form-horizontal">
+            <label class="control-label col-sm-{{options.labelSize}}">Value:</label>
+            <div class="form-control-static col-sm-{{12 - options.labelSize}}"><code>{{values.sampleRadioInput}} <span class="closer" ng-click="values.sampleRadioInput=''">&times;</span></code></div>
+        </div>
+    </ui:panel>
+    <ui:panel-attachment>
+<pre><code>&lt;ui:form-input type="radio" id="sampleRadioInputFirst" orientation="{{options.orientation}}" label-size="{{options.labelSize}}"
+        feedback="{{options.feedback}}" state="{{options.state}}" label="First item" value="first" ng-model="values.sampleRadioInput"&gt;&lt;/ui:form-input&gt;
+&lt;ui:form-input type="radio" id="sampleRadioInputSecond" orientation="{{options.orientation}}" label-size="{{options.labelSize}}"
+        feedback="{{options.feedback}}" state="{{options.state}}" label="Second item" value="second" ng-model="values.sampleRadioInput"&gt;&lt;/ui:form-input&gt;</code></pre>
+    </ui:panel-attachment>
+    <h2 id="form-select">Form Select</h2>
+    <p>Form selects are components which offer a set of predetermined input options to the user so that they might choose
+    one or more of the available options</p>
+    <h3>Combobox</h3>
+    <p>Comboboxes are traditional <code>&lt;select/&gt;</code> components and are very well-suited to choosing among
+    many items only one of which is the targeted choice.</p>
+    <ui:panel type="information" title="Example" ng-init="values.sampleComboInput='male'">
+        <ui:form-select type="combo" id="sampleComboInput" ng-model="values.sampleComboInput" label="Gender" descriptor="options">
             <ui:form-select-item value="male" caption="Male"></ui:form-select-item>
             <ui:form-select-item value="female" caption="Female"></ui:form-select-item>
+            <ui:form-select-item value="n/a" caption="Unspecified"></ui:form-select-item>
         </ui:form-select>
-        <ui:form-select type="checkList" selection="multiple" id="preference" validation="" label="Choose what you would like to know about">
-            <ui:form-select-item value="computer" caption="Computer"></ui:form-select-item>
-            <ui:form-select-item value="science" caption="Science"></ui:form-select-item>
-            <ui:form-select-item value="travel" caption="Travel"></ui:form-select-item>
-        </ui:form-select>
-        <ui:form-select type="checkList" selection="single" id="description" validation="" label="Which item describes you the best">
-            <ui:form-select-item value="developer" caption="Software developer"></ui:form-select-item>
-            <ui:form-select-item value="user" caption="Software end-user"></ui:form-select-item>
-        </ui:form-select>
-        <ui:form-action>
-            <button class="btn btn-primary" type="button"><span class="glyphicon glyphicon-save"></span> Save</button>
-            <button class="btn btn-danger" type="button"><span class="glyphicon glyphicon-remove"></span> Delete
-            </button>
-        </ui:form-action>
-    </ui:form-container>
+        <div class="form-group row form-horizontal">
+            <label class="control-label col-sm-{{options.labelSize}}">Value:</label>
+            <div class="form-control-static col-sm-{{12 - options.labelSize}}"><code>{{values.sampleComboInput}} <span class="closer" ng-click="values.sampleComboInput=''">&times;</span></code></div>
+        </div>
+    </ui:panel>
 </div>
 </body>
 </html>

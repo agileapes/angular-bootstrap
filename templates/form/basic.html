@@ -1,10 +1,8 @@
-<div class="form-group" ng-class="{'has-feedback': scope.feedback, 'has-success': scope.state == 'valid', 'has-error': scope.state == 'invalid', 'has-warning': scope.state == 'warning', 'has-info': scope.state == 'notice'}">
-    <span ng-if="label"><label for="{{id}}" ng-class="{'col-sm-{{parent.labelSize}}': parent.orientation == 'horizontal' && label, 'sr-only': parent.orientation == 'inline'}" class="control-label"><span ng-if="label">{{label}}</span><span ng-if="!label && parent.orientation == 'vertical'">&nbsp;</span></label></span>
-    <div ng-if="parent.orientation != 'inline'">
-        <div ng-class="{'col-sm-{{12 - parent.labelSize}}': parent.orientation == 'horizontal' && label, 'col-sm-12': parent.orientation == 'horizontal' && !label}">
+<div ng-class="{'form-horizontal': orientation == 'horizontal', 'form-inline': orientation == 'inline'}"><div class="form-group" ng-class="{'has-feedback': scope.feedback, 'has-success': scope.state == 'valid', 'has-error': scope.state == 'invalid', 'has-warning': scope.state == 'warning', 'has-info': scope.state == 'notice'}">
+    <span ng-if="label"><label for="{{id}}" ng-class="{'sr-only': orientation == 'inline'}" class="control-label {{(orientation == 'horizontal' && label) ? ('col-sm-' + labelSize) : ''}}"><span ng-if="label">{{label}}</span><span ng-if="!label && orientation == 'vertical'">&nbsp;</span></label></span>
+        <div ng-if="orientation != 'inline'" ng-class="{'col-sm-12': orientation == 'horizontal' && !label}" class="{{(orientation == 'horizontal' && label) ? ('col-sm-' + (12 - labelSize)) : ''}}">
             <input id="{{id}}" class="form-control" type="{{type}}" placeholder="{{placeholder}}" ng-model="scope.ngModel"/>
             <span ng-if="feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
         </div>
-    </div>
-    <input ng-if="parent.orientation == 'inline'" id="{{id}}" class="form-control" type="{{type}}" placeholder="{{placeholder}}" ng-model="scope.ngModel"/><span ng-if="parent.orientation == 'inline' && feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
-</div>
+    <input ng-if="orientation == 'inline'" id="{{id}}" class="form-control" type="{{type}}" placeholder="{{placeholder}}" ng-model="scope.ngModel"/><span ng-if="orientation == 'inline' && feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
+</div></div>

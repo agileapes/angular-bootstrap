@@ -1,10 +1,13 @@
-<div class="form-group" ng-class="{'has-feedback': scope.feedback, 'has-success': scope.state == 'valid', 'has-error': scope.state == 'invalid', 'has-warning': scope.state == 'warning', 'has-info': scope.state == 'notice'}">
-    <div ng-class="{'col-sm-offset-{{parent.labelSize}} col-sm-{{12 - parent.labelSize}}': parent.orientation == 'horizontal'}">
-        <div class="radio">
-            <label>
-                <input id="{{id}}" type="radio" value="{{scope.value}}" ng-model="scope.ngModel" name="{{scope.group}}"> {{scope.label}}
-                <span ng-if="parent.orientation != 'inline' && feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
-            </label>
+<div ng-class="{'form-horizontal': orientation == 'horizontal', 'form-inline': orientation == 'inline'}">
+    <div class="form-group" ng-class="{'has-feedback': scope.feedback, 'has-success': scope.state == 'valid', 'has-error': scope.state == 'invalid', 'has-warning': scope.state == 'warning', 'has-info': scope.state == 'notice'}">
+        <div class="{{(orientation == 'horizontal' && label) ? ('col-sm-offset-' + labelSize) : ''}} {{(orientation == 'horizontal' && label) ? ('col-sm-' + (12 - labelSize)) : ''}}">
+            <div class="radio">
+                <label>
+                    <input id="{{id}}" type="radio" name="{{scope.id}}" value="{{scope.value}}" ng-model="scope.ngModel"> {{scope.label}}
+                    <span ng-if="orientation != 'inline' && feedback"
+                          class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
+                </label>
+            </div>
         </div>
     </div>
 </div>

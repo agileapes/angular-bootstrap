@@ -78,11 +78,11 @@
         var initializer = {
             templateAvailable: {},
             link: function (loaded, scopePreparator) {
-                return function ($scope, $element, $attributes, formController) {
+                return function ($scope, $element, $attributes) {
                     $.each($scope.$$isolateBindings, function (binding, attribute) {
                         $($element).get(0).removeAttribute(attribute.substring(1));
                     });
-                    $scope.parent = formController.$scope;
+                    var formController = null;
                     scopePreparator($scope, $element, $attributes, formController);
                     var self = this;
                     loaded.done(function () {
@@ -130,6 +130,39 @@
                             if (angular.isUndefined($scope.ngModel) && angular.isDefined($scope.value)) {
                                 $scope.ngModel = $scope.value;
                             }
+                            if (angular.isDefined($scope.descriptor)) {
+                                $scope.$watch("descriptor.label", function (value) {
+                                    if (typeof value == "string") {
+                                        $scope.label = value;
+                                    }
+                                });
+                                $scope.$watch("descriptor.feedback", function (value) {
+                                    if (typeof value == "string") {
+                                        $scope.feedback = value;
+                                    }
+                                });
+                                $scope.$watch("descriptor.placeholder", function (value) {
+                                    if (typeof value == "string") {
+                                        $scope.placeholder = value;
+                                    }
+                                });
+                                $scope.$watch("descriptor.orientation", function (value) {
+                                    if (typeof value == "string") {
+                                        $scope.orientation = value;
+                                    }
+                                });
+                                $scope.$watch("descriptor.state", function (value) {
+                                    if (typeof value == "string") {
+                                        $scope.state = value;
+                                    }
+                                });
+                                $scope.$watch("descriptor.labelSize", function (value) {
+                                    value = parseInt(value);
+                                    if (typeof value == "number") {
+                                        $scope.labelSize = value;
+                                    }
+                                });
+                            }
                             initializer.templateAvailable[$scope.type].then(function (compiled) {
                                 compiled($scope, function ($clone, $localScope) {
                                     $element.replaceWith($clone);
@@ -152,6 +185,19 @@
                     $scope.$timeout = $timeout;
                     loaded.done(function () {
                         $scope.scope = $scope;
+                        var node = $element.get(0);
+                        var parentScope = {
+                            labelSize: 3,
+                            orientation: "vertical"
+                        };
+                        while (node) {
+                            var data = $(node).data('form.container');
+                            if (data) {
+                                parentScope = data;
+                                break;
+                            }
+                            node = node.parentNode;
+                        }
                         toolkit.tools.actionQueue.perform(function (type) {
                             return typeof toolkit.ext[prefix].components[type] != "undefined";
                         }, prefix + "." + $scope.type, function () {
@@ -162,6 +208,22 @@
                                 }
                                 initializer.templateAvailable[$scope.type].resolve($compile(angular.element(template), transclude ? $transclude : null));
                             });
+                            if (typeof $scope.labelSize == "undefined") {
+                                $scope.labelSize = parentScope.labelSize;
+                            }
+                            if (typeof $scope.orientation == "undefined") {
+                                $scope.orientation = parentScope.orientation;
+                            }
+                            if (!$scope.labelSize) {
+                                $scope.labelSize = 3;
+                            }
+                            if (!$scope.orientation) {
+                                $scope.orientation = "vertical";
+                            }
+                            if ($scope.orientation != "inline" && $scope.orientation != "vertical" && $scope.orientation != "horizontal") {
+                                $scope.orientation = "vertical";
+                            }
+                            $scope.labelSize = parseInt($scope.labelSize);
                             if (component.controller && $.isFunction(component.controller)) {
                                 component.controller.apply(self, [$scope, $element, $attrs, $transclude, $timeout]);
                                 (function () {
@@ -217,14 +279,14 @@
                     orientation: "@",
                     labelSize: "@"
                 },
-                controller: function ($scope) {
-                    this.$scope = $scope;
+                controller: function ($scope, $element) {
                     if (!$scope.labelSize) {
                         $scope.labelSize = 3;
                     }
                     if (!$scope.orientation) {
                         $scope.orientation = "vertical";
                     }
+                    $element.data('form.container', $scope);
                     $scope.labelSize = parseInt($scope.labelSize);
                 }
             };
@@ -240,7 +302,6 @@
             var loaded = load("formInput", ["basic"]);
             return {
                 restrict: "E",
-                require: "^" + toolkit.classes.Directive.qualify("formContainer"),
                 transclude: false,
                 templateUrl: registry.formInput.templateUrl,
                 replace: false,
@@ -252,6 +313,9 @@
                     feedback: "@",
                     placeholder: "@",
                     state: "@",
+                    orientation: "@",
+                    labelSize: "@",
+                    descriptor: "=?",
                     ngModel: "=?"
                 },
                 link: initializer.link(loaded, function ($scope) {
@@ -267,7 +331,6 @@
             var loaded = load("formSelect", ["select"]);
             return {
                 restrict: "E",
-                require: "^" + toolkit.classes.Directive.qualify("formContainer"),
                 transclude: true,
                 replace: true,
                 templateUrl: registry.formSelect.templateUrl,
@@ -280,6 +343,9 @@
                     state: "@",
                     selection: "@",
                     feedback: "@",
+                    orientation: "@",
+                    labelSize: "@",
+                    descriptor: "=?",
                     ngModel: "=?"
                 },
                 link: initializer.link(loaded, function ($scope) {

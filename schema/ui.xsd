@@ -92,45 +92,18 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:choice minOccurs="0" maxOccurs="unbounded">
-                    <xs:element name="form-input">
-                        <xs:complexType>
-                            <xs:attribute name="type" type="xs:string" use="optional" default="text"/>
-                            <xs:attribute name="id" type="xs:string" use="required"/>
-                            <xs:attribute name="placeholder" type="xs:string" use="optional" default=""/>
-                            <xs:attribute name="validation" type="xs:string" use="optional" default=""/>
-                            <xs:attribute name="state" type="inputState" use="optional" default=""/>
-                            <xs:attribute name="feedback" type="glyph" use="optional" default=""/>
-                            <xs:attribute name="label" type="xs:string" use="optional" default=""/>
-                            <xs:attribute name="value" type="xs:string" use="optional" default=""/>
-                        </xs:complexType>
-                    </xs:element>
-                    <xs:element name="form-select">
-                        <xs:complexType>
-                            <xs:sequence>
-                                <xs:element name="form-select-item">
-                                    <xs:complexType mixed="true">
-                                        <xs:attribute name="value" type="xs:string"/>
-                                        <xs:attribute name="caption" type="xs:string"/>
-                                    </xs:complexType>
-                                </xs:element>
-                            </xs:sequence>
-                            <xs:attribute name="type" type="selectType" use="required"/>
-                            <xs:attribute name="id" type="xs:string" use="required"/>
-                            <xs:attribute name="selection" type="selectMode" use="optional" default="single"/>
-                            <xs:attribute name="validation" type="xs:string" use="optional" default=""/>
-                            <xs:attribute name="state" type="inputState" use="optional" default=""/>
-                            <xs:attribute name="feedback" type="glyph" use="optional" default=""/>
-                            <xs:attribute name="label" type="xs:string" use="optional" default=""/>
-                            <xs:attribute name="value" type="xs:string" use="optional" default=""/>
-                        </xs:complexType>
-                    </xs:element>
+                    <xs:element name="form-input" type="form-input"/>
+                    <xs:element name="form-select" type="form-select"/>
                 </xs:choice>
                 <xs:element name="form-action" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
-            <xs:attribute name="orientation" use="optional" default="vertical" type="orientation" />
-            <xs:attribute name="label-size" use="optional" default="3" type="xs:nonNegativeInteger" />
+            <xs:attributeGroup ref="formContainer"/>
         </xs:complexType>
     </xs:element>
+
+    <xs:element name="form-input" type="form-input"/>
+
+    <xs:element name="form-select" type="form-select"/>
 
     <xs:element name="image">
         <xs:complexType>
@@ -238,6 +211,28 @@
         <xs:attribute name="kind" use="optional" default="none" type="widgetKind"/>
         <xs:attribute name="caret" use="optional" default="false" type="true"/>
         <xs:attribute name="size" use="optional" default="normal" type="size"/>
+    </xs:complexType>
+
+    <xs:complexType name="form-input">
+        <xs:attribute name="placeholder" type="xs:string" use="optional" default=""/>
+        <xs:attribute name="checked" type="xs:string" use="optional" default=""/>
+        <xs:attribute name="group" type="xs:string" use="optional" default=""/>
+        <xs:attribute name="type" type="xs:string" use="required"/>
+        <xs:attributeGroup ref="formItem"/>
+    </xs:complexType>
+
+    <xs:complexType name="form-select">
+        <xs:sequence>
+            <xs:element name="form-select-item">
+                <xs:complexType mixed="true">
+                    <xs:attribute name="value" type="xs:string"/>
+                    <xs:attribute name="caption" type="xs:string"/>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="type" type="selectType" use="required"/>
+        <xs:attribute name="selection" type="selectMode" use="optional" default="single"/>
+        <xs:attributeGroup ref="formItem"/>
     </xs:complexType>
 
     <xs:simpleType name="horizontalPosition">
@@ -519,4 +514,21 @@
             <xs:enumeration value="thumbnail"/>
         </xs:restriction>
     </xs:simpleType>
+
+    <!-- Attribute Groups -->
+    <xs:attributeGroup name="formContainer">
+        <xs:attribute name="orientation" use="optional" default="vertical" type="orientation" />
+        <xs:attribute name="label-size" use="optional" default="3" type="xs:nonNegativeInteger" />
+    </xs:attributeGroup>
+
+    <xs:attributeGroup name="formItem">
+        <xs:attribute name="id" type="xs:string" use="required"/>
+        <xs:attribute name="validation" type="xs:string" use="optional" default=""/>
+        <xs:attribute name="state" type="inputState" use="optional" default=""/>
+        <xs:attribute name="feedback" type="glyph" use="optional" default=""/>
+        <xs:attribute name="label" type="xs:string" use="optional" default=""/>
+        <xs:attribute name="value" type="xs:string" use="optional" default=""/>
+        <xs:attributeGroup ref="formContainer"/>
+    </xs:attributeGroup>
+
 </xs:schema>

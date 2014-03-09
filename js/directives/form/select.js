@@ -1,7 +1,10 @@
 (function (toolkit, $) {
-    toolkit.register("formSelect.combo", function (registry) {
+    toolkit.register("formSelect.select", function (registry) {
         registry.combo = toolkit.ext.formSelect.define({
             templateUrl: "combo"
+        });
+        registry.checkList = toolkit.ext.formSelect.define({
+            templateUrl: "check-list"
         });
     });
 }).postpone(null, [BootstrapUI, jQuery], function () {
