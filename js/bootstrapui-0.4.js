@@ -991,8 +991,9 @@ function ifDefined(variable) {
         /**
          * Loads all queued objects, unless they have been loaded already. Objects can signal their loading by
          * either being automatically loaded via `load`, or by calling `register` with their name.
-         * @param name the name of the component to be called. Could be an array of names. Alternatively, you could
-         * path in multiple names as arguments. Name prefixes are also acceptable, such as `form.*` which wil load
+         * @param {string|Array} [name] the name of the component to be called. Could be an array of names. Alternatively, you could
+         * path in multiple names as arguments. Name prefixes are also acceptable, such as `form.*` which wil load.
+         * If no name is specified, the preloader will try to load all items.
          * all registered items whose name starts with `form.`.
          * @returns {BootstrapUI.preloader}
          */
