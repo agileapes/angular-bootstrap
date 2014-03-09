@@ -1,0 +1,5 @@
+<div class="progress" ng-class="{'progress-striped': striped || active, 'active': active}">
+    <div class="progress-bar" role="progressbar" aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{progress}}%" ng-class="{'progress-bar-default': type == 'normal', 'progress-bar-primary': type == 'primary', 'progress-bar-success': type == 'success', 'progress-bar-info': type == 'information', 'progress-bar-warning': type == 'warning', 'progress-bar-danger': type == 'danger'}">
+        <span ng-show="label" style="min-width: 50px;">{{progress}}%</span>
+    </div>
+</div>

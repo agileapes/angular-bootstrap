@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<!--suppress CheckTagEmptyBody -->
+<html xmlns:ui="http://www.agileapes.com/ui" data-bootstrapui>
+<head>
+    <title>Angular Bootstrap :: Progress Bars</title>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" href="../highlight/styles/xcode.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/theme.css"/>
+    <script src="../js/config.js"></script>
+    <script src="../js/jquery-1.11.0.js"></script>
+    <script src="../bootstrap/js/bootstrap.min.js"></script>
+    <script src="../js/angular.js"></script>
+    <script src="../js/bootstrapui-0.4.js"></script>
+    <script src="../js/directives/progressBar.js"></script>
+    <script src="../js/directives/icon.js"></script>
+    <script src="../js/demo.js"></script>
+    <script src="../highlight/highlight.pack.js"></script>
+    <script type="text/javascript"><!--
+    $(function () {
+        $("pre code").each(function () {
+            hljs.highlightBlock(this);
+        });
+    });
+    //--></script>
+</head>
+<body>
+<div class="container" ng-init="progress=25; label=false; type='success'; striped= false; active = false;">
+    <ol class="breadcrumb">
+        <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
+        <li><span class="glyphicon glyphicon-refresh"></span> Progress Bars</li>
+    </ol>
+    <h1>Progress Bars</h1>
+    <p>Progress bars help you visualize the progress of a certain, on-going task.</p>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Example</h3>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label for="progress" class="control-label">Progress</label>
+                <input id="progress" class="form-control" type="number" ng-model="progress" />
+            </div>
+            <div class="form-group">
+                <label for="type" class="control-label">Type</label>
+                <select id="type" class="form-control" ng-model="type">
+                    <option value="none">none</option>
+                    <option value="normal">normal</option>
+                    <option value="primary">primary</option>
+                    <option value="success">success</option>
+                    <option value="information">information</option>
+                    <option value="warning">warning</option>
+                    <option value="danger">danger</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="label" class="checkbox-inline">
+                    <input id="label" type="checkbox" ng-model="label" /> Show label
+                </label>
+                <label for="active" class="checkbox-inline">
+                    <input id="active" type="checkbox" ng-model="active" /> Active
+                </label>
+                <label for="striped" class="checkbox-inline">
+                    <input id="striped" type="checkbox" ng-model="striped" /> Striped
+                </label>
+            </div>
+            <hr/>
+            <ui:progress-bar progress="progress" label="label" active="active" striped="striped" type="type"></ui:progress-bar>
+        </div>
+        <div class="panel-footer">
+<pre><code>&lt;ui:progress-bar progress="{{progress}}"<span ng-show="label"> label="true"</span><span ng-show="active"> active="true"</span><span ng-show="striped"> striped="true"</span><span ng-show="type"> type="{{type}}"</span>&gt;&lt;/ui:progress-bar&gt;</code></pre>
+        </div>
+    </div>
+    <div class="alert alert-info">
+        <strong><ui:icon glyph="info-sign"></ui:icon></strong> Do note that marking a progress bar as active will also
+        automatically make it striped, whether or not you specify the <code>striped</code> property to be true.
+    </div>
+</div>
+</body>
+</html>

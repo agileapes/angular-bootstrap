@@ -199,6 +199,16 @@
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="progress-bar">
+        <xs:complexType>
+            <xs:attribute name="progress" type="xs:positiveInteger" use="required" />
+            <xs:attribute name="type" type="widgetKind" use="optional" default="none"/>
+            <xs:attribute name="label" type="xs:boolean" use="optional" default="false"/>
+            <xs:attribute name="striped" type="xs:boolean" use="optional" default="false"/>
+            <xs:attribute name="active" type="xs:boolean" use="optional" default="false"/>
+        </xs:complexType>
+    </xs:element>
+
     <xs:complexType name="dropdown">
         <xs:sequence>
             <xs:choice minOccurs="1" maxOccurs="unbounded">
