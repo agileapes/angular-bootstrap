@@ -1,3 +1,9 @@
+/**
+ * Will return the value of the given expression if it does not throw an exception.
+ * This is particularly useful for detecting the existence of dependencies.
+ * @param variable
+ * @returns {*}
+ */
 function ifDefined(variable) {
     try {
         return eval(variable);
@@ -6,9 +12,30 @@ function ifDefined(variable) {
     }
 }
 
+/**
+ * Loads the BootstrapUI object into the `window` namespace.
+ * This allows for injection of jQuery, AngularJS, as well as the BoostrapUIConfig object into the system.
+ */
 (function ($, angular, config) {
 
+    /**
+     * Postpones the execution of the function until a later time or a given criteria is met.
+     * @param [thisArg] {Object} the context of the parameter. Same as `thisArg` for Function.apply. Default is null.
+     * @param [args] {Array} the parameters passed to the function. Same as `args` for Function.apply. Default is [].
+     * @param [delay] {int|Function} a numeric delay in milliseconds, or
+     * @param [timeout] {int} the expected time within which the call is supposed to happen. This is specially useful
+     * in setting a limit for the time during which the scheduler is waiting for the dynamic condition to be met.
+     * @param [action] {String} a human readable action descriptor
+     * @returns {Function} the returned function object will be augmented with control method `then(success(function, result), failure(function, reason))`
+     * which will enable the postponing caller to run an action when the scheduler fires the function.
+     */
     Function.prototype.postpone = function (thisArg, args, delay, timeout, action) {
+        if (typeof thisArg == "undefined") {
+            thisArg = null;
+        }
+        if (typeof args == "undefined") {
+            args = [];
+        }
         if (typeof delay == "undefined") {
             delay = 0;
         }
@@ -84,7 +111,27 @@ function ifDefined(variable) {
         return this;
     };
 
+    /**
+     * Repeats the function call with the given delay.
+     * @param {Object} [thisArg] the context of the parameter. Same as `thisArg` for Function.apply. Default is null.
+     * @param {Array} [args] the parameters passed to the function. Same as `args` for Function.apply. Default is [].
+     * @param {int} [delay] a non-negative, non-zero interval at which the function call will occur.
+     * @returns {{count, stop, then}} A handler object that will allow you to control the scheduling as well as stop
+     * the execution cycle.
+     */
     Function.prototype.repeat = function (thisArg, args, delay) {
+        if (typeof thisArg == "undefined") {
+            thisArg = null;
+        }
+        if (typeof args == "undefined") {
+            args = [];
+        }
+        if (typeof delay == "undefined") {
+            delay = 1000;
+        }
+        if (delay <= 0) {
+            delay = 1;
+        }
         var func = this;
         var successQueue = [];
         var failureQueue = [];
@@ -100,17 +147,28 @@ function ifDefined(variable) {
                 obj(func, reason);
             }
         };
+        var interval = null;
         var handler = {
-            interval: null,
+            /**
+             * The number of times the scheduler has fired the function since the beginning of its execution.
+             */
             count: 0,
+            /**
+             * Stops the scheduled execution. This action will result in the failure callbacks being fired, and it also
+             * clears all the fields of the handler. After calling this method, no other interaction with the handler is
+             * possible.
+             */
             stop: function () {
-                clearInterval(handler.interval);
+                clearInterval(interval);
                 fail(func, "Stopped by user");
-                delete handler.interval;
                 delete handler.count;
                 delete handler.stop;
-                handler = null;
             },
+            /**
+             * Schedules success and failure callbacks for the execution.
+             * @param {Function} [success] Schedules success callback `success(function, result);`
+             * @param {Function} [failure] Schedules failure callback `failure(function, reason);`
+             */
             then: function (success, failure) {
                 if ($.isFunction(success)) {
                     successQueue.push(success);
@@ -120,7 +178,7 @@ function ifDefined(variable) {
                 }
             }
         };
-        handler.interval = setInterval(function () {
+        interval = setInterval(function () {
             handler.count ++;
             var context = thisArg, parameters = args;
             if ($.isFunction(context)) {
@@ -134,6 +192,11 @@ function ifDefined(variable) {
         return handler;
     };
 
+    /**
+     * Repeats the String the given number of times. '0' or a negative number returns an empty string.
+     * @param times
+     * @returns {String} the repetition of the string
+     */
     String.prototype.repeat = function (times) {
         if (!times || times < 1) {
             times = 0;
@@ -145,6 +208,15 @@ function ifDefined(variable) {
         return result;
     };
 
+    /**
+     * Returns a copy of the string fixed to the given length. Should the string be originally smaller than the
+     * specified length, it will be padded from the left or the right with the filler character. Should it be
+     * larger than the specified length, though, it will be truncated.
+     * @param {int} length the length
+     * @param {String} [filler] default is " " (space character)
+     * @param {boolean} [prepend] default is `true`. If set to false, the padding will occur from the right.
+     * @returns {String} the fixed string
+     */
     String.prototype.fix = function (length, filler, prepend) {
         if (typeof length != "number") {
             length = this.length;
@@ -165,6 +237,12 @@ function ifDefined(variable) {
         return str;
     };
 
+    /**
+     * Returns a copy of the string with padding from the left and the right so that it is centered in a string of
+     * the given length. If the length of the original string is more than the specified length, no change is done.
+     * @param length
+     * @returns {String}
+     */
     String.prototype.center = function (length) {
         var str = this;
         if (str.length >= length) {
@@ -173,6 +251,15 @@ function ifDefined(variable) {
         return " ".repeat(Math.floor((length - str.length) / 2)) + str + " ".repeat(Math.ceil((length - str.length) / 2));
     };
 
+    /**
+     * Proxies the calls using a parent container. This way, if an event is triggered on an object inside container "A",
+     * which could be identified with selector "B", we could add handlers to it using `$("A").on.proxy("event", "B", handler);`
+     * Detaching handlers attached using this method is the same as detaching handlers attached via `jQuery.on`.
+     * @param event the event to which we want to listen
+     * @param selector the selector applied to the target
+     * @param callback the callback being attached
+     * @returns {jQuery} jQuery selector on the parent container
+     */
     $.fn.on.proxy = function (event, selector, callback) {
         if (!callback) {
             if (!selector || !$.isFunction(selector)) {
@@ -192,6 +279,13 @@ function ifDefined(variable) {
         return $this;
     };
 
+    /**
+     * Forwards specified events of the specified types occurring for the selected elements to the recipient proxy object
+     * @param {HTMLElement|jQuery} proxy the proxy object receiving the events
+     * @param {string} event the event name(s)
+     * @param {string} [_] optional event names
+     * @returns {jQuery}
+     */
     $.fn.on.forward = function (proxy, event, _) {
         var $this = $(this);
         var events = arguments;
@@ -234,13 +328,38 @@ function ifDefined(variable) {
     // Defining the actual BootstrapUI singleton class here
     //*****
 
-    BootstrapUI = {
+    /**
+     * The BootstrapUI main scope declared
+     */
+    window.BootstrapUI = {
+        /**
+         * Current version of the BoostrapUI as loaded with the window context
+         */
         version: "0.4",
+        /**
+         * Different component types registered with the BootstrapUI framework
+         */
         types: {},
+        /**
+         * Namespace reserved for tools (a)synchronously registered with the context so that they are made
+         * available to other users
+         */
         tools: {},
+        /**
+         * Classes exposing features for to the components are registered in this namespace
+         */
         classes: {},
+        /**
+         * All directives loaded asynchronously via the framework are registered in this namespace
+         */
         directives: {},
+        /**
+         * This is a namespace reserved for filters loaded to the framework
+         */
         filters: {},
+        /**
+         * This is a special namespace reserved for use by extensions to the framework
+         */
         ext: {}
     };
 
@@ -352,6 +471,12 @@ function ifDefined(variable) {
         };
     };
 
+    /**
+     * Returns the qualified name of the given directive for the framework. This is usually given by
+     * adding the namespace related prefix to the raw name of the directive
+     * @param {string} name
+     * @returns {string}
+     */
     BootstrapUI.classes.Directive.qualify = function (name) {
         if (config.namespace == "") {
             return name;
@@ -376,6 +501,18 @@ function ifDefined(variable) {
         };
     };
 
+    /**
+     * This tool will generate a range builder for the given specifications
+     * @param {int} from the low number of the range
+     * @param {int} [to] the maximum number of the range. Default is `from+1`
+     * @param {int} [current] current number in the range around which the range is built. Default is `from`.
+     * @param {int} [show] The number of items in the created range. This number is made so that the current item
+     * is in the center, unless the centering throws the range outside the boundaries, in which case it will be
+     * adjusted to be compliant with the constraints. Default is to let the range contain all the items within the
+     * specified boundaries.
+     * @returns {{from: number, to: number, expand: expand}} Calling the expand function will result in an array
+     * containing all the items in the range, as per the given specification.
+     */
     BootstrapUI.tools.range = function (from, to, current, show) {
         if (!to) {
             to = from + 1;
@@ -417,69 +554,151 @@ function ifDefined(variable) {
         return output;
     };
 
+    /**
+     * This is an action queue that will hold actions in named queues until the given queue is triggered.
+     * @see fail
+     * @see perform
+     * @see notify
+     */
     BootstrapUI.tools.actionQueue = {
+        /**
+         * Namespace for the queues to be registered. In case of memory leaks, it always
+         * pays to check this namespace to see if there are any dangling tasks waiting to be executed without
+         * any hope of reaching the execution state.
+         */
         requests: {},
+        /**
+         * Registry for failures occurring via the push/load system.
+         */
         failures: {},
+        /**
+         * A registry for the timeout interval handlers to be registered.
+         */
         timeouts: {},
-        notify: function (type) {
-            if (!BootstrapUI.tools.actionQueue.requests[type]) {
+        /**
+         * Notifies the queue that it is safe to executed all actions and dispose of the associated queue
+         * @param {String} queue the fully qualified name of the queue
+         */
+        notify: function (queue) {
+            if (!BootstrapUI.tools.actionQueue.requests[queue]) {
                 return;
             }
-            if (BootstrapUI.tools.actionQueue.timeouts[type]) {
-                clearTimeout(BootstrapUI.tools.actionQueue.timeouts[type]);
+            if (BootstrapUI.tools.actionQueue.timeouts[queue]) {
+                clearTimeout(BootstrapUI.tools.actionQueue.timeouts[queue]);
             }
-            var queue = BootstrapUI.tools.actionQueue.requests[type];
-            BootstrapUI.tools.console.debug("Running actions associated with queue <" + type + "/>");
-            delete BootstrapUI.tools.actionQueue.requests[type];
-            for (var i = 0; i < queue.length; i++) {
-                var func = queue[i];
+            var actions = BootstrapUI.tools.actionQueue.requests[queue];
+            BootstrapUI.tools.console.debug("Running actions associated with queue <" + queue + "/>");
+            delete BootstrapUI.tools.actionQueue.requests[queue];
+            for (var i = 0; i < actions.length; i++) {
+                var func = actions[i];
                 func.postpone();
             }
         },
-        perform: function (controller, type, action) {
-            if (!$.isFunction(controller) || controller(type)) {
+        /**
+         * Performs the given action if the criteria set by the controller is met, otherwise the action is
+         * scheduled for the queue to be notified.
+         * @param {Function} controller the criteria controller
+         * @param {String} queue the name of the target queue
+         * @param {Function} action the action to be performed
+         * @param {int} [timeout] the timeout allowed for the queue to be notified, prior to considering the
+         * action to have been failed. Default is 5000ms.
+         */
+        perform: function (controller, queue, action, timeout) {
+            if (typeof timeout != "number") {
+                timeout = 5000;
+            }
+            if (!$.isFunction(controller) || controller(queue)) {
                 action.postpone();
                 return;
             }
-            BootstrapUI.tools.console.debug("Postponing action until queue trigger <" + type + "/> becomes available");
-            if (!BootstrapUI.tools.actionQueue.requests[type]) {
-                BootstrapUI.tools.actionQueue.requests[type] = [];
+            BootstrapUI.tools.console.debug("Postponing action until queue trigger <" + queue + "/> becomes available");
+            if (!BootstrapUI.tools.actionQueue.requests[queue]) {
+                BootstrapUI.tools.actionQueue.requests[queue] = [];
             }
-            if (!BootstrapUI.tools.actionQueue.timeouts[type]) {
-                BootstrapUI.tools.actionQueue.timeouts[type] = setTimeout(function () {
-                    BootstrapUI.tools.console.error("Timeout waiting for queue <" + type + "/> to be triggered.");
-                    BootstrapUI.tools.actionQueue.requests[type] = [];
-                    delete BootstrapUI.tools.actionQueue.requests[type];
-                    if (BootstrapUI.tools.actionQueue.failures[type]) {
-                        $(BootstrapUI.tools.actionQueue.failures[type]).each(function () {
+            if (!BootstrapUI.tools.actionQueue.timeouts[queue]) {
+                BootstrapUI.tools.actionQueue.timeouts[queue] = setTimeout(function () {
+                    BootstrapUI.tools.console.error("Timeout waiting for queue <" + queue + "/> to be triggered.");
+                    BootstrapUI.tools.actionQueue.requests[queue] = [];
+                    delete BootstrapUI.tools.actionQueue.requests[queue];
+                    if (BootstrapUI.tools.actionQueue.failures[queue]) {
+                        $(BootstrapUI.tools.actionQueue.failures[queue]).each(function () {
                             this();
                         });
                     }
-                    delete BootstrapUI.tools.actionQueue.failures[type];
-                }, 5000);
+                    delete BootstrapUI.tools.actionQueue.failures[queue];
+                }, timeout);
             }
-            BootstrapUI.tools.actionQueue.requests[type].push(action);
+            BootstrapUI.tools.actionQueue.requests[queue].push(action);
         },
-        fail: function (type, handler) {
-            if (!BootstrapUI.tools.actionQueue.failures[type]) {
-                BootstrapUI.tools.actionQueue.failures[type] = [];
+        /**
+         * Registers a failure handler callback for the given queue. These will be called in the order in which
+         * they have been registered should the queue time out.
+         * @param {string} queue
+         * @param {Function} handler
+         */
+        fail: function (queue, handler) {
+            if (!BootstrapUI.tools.actionQueue.failures[queue]) {
+                BootstrapUI.tools.actionQueue.failures[queue] = [];
             }
-            BootstrapUI.tools.actionQueue.failures[type].push(handler);
+            BootstrapUI.tools.actionQueue.failures[queue].push(handler);
         }
     };
 
+    /**
+     * A console wrapper for the browser, which will enable extensive logging even if the browser does not support a
+     * console interface.
+     * @see replace
+     */
     BootstrapUI.tools.console = {
+        /**
+         * A reference to the actual console used by the browser
+         */
         browserConsole: console,
+        /**
+         * Flag that determines whether or not messages passed to this console should be preserved for
+         * later inspection. Handy for debugging, but not memory-efficient for production.
+         */
         preserve: false,
+        /**
+         * The format for the log messages dumped to the console.
+         */
         format: "%s",
+        /**
+         * Flag determining whether or not messages passed to this console should be sent through to the browser's
+         * console as well
+         */
         output: true,
+        /**
+         * Flag determining whether or not this console has replaced the browser console
+         */
         replaced: false,
+        /**
+         * Namespace for the messages sent to the console
+         */
         messages: {
+            /**
+             * Log level messages
+             */
             log: [],
+            /**
+             * Debug level messages
+             */
             debug: [],
+            /**
+             * Warning level messages
+             */
             warn: [],
+            /**
+             * Info level messages
+             */
             info: [],
+            /**
+             * Error level messages
+             */
             error: [],
+            /**
+             * Function that will flush all the augmented messages to the browser's console
+             */
             flush: function () {
                 if (BootstrapUI.tools.console.browserConsole) {
                     var messages = [];
@@ -509,10 +728,18 @@ function ifDefined(variable) {
                 }
             }
         },
+        /**
+         * Replaces the browser's console with the BootstrapUI console.
+         */
         replace: function () {
             BootstrapUI.tools.console.replaced = true;
             window.console = BootstrapUI.tools.console;
         },
+        /**
+         * Returns a log handler for the given log level
+         * @param {string} logger one of log, warn, debug, error, and info.
+         * @returns {Function}
+         */
         handler: function (logger) {
             var level = logger;
             logger = BootstrapUI.tools.console.proxy("BootstrapUI.tools.console.browserConsole." + logger);
@@ -550,6 +777,11 @@ function ifDefined(variable) {
                 return arguments.length == 1 ? arguments[0] : arguments;
             }
         },
+        /**
+         * Returns a proxy method that will call to the underlying method if it is available and does nothing otherwise.
+         * @param {string} target
+         * @returns {Object}
+         */
         proxy: function (target) {
             eval("function proxy(x) {try {eval('" + target + "');} catch (e) {return;}" + target + "(x);}");
             return eval("proxy");
@@ -626,16 +858,43 @@ function ifDefined(variable) {
         BootstrapUI.config = config;
     };
 
+    /**
+     * A preloader that will load items via AJAX and perform predesignated actions if specified.
+     */
     BootstrapUI.preloader = {
+        /**
+         * The preloaded items
+         */
         items: {},
+        /**
+         * Path qualifiers for each given component types. All custom types must register a qualifier here, or hand
+         * in a qualified path with each instance of component descriptors.
+         */
         qualifiers: {
+            /**
+             * Path qualifier for the directives. Will look into `config.directiveBase`
+             * @param {string} name
+             * @returns {string}
+             */
             directive: function (name) {
                 return config.base + "/" + config.directivesBase + "/" + name + ".js";
             },
+            /**
+             * Path qualifier for the directives. Will look into `config.filtersBase`
+             * @param {string} name
+             * @returns {string}
+             */
             filter: function (name) {
                 return config.base + "/" + config.filtersBase + "/" + name + ".js";
             }
         },
+        /**
+         * Qualifies the path to the given component. If the component has specified a `path` property intrinsically,
+         * that is given the most precedence. If not, it will try to look at `preloader.qualifiers` for a qualifier for
+         * the given component type. If that fails as well, returns `null` and logs an error.
+         * @param {object} component
+         * @returns {string}
+         */
         qualify: function (component) {
             if (component.path) {
                 return component.path;
@@ -647,6 +906,11 @@ function ifDefined(variable) {
                 return null;
             }
         },
+        /**
+         * Adds a new component to the preloader's queue. The item has to specify a name as well as a type.
+         * @param {object} item
+         * @returns {BootstrapUI.preloader}
+         */
         add: function (item) {
             if ($.isArray(item)) {
                 $(item).each(function () {
@@ -661,6 +925,12 @@ function ifDefined(variable) {
             }
             return BootstrapUI.preloader;
         },
+        /**
+         * Registers directives of the given name.
+         * @param {string} name
+         * @param {string} [_]
+         * @returns {BootstrapUI.preloader}
+         */
         directive: function (name, _) {
             if ($.isArray(name)) {
                 $(name).each(function () {
@@ -678,6 +948,13 @@ function ifDefined(variable) {
                 type: "directive"
             });
         },
+        /**
+         * Registers filters of the given name.
+         * @param {string} name
+         * @param {string} [_]
+         * @returns {Object} a jQuery promised which will be resolved when all the given items have been
+         * loaded.
+         */
         filter: function (name, _) {
             if ($.isArray(name)) {
                 $(name).each(function () {
@@ -695,6 +972,12 @@ function ifDefined(variable) {
                 type: "filter"
             });
         },
+        /**
+         * Returns the component object for the given name, if it exists, otherwise, it first creates a prototypical
+         * object and returns that.
+         * @param {string} name
+         * @returns {Object}
+         */
         get: function (name) {
             if (BootstrapUI.preloader.items[name]) {
                 return BootstrapUI.preloader.items[name];
@@ -705,6 +988,14 @@ function ifDefined(variable) {
                 return BootstrapUI.preloader.items[name];
             }
         },
+        /**
+         * Loads all queued objects, unless they have been loaded already. Objects can signal their loading by
+         * either being automatically loaded via `load`, or by calling `register` with their name.
+         * @param name the name of the component to be called. Could be an array of names. Alternatively, you could
+         * path in multiple names as arguments. Name prefixes are also acceptable, such as `form.*` which wil load
+         * all registered items whose name starts with `form.`.
+         * @returns {BootstrapUI.preloader}
+         */
         load: function (name) {
             var deferred = $.Deferred();
             var promise = deferred.promise;
@@ -828,6 +1119,13 @@ function ifDefined(variable) {
         }
     };
 
+    /**
+     * Registers the given component with the preloader.
+     * @param {string} [component] the fully qualified name of the component. Optional, but strongly advised.
+     * @param {function} factory the factory dispensing the component. factory is of the form `factory(registry,
+     * BootstrapUI.classes, BootstrapUI.tools)`, wherein registry is a clean object into which components must be
+     * added as properties.
+     */
     BootstrapUI.register = function (component, factory) {
         if (!factory && $.isFunction(component)) {
             factory = component;
@@ -856,7 +1154,6 @@ function ifDefined(variable) {
                 BootstrapUI.tools.console.debug("Registered filter: " + simpleName);
             } else if (value.getType && $.isFunction(value.getType) && BootstrapUI.types[value.getType()] && $.isFunction(BootstrapUI.types[value.getType()])) {
                 BootstrapUI.types[value.getType()].apply(null, [simpleName, value]);
-//                BootstrapUI.types[value.getType](simpleName, value);
             } else {
                 BootstrapUI.tools.console.error("Unknown component discovered " + simpleName);
             }
@@ -864,8 +1161,10 @@ function ifDefined(variable) {
     };
 
     /**
-     * Will bootstrap the UI on the given root element
-     * @param root optional, assumed to be `document` if not provided
+     * Will bootstrap the UI on the given root element. Bootstrapping results in event `ui.ready` to be triggered, which
+     * can be used to bind events to UI elements loaded dynamically. This event is not triggered unless all components
+     * scheduled via the preloader are loaded successfully
+     * @param {HTMLElement} root optional, assumed to be `document` if not provided
      */
     BootstrapUI.bootstrap = function (root) {
         BootstrapUI.tools.console.debug("Bootstrapping the UI ...");
@@ -899,6 +1198,13 @@ function ifDefined(variable) {
     };
     BootstrapUI.configure(config);
     var loader;
+    /**
+     * Automatically bootstraps applications which have the `data-boostrapui` attribute on their `HTML` tag.
+     * Applications used with BootstrapUI must not contain an `ng-app` in the portion of the DOM they want to
+     * use for components loaded via BoostrapUI.
+     * If `data-boostrapui` is not placed on the HTML tag, BootstrapUI.bootstrap() must be called manually at
+     * the appropriate time to let BootstrapUI directives attach to the AngularJS application.
+     */
     (function () {
         loader = BootstrapUI.preloader.load();
         $(function () {
