@@ -1,5 +1,5 @@
 <div class="alert" ng-class="{'alert-default': type == 'normal', 'alert-primary': type == 'primary', 'alert-success': type == 'success', 'alert-info': type == 'information', 'alert-warning': type == 'warning', 'alert-danger': type == 'danger', 'alert-dismissable': dismissible}">
-    <h4 ng-show="title"><span ng-show="glyph" class="glyphicon glyphicon-{{glyph}}">&nbsp;</span>{{title}}</h4>
+    <h4 ng-show="title"><span ng-show="glyph"><span class="glyphicon glyphicon-{{glyph}}"></span> </span>{{title}}</h4>
     <button ng-show="dismissible" type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
     <div ng-transclude></div>
 </div>
