@@ -160,8 +160,19 @@ pre code .annotation:before {
 pre code .annotation {
     font-weight: bold;
     cursor: pointer;
+    opacity: 0.6;
+    -webkit-transition: all 0.25s;
+    -moz-transition: all 0.25s;
+    -ms-transition: all 0.25s;
+    -o-transition: all 0.25s;
+    transition: all 0.25s;
 }
 
 pre code .annotation:after {
     content: "}";
+}
+
+pre code .annotation:hover {
+    opacity: 1;
+    background: #ffedf0;
 }
