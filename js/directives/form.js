@@ -198,6 +198,9 @@
                             }
                             node = node.parentNode;
                         }
+                        //This allows for rendering of components which have registered themselves prior to
+                        //a request for their presence. This way, we will notify the queue that the components
+                        //are already present and as such we don't need to wait any longer.
                         if (toolkit.ext[prefix].components[$scope.type]) {
                             toolkit.tools.actionQueue.notify.postpone(null, [prefix + "." + $scope.type]);
                         }
