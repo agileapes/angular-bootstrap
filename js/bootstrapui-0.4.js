@@ -452,15 +452,17 @@ function ifDefined(variable) {
 
     /**
      * A class representing a new directive
-     * @param version the version of the directive
-     * @param [url] the URL to the template
-     * @param [factory] the directive calculation lambda (optional)
+     * @param {String} version the version of the directive
+     * @param {String} [url] the URL to the template
+     * @param {Function} [factory] the directive calculation lambda (optional)
+     * @param {Array} [requirements] the directives that this directive's template rely on.
      * @constructor
      */
-    BootstrapUI.classes.Directive = function (version, url, factory) {
+    BootstrapUI.classes.Directive = function (version, url, factory, requirements) {
         this.isDirective = true;
         this.version = version;
         this.templateUrl = config.base + "/" + config.templateBase + "/" + url + ".html";
+        this.requirements = $.isArray(requirements) ? requirements : [];
         if ($.isFunction(url) && typeof factory == "undefined") {
             factory = url;
             url = null;
@@ -486,6 +488,22 @@ function ifDefined(variable) {
     };
 
     /**
+     * Returns the tag name that can be used in the HTML document by the user, given the
+     * raw normalized directive name.
+     * @param {String} name
+     * @returns {String}
+     */
+    BootstrapUI.classes.Directive.tag = function (name) {
+        var tagName = name.replace(/[A-Z]/g, function (match) {
+            return "-" + match.toLowerCase();
+        });
+        if (config.namespace != "") {
+            tagName = config.namespace + ":" + tagName;
+        }
+        return tagName;
+    };
+
+    /**
      * Helper class for creating new filters
      * @param version the version of the filter
      * @param factory the factory method for the given filter
@@ -500,6 +518,48 @@ function ifDefined(variable) {
             };
         };
     };
+
+    /**
+     * TemplateCache class that should be registered as a service with the module to provide template interception.
+     * @param $http AngularJS HTTP service
+     * @param $cacheFactory AngularJS cache factory
+     * @constructor
+     */
+    BootstrapUI.classes.TemplateCache = function ($http, $cacheFactory) {
+        var self = this;
+        var templateCache = $cacheFactory("buTemplateCache");
+        this.info = function () {
+            return templateCache.info();
+        };
+        this.put = function (key, template) {
+            templateCache.put(key, template);
+        };
+        this.remove = function (key) {
+            templateCache.remove(key);
+        };
+        this.removeAll = function () {
+            templateCache.removeAll();
+        };
+        this.destroy = function () {
+            templateCache.destroy();
+        };
+        this.get = function (key) {
+            return $http.get(key, {
+                cache: templateCache
+            }).then(function (result) {
+                for (var i = 0; i < BootstrapUI.classes.TemplateCache.interceptors.length; i++) {
+                    var interceptor = BootstrapUI.classes.TemplateCache.interceptors[i];
+                    var returned = interceptor.apply(self, [result.data, key]);
+                    if (returned) {
+                        result.data = returned;
+                    }
+                }
+                return result;
+            });
+        };
+    };
+
+    BootstrapUI.classes.TemplateCache.interceptors = [];
 
     /**
      * This tool will generate a range builder for the given specifications
@@ -1124,8 +1184,8 @@ function ifDefined(variable) {
      * Registers the given component with the preloader.
      * @param {string} [component] the fully qualified name of the component. Optional, but strongly advised.
      * @param {function} factory the factory dispensing the component. factory is of the form `factory(registry,
-     * BootstrapUI.classes, BootstrapUI.tools)`, wherein registry is a clean object into which components must be
-     * added as properties.
+     * BootstrapUI.classes.Directive.tag, BootstrapUI.classes, BootstrapUI.tools)`, wherein registry is a clean
+     * object into which components must be added as properties.
      */
     BootstrapUI.register = function (component, factory) {
         if (!factory && $.isFunction(component)) {
@@ -1139,11 +1199,14 @@ function ifDefined(variable) {
         }
         BootstrapUI.preloader.get(component).loaded = true;
         var registry = {};
-        factory.apply(registry, [registry, BootstrapUI.classes, BootstrapUI.tools]);
+        factory.apply(registry, [registry, BootstrapUI.classes.Directive.tag, BootstrapUI.classes, BootstrapUI.tools]);
         $.each(registry, function (simpleName, value) {
             if (value.isDirective) {
                 if (BootstrapUI.directives[BootstrapUI.classes.Directive.qualify(simpleName)]) {
                     return;
+                }
+                if (value.requirements.length > 0) {
+                    BootstrapUI.preloader.directive(value.requirements).load();
                 }
                 BootstrapUI.directives[BootstrapUI.classes.Directive.qualify(simpleName)] = value.factory;
                 BootstrapUI.tools.console.debug("Registered directive: " + simpleName);
@@ -1179,6 +1242,7 @@ function ifDefined(variable) {
         loader.done(function () {
             new BootstrapUI.classes.State({
                 bind: function (module, callback) {
+                    module.service("$templateCache", BootstrapUI.classes.TemplateCache);
                     BootstrapUI.tools.console.debug("Binding the directives ...");
                     module.directive(BootstrapUI.directives);
                     BootstrapUI.tools.console.debug("Binding the filters ...");
@@ -1208,6 +1272,9 @@ function ifDefined(variable) {
      */
     (function () {
         loader = BootstrapUI.preloader.load();
+        BootstrapUI.classes.TemplateCache.interceptors.push(function (template, key) {
+            return template.replace(/bootstrapui:/g, config.namespace ? (config.namespace + ":") : "");
+        });
         $(function () {
             $("html[data-bootstrapui]").each(function () {
                 BootstrapUI.tools.console.debug("Auto-bootstrap starting ...");
@@ -1215,4 +1282,5 @@ function ifDefined(variable) {
             });
         });
     }).postpone();
+
 })(ifDefined("jQuery"), ifDefined("angular"), ifDefined("BootstrapUIConfig"));

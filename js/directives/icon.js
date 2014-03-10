@@ -10,5 +10,8 @@
                 }
             };
         });
+        registry.icon.icons = {
+
+        };
     });
 })(BootstrapUI);

@@ -1,6 +1,6 @@
 (function (toolkit) {
     toolkit.register("dropdown", function (registry) {
-        registry.dropdown = new toolkit.classes.Directive("1.0", "dropdown", function () {
+        registry.dropdown = new toolkit.classes.Directive("1.0", "dropdown", function ($compile, $sce) {
             return  {
                 restrict: "E",
                 templateUrl: registry.dropdown.templateUrl,
@@ -26,7 +26,7 @@
                     };
                 }
             };
-        });
+        }, ["icon"]);
         registry.dropdownItem = new toolkit.classes.Directive("1.0", "dropdown-item", function () {
             return  {
                 require: "^" + toolkit.classes.Directive.qualify("dropdown"),
