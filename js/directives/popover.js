@@ -13,7 +13,7 @@
                     }
                     var $popover = $(popover);
                     $popover.hide();
-                    $scope.init = function () {
+                    $scope.update = function () {
                         var title = $popover.attr('title');
                         if (!title) {
                             title = "";
@@ -27,10 +27,15 @@
                             trigger = "click";
                         }
                         $($element).popover('destroy');
+                        var template = $popover.clone();
+                        template.find("> [ng-non-bindable]").add(template.find("> .ng-non-bindable")).each(function () {
+                            this.removeAttribute('ng-non-bindable');
+                            $(this).removeClass("ng-non-bindable");
+                        });
                         $($element).popover({
                             html: true,
                             title: title,
-                            content: $compile($popover.html())($scope),
+                            content: $compile(template.html())($scope),
                             container: $element.get(0).parentNode,
                             placement: $attrs.placement ? $attrs.placement : "right",
                             trigger: trigger
@@ -38,14 +43,13 @@
                     };
                     $scope.$watch(function () {
                         return $attrs.placement;
-                    }, $scope.init);
+                    }, $scope.update);
                     $scope.$watch(function () {
                         return $attrs.trigger;
-                    }, $scope.init);
+                    }, $scope.update);
                     $scope.$watch(function () {
                         return $popover.attr('title');
-                    }, $scope.init);
-                    $scope.init.postpone();
+                    }, $scope.update);
                 }
             };
         });

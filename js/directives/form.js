@@ -198,6 +198,9 @@
                             }
                             node = node.parentNode;
                         }
+                        if (toolkit.ext[prefix].components[$scope.type]) {
+                            toolkit.tools.actionQueue.notify.postpone(null, [prefix + "." + $scope.type]);
+                        }
                         toolkit.tools.actionQueue.perform(function (type) {
                             return typeof toolkit.ext[prefix].components[type] != "undefined";
                         }, prefix + "." + $scope.type, function () {

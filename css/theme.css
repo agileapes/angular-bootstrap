@@ -152,3 +152,16 @@ code span.closer {
     left: 2px;
     cursor: pointer;
 }
+
+pre code .annotation:before {
+    content: "{";
+}
+
+pre code .annotation {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+pre code .annotation:after {
+    content: "}";
+}

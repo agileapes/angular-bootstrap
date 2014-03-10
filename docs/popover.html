@@ -14,19 +14,21 @@
     <script src="../js/bootstrapui-0.4.js"></script>
     <script src="../js/directives/icon.js"></script>
     <script src="../js/directives/popover.js"></script>
+    <script src="../js/directives/form.js"></script>
+    <script src="../js/directives/alert.js"></script>
     <script src="../js/demo.js"></script>
     <script src="../highlight/highlight.pack.js"></script>
     <script type="text/javascript"><!--
     $(function () {
-        $("[data-toggle=tooltip]").tooltip();
         $("pre code").each(function () {
             hljs.highlightBlock(this);
         });
+        $("[data-toggle=tooltip]").tooltip();
     });
     //--></script>
 </head>
 <body>
-<div class="container" ng-init="options={show:false, placement: 'bottom', trigger: 'hover'}">
+<div class="container" ng-init="options={show:false, placement: 'bottom', trigger: 'click', values: {first: 'Milad', last: 'Naseri'}}">
     <ol class="breadcrumb">
         <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
         <li><span class="glyphicon glyphicon-comment"></span> Popover</li>
@@ -39,7 +41,7 @@
         <div class="panel-heading">
             <h3 class="panel-title">Options</h3>
         </div>
-        <div class="panel-body">
+        <div class="panel-body form-horizontal">
             <div class="form-group row">
                 <label class="control-label col-lg-4" for="settings-placement">Popover positioning</label>
                 <div class="col-lg-8">
@@ -62,6 +64,11 @@
                     </select>
                 </div>
             </div>
+            <div class="checkbox row">
+                <label class="col-lg-offset-4 col-lg-8">
+                    <input type="checkbox" ng-model="options.title" /> Include a title
+                </label>
+            </div>
         </div>
     </div>
     <h1>Popover</h1>
@@ -72,33 +79,40 @@
         <div class="panel-body" ng-init="first='Milad'; last='Naseri';">
             <div class="form-horizontal form-group row">
                 <label class="control-label col-sm-3">Name</label>
-
                 <p class="col-sm-9 form-control-static">
-                    <a href="#" id="elementWithPopover" ui:popover="#myPopover" data-placement="{{options.placement}}" data-trigger="{{options.trigger}}">{{first}} {{last}}</a>
+                    {{options.values.first}} {{options.values.last}} <a href="#" id="elementWithPopover" ui:popover="#myPopover" data-placement="{{options.placement}}" data-trigger="{{options.trigger}}"><ui:icon glyph="pencil"></ui:icon></a>
                     <input type="button" ng-show="options.trigger == 'manual'" class="btn btn-primary btn-sm pull-right" value="show" onclick="$('#elementWithPopover').popover('toggle');" />
                 </p>
-
-                <div id="myPopover" data-placement="bottom">
-                    <div class="row form-horizontal form-group">
-                        <label class="control-label col-sm-5" for="first">First name:</label>
-
-                        <div class="col-sm-7">
-                            <input id="first" type="text" class="form-control" ng-model="first"/>
-                        </div>
-                    </div>
-                    <div class="row form-horizontal form-group">
-                        <label class="control-label col-sm-5" for="last">Last name:</label>
-
-                        <div class="col-sm-7">
-                            <input id="last" type="text" class="form-control" ng-model="last"/>
-                        </div>
-                    </div>
+            </div>
+            <div id="myPopover" ng-attr-title="{{options.title ? 'Edit Name' : ''}}">
+                <div ng-non-bindable>
+                    <ui:form-container label-size="5" orientation="horizontal">
+                        <ui:form-input type="text" id="firstNameEdit" label="First name" ng-model="options.values.first"></ui:form-input>
+                        <ui:form-input type="text" id="lastNameEdit" label="Last name" ng-model="options.values.last"></ui:form-input>
+                    </ui:form-container>
                 </div>
             </div>
         </div>
         <div class="panel-footer">
+<pre><code>&lt;div class="form-horizontal form-group row"&gt;
+    &lt;label class="control-label col-sm-3"&gt;Name&lt;/label&gt;
+    &lt;p class="col-sm-9 form-control-static"&gt;
+        <span ng-non-bindable>{{values.first}} {{values.last}}</span> &lt;a href="#" id="elementWithPopover" <span class="annotation" data-toggle="tooltip" data-container="body" title="Placement of this attribute ensures that the selected element will contain the popover">ui:popover="#myPopover"</span> <span class="annotation" data-toggle="tooltip" data-container="body" title="This (optional) attribute determines the placement of the popover">data-placement="{{options.placement}}"</span> <span class="annotation" data-toggle="tooltip" data-container="body" title="This (optional) attribute determines how the popover will be triggered.">data-trigger="{{options.trigger}}"</span>&gt;&lt;ui:icon glyph="pencil"&gt;&lt;/ui:icon&gt;&lt;/a&gt;
+        <span ng-show="options.trigger == 'manual'">&lt;input type="button" class="btn btn-primary btn-sm pull-right" value="show" onclick="<span class="annotation" data-toggle="tooltip" data-container="body" title="This JavaScript code can be used to toggle the popover manually">$('#elementWithPopover').popover('toggle');</span>" /&gt;
+</span>&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id="myPopover" <span class="annotation" data-toggle="tooltip" data-container="body" title="This AngularJS directive must be used on popover content elements should we require that directives be present in the container">ng-non-bindable</span><span ng-show="options.title" class="annotation" data-toggle="tooltip" data-container="body" title="The optional title attribute can be set to have the popover display a title"> title="Popover title"</span>&gt;
+    &lt;ui:form-container label-size="5" orientation="horizontal"&gt;
+        &lt;ui:form-input type="text" id="firstNameEdit" label="First name" ng-model="options.values.first"&gt;&lt;/ui:form-input&gt;
+        &lt;ui:form-input type="text" id="lastNameEdit" label="Last name" ng-model="options.values.last"&gt;&lt;/ui:form-input&gt;
+    &lt;/ui:form-container&gt;
+&lt;/div&gt;</code></pre>
         </div>
     </div>
+    <ui:alert type="warning">
+        <ui:icon glyph="exclamation-sign"></ui:icon> The <code>ng-non-bindable</code> directive must be set on the popover
+        element if we require that a correct scoping be presented to directives within the container.
+    </ui:alert>
 </div>
 </body>
 </html>
