@@ -95,7 +95,13 @@
                     <xs:element name="form-input" type="form-input"/>
                     <xs:element name="form-select" type="form-select"/>
                 </xs:choice>
-                <xs:element name="form-action" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="form-action" minOccurs="0" maxOccurs="1">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
             </xs:sequence>
             <xs:attributeGroup ref="formContainer"/>
         </xs:complexType>
@@ -530,5 +536,7 @@
         <xs:attribute name="value" type="xs:string" use="optional" default=""/>
         <xs:attributeGroup ref="formContainer"/>
     </xs:attributeGroup>
+
+    <xs:attribute name="popover" type="xs:string"/>
 
 </xs:schema>

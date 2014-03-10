@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<!--suppress CheckTagEmptyBody -->
+<html xmlns:ui="http://www.agileapes.com/ui" data-bootstrapui>
+<head>
+    <title>Angular Bootstrap :: Popover</title>
+    <meta charset="UTF-8"/>
+    <link rel="stylesheet" type="text/css" href="../bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" href="../highlight/styles/xcode.css"/>
+    <link rel="stylesheet" type="text/css" href="../css/theme.css"/>
+    <script src="../js/config.js"></script>
+    <script src="../js/jquery-1.11.0.js"></script>
+    <script src="../bootstrap/js/bootstrap.min.js"></script>
+    <script src="../js/angular.js"></script>
+    <script src="../js/bootstrapui-0.4.js"></script>
+    <script src="../js/directives/icon.js"></script>
+    <script src="../js/directives/popover.js"></script>
+    <script src="../js/demo.js"></script>
+    <script src="../highlight/highlight.pack.js"></script>
+    <script type="text/javascript"><!--
+    $(function () {
+        $("[data-toggle=tooltip]").tooltip();
+        $("pre code").each(function () {
+            hljs.highlightBlock(this);
+        });
+    });
+    //--></script>
+</head>
+<body>
+<div class="container" ng-init="options={show:false, placement: 'bottom', trigger: 'hover'}">
+    <ol class="breadcrumb">
+        <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
+        <li><span class="glyphicon glyphicon-comment"></span> Popover</li>
+    </ol>
+    <div class="pull-right page-options" ng-click="options.show = !options.show;" data-toggle="tooltip"
+         data-placement="left" title="Change display options for the rendered forms">
+        <ui:icon glyph="wrench"></ui:icon>
+    </div>
+    <div class="panel panel-info" ng-show="options.show">
+        <div class="panel-heading">
+            <h3 class="panel-title">Options</h3>
+        </div>
+        <div class="panel-body">
+            <div class="form-group row">
+                <label class="control-label col-lg-4" for="settings-placement">Popover positioning</label>
+                <div class="col-lg-8">
+                    <select id="settings-placement" class="form-control" ng-model="options.placement">
+                        <option value="right">Right</option>
+                        <option value="bottom">Bottom</option>
+                        <option value="left">Left</option>
+                        <option value="top">Top</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="control-label col-lg-4" for="settings-trigger">Popover trigger</label>
+                <div class="col-lg-8">
+                    <select id="settings-trigger" class="form-control" ng-model="options.trigger">
+                        <option value="click">Click</option>
+                        <option value="hover">Hover</option>
+                        <option value="focus">Focus</option>
+                        <option value="manual">Manual</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h1>Popover</h1>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Example</h3>
+        </div>
+        <div class="panel-body" ng-init="first='Milad'; last='Naseri';">
+            <div class="form-horizontal form-group row">
+                <label class="control-label col-sm-3">Name</label>
+
+                <p class="col-sm-9 form-control-static">
+                    <a href="#" id="elementWithPopover" ui:popover="#myPopover" data-placement="{{options.placement}}" data-trigger="{{options.trigger}}">{{first}} {{last}}</a>
+                    <input type="button" ng-show="options.trigger == 'manual'" class="btn btn-primary btn-sm pull-right" value="show" onclick="$('#elementWithPopover').popover('toggle');" />
+                </p>
+
+                <div id="myPopover" data-placement="bottom">
+                    <div class="row form-horizontal form-group">
+                        <label class="control-label col-sm-5" for="first">First name:</label>
+
+                        <div class="col-sm-7">
+                            <input id="first" type="text" class="form-control" ng-model="first"/>
+                        </div>
+                    </div>
+                    <div class="row form-horizontal form-group">
+                        <label class="control-label col-sm-5" for="last">Last name:</label>
+
+                        <div class="col-sm-7">
+                            <input id="last" type="text" class="form-control" ng-model="last"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-footer">
+        </div>
+    </div>
+</div>
+</body>
+</html>

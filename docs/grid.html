@@ -20,6 +20,15 @@
         <li><span class="glyphicon glyphicon-th"></span> Grid</li>
     </ol>
     <h1>Grid</h1>
+    <input ng-model="myFilter" />
+    <ui:grid selection="single" pagination="true" ng-model="users | sort:'name' | filter:myFilter">
+        <ui:columns>
+            <ui:column title="Name" sortable="true" pinned="true" state="notice" glyph="" model="name"></ui:column>
+            <!--<ui:column title="Email" sortable="true" pinned="true" state="notice" glyph="">-->
+                <!--<ui:form-input type="email" ng-model="email"></ui:form-input>-->
+            <!--</ui:column>-->
+        </ui:columns>
+    </ui:grid>
 </div>
 </body>
 </html>
