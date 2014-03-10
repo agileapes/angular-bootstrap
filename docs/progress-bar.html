@@ -14,36 +14,32 @@
     <script src="../js/bootstrapui-0.4.js"></script>
     <script src="../js/directives/progressBar.js"></script>
     <script src="../js/directives/icon.js"></script>
-    <script src="../js/demo.js"></script>
     <script src="../highlight/highlight.pack.js"></script>
-    <script type="text/javascript"><!--
-    $(function () {
-        $("pre code").each(function () {
-            hljs.highlightBlock(this);
-        });
-    });
-    //--></script>
+    <script src="../js/demo.js"></script>
 </head>
 <body>
-<div class="container" ng-init="progress=25; label=false; type='success'; striped= false; active = false;">
+<div class="container" ng-init="options = {show: false, progress: 25, label: false, type: 'success', striped: false, active: false};">
     <ol class="breadcrumb">
         <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
         <li><span class="glyphicon glyphicon-refresh"></span> Progress Bars</li>
     </ol>
-    <h1>Progress Bars</h1>
-    <p>Progress bars help you visualize the progress of a certain, on-going task.</p>
-    <div class="panel panel-default">
+    <div class="pull-right page-options" ng-click="options.show = !options.show;" data-toggle="tooltip"
+         data-placement="left" title="Change display options for the rendered forms">
+        <ui:icon glyph="wrench"></ui:icon>
+    </div>
+    <div class="panel panel-info" ng-show="options.show">
         <div class="panel-heading">
-            <h3 class="panel-title">Example</h3>
+            <h3 class="panel-title">Options</h3>
         </div>
-        <div class="panel-body">
+        <div class="panel-body form-horizontal">
             <div class="form-group">
-                <label for="progress" class="control-label">Progress</label>
-                <input id="progress" class="form-control" type="number" ng-model="progress" />
+                <label for="progress" class="control-label col-sm-4">Progress</label>
+                <div class="col-sm-8"><input id="progress" class="form-control" type="number" ng-model="options.progress" /></div>
             </div>
             <div class="form-group">
-                <label for="type" class="control-label">Type</label>
-                <select id="type" class="form-control" ng-model="type">
+                <label for="type" class="control-label col-sm-4">Type</label>
+                <div class="col-sm-8">
+                <select id="type" class="form-control" ng-model="options.type">
                     <option value="none">none</option>
                     <option value="normal">normal</option>
                     <option value="primary">primary</option>
@@ -52,23 +48,35 @@
                     <option value="warning">warning</option>
                     <option value="danger">danger</option>
                 </select>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="label" class="checkbox-inline">
-                    <input id="label" type="checkbox" ng-model="label" /> Show label
-                </label>
-                <label for="active" class="checkbox-inline">
-                    <input id="active" type="checkbox" ng-model="active" /> Active
-                </label>
-                <label for="striped" class="checkbox-inline">
-                    <input id="striped" type="checkbox" ng-model="striped" /> Striped
-                </label>
+            <div>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-8">
+                    <label for="label" class="checkbox-inline">
+                        <input id="label" type="checkbox" ng-model="options.label" /> Show label
+                    </label>
+                    <label for="active" class="checkbox-inline">
+                        <input id="active" type="checkbox" ng-model="options.active" /> Active
+                    </label>
+                    <label for="striped" class="checkbox-inline">
+                        <input id="striped" type="checkbox" ng-model="options.striped" /> Striped
+                    </label>
+                </div>
             </div>
-            <hr/>
-            <ui:progress-bar progress="progress" label="label" active="active" striped="striped" type="type"></ui:progress-bar>
+        </div>
+    </div>
+    <h1>Progress Bars</h1>
+    <p>Progress bars help you visualize the progress of a certain, on-going task.</p>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Example</h3>
+        </div>
+        <div class="panel-body">
+            <ui:progress-bar progress="options.progress" label="options.label" active="options.active" striped="options.striped" type="options.type"></ui:progress-bar>
         </div>
         <div class="panel-footer">
-<pre><code>&lt;ui:progress-bar progress="{{progress}}"<span ng-show="label"> label="true"</span><span ng-show="active"> active="true"</span><span ng-show="striped"> striped="true"</span><span ng-show="type"> type="{{type}}"</span>&gt;&lt;/ui:progress-bar&gt;</code></pre>
+<pre><code>&lt;ui:progress-bar <span class="annotation" title="This attribute is required and specifies (in percents) the progress that should be displayed with the progress bar. The progress will be bound by 0 and 100.">progress="{{options.progress}}"</span><span ng-show="options.label"> <span class="annotation" title="This (optional) attribute specifies whether or not the progress bar should display a label indicating current progress. The default value is <code>false</code>.">label="true"</span></span><span ng-show="options.active"> active="true"</span><span ng-show="options.striped"> <span class="annotation" title="Hello">striped="true"</span></span><span ng-show="options.type"> type="{{type}}"</span>&gt;&lt;/ui:progress-bar&gt;</code></pre>
         </div>
     </div>
     <div class="alert alert-info">

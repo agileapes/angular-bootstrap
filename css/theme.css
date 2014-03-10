@@ -176,3 +176,9 @@ pre code .annotation:hover {
     opacity: 1;
     background: #ffedf0;
 }
+
+.tooltip code {
+    background: #f0f0f0;
+    border: 1px solid #000000;
+    color: #000000;
+}

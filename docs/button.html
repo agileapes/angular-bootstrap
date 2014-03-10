@@ -14,16 +14,13 @@
     <script src="../js/bootstrapui-0.4.js"></script>
     <script src="../js/directives/button.js"></script>
     <script src="../js/directives/icon.js"></script>
-    <script src="../js/demo.js"></script>
     <script src="../highlight/highlight.pack.js"></script>
+    <script src="../js/demo.js"></script>
     <script type="text/javascript"><!--
     $(function () {
-        $("pre code").each(function () {
-            hljs.highlightBlock(this);
-            $("#button1").on('click', function (e) {
-                alert("Clicked from trigger!");
-                e.cancelBubble();
-            });
+        $("#button1").on('click', function (e) {
+            alert("Clicked from trigger!");
+            e.cancelBubble();
         });
     });
     //--></script>

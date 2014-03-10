@@ -14,8 +14,8 @@
     <script src="../js/bootstrapui-0.4.js"></script>
     <script src="../js/directives/pagination.js"></script>
     <script src="../js/filters/range.js"></script>
-    <script src="../js/demo.js"></script>
     <script src="../highlight/highlight.pack.js"></script>
+    <script src="../js/demo.js"></script>
     <script>
         var demoConsole = {
             log: function (str) {
@@ -28,9 +28,6 @@
             }
         };
         $(function () {
-            $("pre code").each(function () {
-                hljs.highlightBlock(this);
-            });
             $("ui\\:pagination").on('changing', function (e, state) {
                 if (state.from % 2 == state.to % 2) {
                     demoConsole.log("---- Stopped");
