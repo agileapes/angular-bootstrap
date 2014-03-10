@@ -1,9 +1,7 @@
 (function (toolkit, $) {
     toolkit.register("formInput.basic", function (registry) {
         registry.text = toolkit.ext.formInput.define({
-            templateUrl: "basic",
-            link: function ($scope, $element, $attrs) {
-            }
+            templateUrl: "basic"
         });
         registry.email = $.extend({}, registry.text);
         registry.password = $.extend({}, registry.text);
