@@ -8,6 +8,8 @@
                 templateUrl: registry.alert.templateUrl,
                 scope: {
                     type: "@",
+                    title: "@",
+                    glyph: "@",
                     dismissible: "=?"
                 },
                 controller: function ($scope) {

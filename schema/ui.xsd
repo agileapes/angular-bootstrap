@@ -175,6 +175,8 @@
                 <xs:any/>
             </xs:sequence>
             <xs:attribute name="type" type="widgetKind" use="optional" default="none"/>
+            <xs:attribute name="title" type="xs:string" use="optional" default=""/>
+            <xs:attribute name="glyph" type="glyph" use="optional" default=""/>
             <xs:attribute name="dismissible" type="xs:boolean" use="optional" default="false"/>
         </xs:complexType>
     </xs:element>
