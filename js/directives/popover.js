@@ -36,12 +36,14 @@
                         popoverScope.close = function () {
                             $($element).popover('hide');
                         };
+                        var placement = (typeof $attrs.auto != "undefined" && ($attrs.auto === true || $attrs.auto == "true") ? "auto " : "") + ($attrs.placement ? $attrs.placement : "right");
+                        console.log(placement);
                         $($element).popover({
                             html: true,
                             title: title,
                             content: $compile(template.html())(popoverScope),
                             container: $element.get(0).parentNode,
-                            placement: $attrs.placement ? $attrs.placement : "right",
+                            placement: placement,
                             trigger: trigger
                         });
                     };
@@ -50,6 +52,9 @@
                     }, $scope.update);
                     $scope.$watch(function () {
                         return $attrs.trigger;
+                    }, $scope.update);
+                    $scope.$watch(function () {
+                        return $attrs.auto;
                     }, $scope.update);
                     $scope.$watch(function () {
                         return $popover.attr('title');

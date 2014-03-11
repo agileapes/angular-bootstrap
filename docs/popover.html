@@ -20,7 +20,7 @@
     <script src="../js/demo.js"></script>
 </head>
 <body>
-<div class="container" ng-init="options={show:false, placement: 'bottom', trigger: 'click', values: {first: 'Milad', last: 'Naseri'}}">
+<div class="container" ng-init="options={show:false, placement: 'bottom', trigger: 'click', auto: false, values: {first: 'Milad', last: 'Naseri'}}">
     <ol class="breadcrumb">
         <li><a href="../index.html"><span class="glyphicon glyphicon-home"></span> Home</a></li>
         <li><span class="glyphicon glyphicon-comment"></span> Popover</li>
@@ -56,10 +56,15 @@
                     </select>
                 </div>
             </div>
-            <div class="checkbox row">
-                <label class="col-lg-offset-4 col-lg-8">
-                    <input type="checkbox" ng-model="options.title" /> Include a title
-                </label>
+            <div class="row">
+                <div class="col-sm-8 col-sm-offset-4">
+                    <label for="label" class="checkbox-inline">
+                        <input id="label" type="checkbox" ng-model="options.title" /> Show title
+                    </label>
+                    <label for="active" class="checkbox-inline">
+                        <input id="active" type="checkbox" ng-model="options.auto" /> Placement assist
+                    </label>
+                </div>
             </div>
         </div>
     </div>
@@ -72,7 +77,7 @@
             <div class="form-horizontal form-group row">
                 <label class="control-label col-sm-3">Name</label>
                 <p class="col-sm-9 form-control-static">
-                    {{options.values.first}} {{options.values.last}} <a href="#" id="elementWithPopover" ui:popover="#myPopover" data-placement="{{options.placement}}" data-trigger="{{options.trigger}}"><ui:icon glyph="pencil"></ui:icon></a>
+                    {{options.values.first}} {{options.values.last}} <a href="javascript:void(0);" id="elementWithPopover" ui:popover="#myPopover" data-placement="{{options.placement}}" data-trigger="{{options.trigger}}" data-auto="{{options.auto}}"><ui:icon glyph="pencil"></ui:icon></a>
                     <input type="button" ng-show="options.trigger == 'manual'" class="btn btn-primary btn-sm pull-right" value="show" onclick="$('#elementWithPopover').popover('toggle');" />
                 </p>
             </div>
@@ -91,7 +96,7 @@
             </div>
         </div>
         <div class="panel-footer">
-<pre><code>&lt;a href="#" id="elementWithPopover" <span class="annotation" data-toggle="tooltip" data-container="body" title="This attribute will start popover initialization, as well as contain the selector that points to the popover element">ui:popover="#myPopover"</span> <span class="annotation" data-toggle="tooltip" data-container="body" title="This (optional) attribute determines the placement of the popover">data-placement="{{options.placement}}"</span> <span class="annotation" data-toggle="tooltip" data-container="body" title="This (optional) attribute determines how the popover will be triggered.">data-trigger="{{options.trigger}}"</span>&gt;
+<pre><code>&lt;a href="#" id="elementWithPopover" <span class="annotation" data-toggle="tooltip" data-container="body" title="This attribute will start popover initialization, as well as contain the selector that points to the popover element">ui:popover="#myPopover"</span> <span class="annotation" data-toggle="tooltip" data-container="body" title="This (optional) attribute determines the placement of the popover">data-placement="{{options.placement}}"</span> <span class="annotation" data-toggle="tooltip" data-container="body" title="This (optional) attribute determines how the popover will be triggered.">data-trigger="{{options.trigger}}"</span> <span class="annotation" title="This attributes tells the popover that it is authorized to disobey the assigned placement, if that placement would make it not fit the viewport.">data-auto="{{options.auto}}"</span>&gt;
     &lt;ui:icon glyph="pencil"&gt;&lt;/ui:icon&gt;
 &lt;/a&gt;
 <span ng-show="options.trigger == 'manual'">&lt;input type="button" class="btn btn-primary btn-sm pull-right" value="show" onclick="<span class="annotation" data-toggle="tooltip" data-container="body" title="This JavaScript code can be used to toggle the popover manually">$('#elementWithPopover').popover('toggle');</span>" /&gt;
