@@ -32,10 +32,14 @@
                             this.removeAttribute('ng-non-bindable');
                             $(this).removeClass("ng-non-bindable");
                         });
+                        var popoverScope = $scope.$new();
+                        popoverScope.close = function () {
+                            $($element).popover('hide');
+                        };
                         $($element).popover({
                             html: true,
                             title: title,
-                            content: $compile(template.html())($scope),
+                            content: $compile(template.html())(popoverScope),
                             container: $element.get(0).parentNode,
                             placement: $attrs.placement ? $attrs.placement : "right",
                             trigger: trigger
