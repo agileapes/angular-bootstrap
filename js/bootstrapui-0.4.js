@@ -335,7 +335,7 @@ function ifDefined(variable) {
         /**
          * Current version of the BoostrapUI as loaded with the window context
          */
-        version: "0.4",
+        version: "0.5.1",
         /**
          * Different component types registered with the BootstrapUI framework
          */
