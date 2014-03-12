@@ -356,16 +356,104 @@ function evaluateExpression(expression, optional) {
 
     toolkit.tools.loader = {};
     (function (loader) {
-        loader.items = {};
+        var items = {};
         /**
          * Schedules the load of a new item. The actual loading has to be handled by the handler function
          * @param item
          * @param {Function} loadHandler
          */
         loader.schedule = function (item, loadHandler) {
-
+            var deferred;
+            if (!items[item]) {
+                deferred = items[item] = $.Deferred();
+            } else {
+                deferred = items[item];
+            }
+            if (deferred.state() == "resolved") {
+                return;
+            }
+            var loaded = loadHandler(item, loader, toolkit);
+            if (!loaded || !$.isFunction(loaded.then)) {
+                throw new Error("The result of the load operation for " + item + " does not support the deferred or promise interface.");
+            }
+            loaded.then(function () {
+                //we pass any arguments available to us after having the item load to the listening parties
+                deferred.resolve.apply(deferred, arguments);
+            });
+        };
+        loader.get = function (item) {
+            if (!items[item]) {
+                items[item] = $.Deferred();
+            }
+            return items[item];
         };
     })(toolkit.tools.loader);
+
+    /**
+     * This function will take in a list of promises and return a promise that will be resolved when all of the given
+     * promises have been satisfied. It will fail should any one of the promises fail. An optional timeout can be
+     * specified that will be used to reject the promise when the timeout occurs.
+     * @param {Array} items a list of promises which must be resolved
+     * @param {int} [timeout] an optional timeout for the promises
+     */
+    toolkit.tools.promises = function (items, timeout) {
+        var descriptor = $.Deferred();
+        var pending = [];
+        var count = 0;
+        var failed = false;
+        $(items).each(function (index) {
+            var promise = this;
+            //we first have to check the validity of the promises
+            if (!promise || !promise.then || !$.isFunction(promise.then)) {
+                throw new Error("Item " + index + " is not a promise");
+            }
+            var id = pending.length;
+            //we keep count of how many items we expect to resolve first
+            count ++;
+            //then we keep track of the pending items
+            pending.push({
+                index: index,
+                promise: promise
+            });
+            promise.then(function () {
+                if (failed) {
+                    return;
+                }
+                //if the promise is resolved and no timeout has occurred we count one down.
+                pending[id] = null;
+                count --;
+                descriptor.notify.apply(descriptor, arguments);
+            }, function () {
+                //if the promise has failed we tell the listeners of the occurrence
+                pending[id].rejection = arguments;
+                descriptor.reject("A general error has occurred", pending);
+            });
+        });
+        //we check for status every time the descriptor is notified
+        descriptor.progress(function () {
+            //if the promise has already timed out we don't check any further
+            if (failed) {
+                descriptor.reject("Timed out waiting for promises to resolve", pending);
+                return;
+            }
+            //if there are no more promises we consider the matter resolved
+            if (count == 0) {
+                descriptor.resolve();
+            }
+        });
+        //if a timeout has been set, we should honor it.
+        if (typeof timeout != "undefined") {
+            var timeoutHandle = setTimeout(function () {
+                failed = true;
+                descriptor.notify();
+            }, timeout);
+            //if the descriptor is resolved prior to the timeout handle going off, we should cancel the timeout
+            descriptor.then(function () {
+                clearTimeout(timeoutHandle);
+            });
+        }
+        return descriptor;
+    };
 
     toolkit.classes.Directive = function (version, templateUrl, factory, requirements) {
 
