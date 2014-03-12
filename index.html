@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--suppress CheckTagEmptyBody -->
-<html data-bootstrapui="">
+<html>
 <head>
     <title>Angular Bootstrap</title>
     <meta charset="UTF-8"/>
@@ -11,14 +11,30 @@
     <script src="js/jquery-2.0.3.min.js"></script>
     <script src="bootstrap/js/bootstrap.min.js"></script>
     <script src="js/config.js"></script>
-    <script type="text/javascript"><!--
-    BootstrapUIConfig.base = ".";
-    //--></script>
     <script src="js/angular.js"></script>
-    <script src="js/bootstrapui-0.4.js"></script>
-    <script src="js/demo.js"></script>
+    <script type="text/javascript">
+        (function () {
+        var module = angular.module("demoApplication", [], null);
+        module.directive("impressBox", function () {
+            return {
+                restrict: "E",
+                replace: true,
+                transclude: true,
+                scope: {
+                    link: "@",
+                    glyph: "@",
+                    variation: "@"
+                },
+                template: "<a class='{{variation}} sliding down impress-box' ng-href='{{link}}'>" +
+                        "<span class='glyph landmark'><span class='glyphicon glyphicon-{{glyph}}'></span></span>" +
+                        "<span class='caption' ng-transclude></span>" +
+                        "</a>"
+            };
+        });
+    })();
+    </script>
 </head>
-<body>
+<body ng-app="demoApplication">
 <div class="container">
     <div class="row">
         <impress-box link="docs/icon.html" glyph="th-list" variation="green">Icons</impress-box>
@@ -29,7 +45,7 @@
     </div>
     <div class="row">
         <impress-box link="docs/menu.html" glyph="question-sign" variation="blue">Menu</impress-box>
-        <impress-box link="docs/breadcrumb.html" glyph="list" variation="red">Breadcrumb</impress-box>
+        <impress-box link="docs/breadcrumb.html" glyph="list" variation="dark orange">Breadcrumb</impress-box>
         <impress-box link="docs/pagination.html" glyph="book" variation="teal">Pagination</impress-box>
         <impress-box link="docs/form.html" glyph="edit" variation="wheat">Form</impress-box>
         <impress-box link="docs/image.html" glyph="picture" variation="oceanic blue">Image</impress-box>

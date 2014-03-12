@@ -912,7 +912,7 @@ function ifDefined(variable) {
         BootstrapUI.preloader.directive(config.directives);
         BootstrapUI.preloader.filter(config.filters);
         if (config.preloadAll) {
-            BootstrapUI.preloader.directive("breadcrumb", "buttonGroup", "container", "dropdown", "form", "icon", "inputGroup", "pagination");
+            BootstrapUI.preloader.directive("breadcrumb", "buttonGroup", "container", "dropdown", "form", "icon", "inputGroup", "pagination", "panel", "alert", "popover", "image", "progressBar", "label", "badge", "button");
             BootstrapUI.preloader.filter("range", "capitalize", "capitalizeFirst");
         }
         BootstrapUI.config = config;
@@ -1176,9 +1176,11 @@ function ifDefined(variable) {
                     });
                 }
             }
-            return  deferred.promise();
+            return deferred.promise();
         }
     };
+
+    BootstrapUI.loader =
 
     /**
      * Registers the given component with the preloader.

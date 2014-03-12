@@ -1,8 +1,8 @@
-BootstrapUIConfig = {
+window.BootstrapUIConfig = {
     namespace: "ui",
     base: "..",
     debug: true,
-    preloadAll: false,
+    preloadAll: true,
     console: {
         replace: false,
         output: true,
