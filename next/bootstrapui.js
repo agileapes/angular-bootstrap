@@ -359,18 +359,22 @@ function evaluateExpression(expression, optional) {
         var items = {};
         /**
          * Schedules the load of a new item. The actual loading has to be handled by the handler function
-         * @param item
+         * @param {string} item
          * @param {Function} loadHandler
+         * @param {int} [timeout]
          */
-        loader.schedule = function (item, loadHandler) {
-            var deferred;
-            if (!items[item]) {
-                deferred = items[item] = $.Deferred();
-            } else {
-                deferred = items[item];
+        loader.schedule = function (item, loadHandler, timeout) {
+            var deferred = loader.get(item, timeout);
+            //if the promise has been fulfilled or if we are in the process of doing so we don't do anything more
+            if (deferred.state() == "resolved" || deferred.initialized || (deferred.original && deferred.original.initialized)) {
+                return deferred;
             }
-            if (deferred.state() == "resolved") {
-                return;
+            //This line prevents the loading handler being fired again if more than one loader is scheduled
+            //for the same time before any of them can safely return
+            deferred.initialized = true;
+            //if the deferred has been wrapped with a timeout, we will still need to send the signal to the original
+            if (deferred.original) {
+                deferred.original.initialized = true;
             }
             var loaded = loadHandler(item, loader, toolkit);
             if (!loaded || !$.isFunction(loaded.then)) {
@@ -380,12 +384,42 @@ function evaluateExpression(expression, optional) {
                 //we pass any arguments available to us after having the item load to the listening parties
                 deferred.resolve.apply(deferred, arguments);
             });
+            return deferred;
         };
-        loader.get = function (item) {
+
+        /**
+         * Returns a promise that is resolved when the item is available (which might be immediately).
+         * @param {string} item
+         * @param {int} [timeout]
+         * @returns {then:then}
+         */
+        loader.get = function (item, timeout) {
             if (!items[item]) {
+                //If the item is not there yet, we return a promise that it will be there at some point
                 items[item] = $.Deferred();
             }
+            if (typeof timeout == "number") {
+                return toolkit.tools.applyTimeout(items[item], timeout);
+            }
             return items[item];
+        };
+
+        /**
+         * Will load all the items given the load handler and then resolve the returned promise.
+         *
+         * @param {Function} loadHandler the load handler that will be used for all items.
+         * @param {string} item the name of the item to be loaded
+         * @param {string} [_]
+         * @return {then:then}
+         */
+        loader.load = function (loadHandler, item, _) {
+            var promises = [];
+            for (var i = 1; i < arguments.length; i++) {
+                var task = arguments[i];
+                promises.push(loader.schedule(task, loadHandler));
+            }
+            console.log(promises);
+            return toolkit.tools.promises(promises);
         };
     })(toolkit.tools.loader);
 
@@ -442,7 +476,7 @@ function evaluateExpression(expression, optional) {
             }
         });
         //if a timeout has been set, we should honor it.
-        if (typeof timeout != "undefined") {
+        if (typeof timeout == "number") {
             var timeoutHandle = setTimeout(function () {
                 failed = true;
                 descriptor.notify();
@@ -455,8 +489,32 @@ function evaluateExpression(expression, optional) {
         return descriptor;
     };
 
-    toolkit.classes.Directive = function (version, templateUrl, factory, requirements) {
+    /**
+     * Applies a timeout to a given deferred object
+     */
+    toolkit.tools.applyTimeout = function (deferred, timeout) {
+        var result = $.Deferred();
+        result.original = deferred;
+        deferred.then(function () {
+            result.resolve.apply(result, arguments);
+        }, function () {
+            result.reject.apply(result, arguments);
+        });
+        var timeoutHandle = setTimeout(function () {
+            deferred.reject("Timed out");
+        }, timeout);
+        result.then(function () {
+            clearTimeout(timeoutHandle);
+        });
+        return result;
+    };
 
+    toolkit.classes.Directive = function (version, templateUrl, factory, requirements) {
+        this.version = version;
+        this.templateUrl = toolkit.classes.Directive.path(templateUrl);
+        this.factory = function ($injector) {
+            var directive = $injector.invoke(factory);
+        };
     };
 
 })(evaluateExpression("window.angular"), evaluateExpression("window.jQuery"), evaluateExpression("window.BootstrapUIConfig", true));
