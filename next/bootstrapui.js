@@ -517,4 +517,53 @@ function evaluateExpression(expression, optional) {
         };
     };
 
+    /**
+     * Given a relative template url this static method will resolve its path
+     */
+    toolkit.classes.Directive.path = function (templateUrl) {
+        return toolkit.config.base + "/" + toolkit.config.templateBase + "/" + templateUrl;
+    };
+
+    /**
+     * TemplateCache class that should be registered as a service with the module to provide template interception.
+     * @param $http AngularJS HTTP service
+     * @param $cacheFactory AngularJS cache factory
+     * @constructor
+     */
+    BootstrapUI.classes.TemplateCache = function ($http, $cacheFactory) {
+        var self = this;
+        var templateCache = $cacheFactory("buTemplateCache");
+        this.info = function () {
+            return templateCache.info();
+        };
+        this.put = function (key, template) {
+            templateCache.put(key, template);
+        };
+        this.remove = function (key) {
+            templateCache.remove(key);
+        };
+        this.removeAll = function () {
+            templateCache.removeAll();
+        };
+        this.destroy = function () {
+            templateCache.destroy();
+        };
+        this.get = function (key) {
+            return $http.get(key, {
+                cache: templateCache
+            }).then(function (result) {
+                for (var i = 0; i < BootstrapUI.classes.TemplateCache.interceptors.length; i++) {
+                    var interceptor = BootstrapUI.classes.TemplateCache.interceptors[i];
+                    var returned = interceptor.apply(self, [result.data, key]);
+                    if (returned) {
+                        result.data = returned;
+                    }
+                }
+                return result;
+            });
+        };
+    };
+
+    BootstrapUI.classes.TemplateCache.interceptors = [];
+
 })(evaluateExpression("window.angular"), evaluateExpression("window.jQuery"), evaluateExpression("window.BootstrapUIConfig", true));

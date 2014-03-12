@@ -9,5 +9,13 @@
     <script src="bootstrapui.js"></script>
 </head>
 <body>
+<script>
+    var directive = new BootstrapUI.classes.Directive("1.0", "my-directive", function () {
+        return {
+            controller: function () {}
+        };
+    });
+    console.log(directive.factory);
+</script>
 </body>
 </html>
