@@ -311,9 +311,9 @@ function evaluateExpression(expression, optional) {
      */
     String.prototype.fix = function (length, filler, prepend) {
         if (typeof length != "number") {
-            length = this.length;
+            return this;
         }
-        if (typeof filler == "undefined") {
+        if (typeof filler != "string") {
             filler = " ";
         }
         if (typeof prepend == "undefined") {
@@ -321,7 +321,11 @@ function evaluateExpression(expression, optional) {
         }
         var str = this;
         if (str.length > length) {
-            str = str.substring(0, length);
+            if (!prepend) {
+                str = str.substring(0, length);
+            } else {
+                str = str.substring(str.length - length)
+            }
         } else if (str.length < length) {
             filler = filler.repeat(length - str.length);
             str = (prepend ? filler : "") + str + (!prepend ? filler : "");

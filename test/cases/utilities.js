@@ -1,6 +1,6 @@
 'use strict';
 
-describe("Function.prototype.bind([{*} context], [{*} parameters*])", function () {
+describe("ECMA5 Standard Function.prototype.bind([{*} context], [{*} parameters*])", function () {
 
     var f = jasmine.createSpy("function");
 
@@ -405,5 +405,54 @@ describe("String.prototype.repeat({int} times)", function () {
 });
 
 describe("String.prototype.fix({int} length, [{string} filler = ' '], [{boolean} prepend = true])", function () {
+
+    it("fixes a string to the empty string if the length specified is zero", function () {
+        expect("something".fix(0)).toEqual("");
+    });
+
+    it("returns the same string if no length is specified", function () {
+        var text = "something";
+        expect(text.fix()).toEqual(text);
+    });
+
+    it("truncates a larger string from the right if appending", function () {
+        expect("something".fix(4, " ", false)).toEqual("some");
+    });
+
+    it("truncates a larger string from the left if prepending", function () {
+        expect("something".fix(5, " ", true)).toEqual("thing");
+    });
+
+    it("pads from the left with the ' ' string if fixing a smaller string and is set to prepend with no specific filler", function () {
+        expect("some".fix(6)).toEqual("  some");
+    });
+
+    it("pads from the right with the ' ' string if fixing a smaller string and is set to append with no specific filler", function () {
+        expect("some".fix(6, null, false)).toEqual("some  ");
+    });
+
+    it("honors the given filler if one is specified", function () {
+        expect("1234".fix(6, "0")).toEqual("001234");
+    });
+
+    it("ignores the filler if fixing a larger string", function () {
+        expect("123456".fix(4, "0")).toEqual("123456".fix(4, "-"));
+    });
+
+});
+
+describe("String.prototype.center({int} length)", function () {
+
+    it("returns the same string if the length is smaller than the actual string", function () {
+        expect("123456".center(4)).toEqual("123456");
+    });
+
+    it("adds the same number of padding to each side if difference is even", function () {
+        expect("123456".center(8)).toEqual(" 123456 ");
+    });
+
+    it("adds one more space to the right if difference is odd", function () {
+        expect("123456".center(9)).toEqual(" 123456  ");
+    });
 
 });
