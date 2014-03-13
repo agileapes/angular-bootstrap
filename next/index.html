@@ -10,12 +10,13 @@
 </head>
 <body>
 <script>
-    var directive = new BootstrapUI.classes.Directive("1.0", "my-directive", function () {
-        return {
-            controller: function () {}
-        };
+    var module = angular.module("myApp", [], null)
+            .service("$templateCache", BootstrapUI.classes.TemplateCache);
+    BootstrapUI.classes.Directive.load("myDirective").then(function () {
     });
-    console.log(directive.factory);
 </script>
+<div ng-app="myApp">
+    <my-directive name="Milad"></my-directive>
+</div>
 </body>
 </html>

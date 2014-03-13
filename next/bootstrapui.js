@@ -12,7 +12,7 @@ if (typeof Error == "undefined") {
         this.message = message;
         this.cause = cause;
         this.toString = function () {
-            return message;
+            return message + (cause ? "\ncaused by " + this.cause : "");
         }
     }
 }
@@ -509,19 +509,134 @@ function evaluateExpression(expression, optional) {
         return result;
     };
 
-    toolkit.classes.Directive = function (version, templateUrl, factory, requirements) {
+    toolkit.tools.httpLoader = function (url, timeout, success) {
+        if (!timeout) {
+            timeout = 5000;
+        }
+        if (!$.isFunction(success)) {
+            success = function () {};
+        }
+        var deferred = $.Deferred();
+        $.ajax({
+            url: url,
+            dataType: "text",
+            global: false,
+            success: function (data) {
+                success(data, deferred);
+                deferred.resolve(data);
+            },
+            error: function (xhr, error) {
+                deferred.reject(error);
+            }
+        });
+        return toolkit.tools.applyTimeout(deferred, timeout);
+    };
+
+    toolkit.classes.Directive = function (version, name, templateUrl, factory, requirements) {
+        if (!$.isArray(requirements)) {
+            requirements = [];
+        }
+        var self = this;
         this.version = version;
-        this.templateUrl = toolkit.classes.Directive.path(templateUrl);
-        this.factory = function ($injector) {
-            var directive = $injector.invoke(factory);
+        this.name = name;
+        this.templateUrl = toolkit.classes.Directive.templatePath(templateUrl);
+        this.requirements = requirements && $.isArray(requirements) ? requirements : [];
+        this.register = function (module) {
+            module.directive(self.name, self.factory);
         };
+        this.factory = function ($injector, $templateCache, $http, $compile) {
+            var directive = $injector.invoke(factory);
+            //we have to remove the directive's template, since the template has to be loaded asynchronously
+            //from the location specified
+            delete directive.template;
+            delete directive.templateUrl;
+            var linker = {
+                pre: function () {},
+                post: function () {}
+            };
+            var controller = function () {};
+            if (directive.link) {
+                if ($.isFunction(directive.link)) {
+                    linker.post = directive.link;
+                } else {
+                    if ($.isFunction(directive.link.pre)) {
+                        linker.pre = directive.link.pre;
+                    }
+                    if ($.isFunction(directive.link.post)) {
+                        linker.post = directive.link.post;
+                    }
+                }
+            }
+            if (directive.controller && $.isFunction(directive.controller)) {
+                controller = directive.controller;
+            }
+            var templateAvailable = toolkit.tools.loader.schedule("directive." + name, function () {
+                return $http.get(self.templateUrl, {
+                    cache: $templateCache
+                });
+            });
+            var promises = [];
+            for (var i = 0; i < requirements.length; i++) {
+                var requirement = requirements[i];
+                promises.push(toolkit.classes.Directive.load(requirement));
+            }
+            var templateCompiled = $.Deferred();
+            promises.push(templateCompiled);
+            directive.controller = function ($scope, $element, $attrs, $transclude) {
+                var controllerSelf = this;
+                templateAvailable.then(function (template) {
+                    templateCompiled.resolve($compile(template.data, $transclude));
+                    $injector.invoke(controller, controllerSelf, {
+                        $scope: $scope,
+                        $element: $element,
+                        $attrs: $attrs,
+                        $transclude: $transclude
+                    });
+                });
+            };
+            directive.link = {
+                pre: function ($scope, $element, $attrs, parentController) {
+                    var linkSelf = this;
+                    templateCompiled.then(function (prepare) {
+                        prepare($scope, function ($clone, $localScope) {
+                            $element.replaceWith($clone);
+                            linker.post.apply(linkSelf, [$localScope, $clone, $attrs, parentController]);
+                            $scope.$apply.postpone($scope);
+                        });
+                    });
+                },
+                post: function ($scope, $element, $attrs, parentController) {
+                    linker.post.apply(this, [$scope, $element, $attrs, parentController]);
+                }
+            };
+            return directive;
+        };
+    };
+
+    toolkit.classes.Directive.load = function (qualifiedName) {
+        return toolkit.tools.loader.schedule("directive." + qualifiedName, function () {
+            return toolkit.tools.httpLoader(toolkit.classes.Directive.directivePath(qualifiedName), 3000, function (data, deferred) {
+                try {
+                    eval(data);
+                } catch (e) {
+                    deferred.reject(typeof e == "string" ? e : (e.message ? e.message : "Unknown error occurred while evaluating directive " + qualifiedName));
+                }
+            });
+        });
     };
 
     /**
      * Given a relative template url this static method will resolve its path
      */
-    toolkit.classes.Directive.path = function (templateUrl) {
+    toolkit.classes.Directive.templatePath = function (templateUrl) {
         return toolkit.config.base + "/" + toolkit.config.templateBase + "/" + templateUrl;
+    };
+
+    /**
+     * Given a relative template url this static method will resolve its path
+     */
+    toolkit.classes.Directive.directivePath = function (qualifiedName) {
+        return toolkit.config.base + "/" + toolkit.config.directivesBase + "/" + qualifiedName.replace(/\.[^\.]+$/, "").replace('.', '/') + ".js";
     };
 
     /**

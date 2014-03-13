@@ -88,25 +88,31 @@
             <ui:panel type="information" title="Personal Information">
                 <ui:form-container orientation="horizontal" label-size="6">
                     <div class="row">
-                        <div class="col-lg-6">
+                        <div class="col-lg-4">
                             <ui:form-input type="text" id="firstName" label="First name" ng-model="user.first"></ui:form-input>
                         </div>
-                        <div class="col-lg-6">
+                        <div class="col-lg-4">
+                            <ui:form-input type="text" id="lastName" label="Last name" ng-model="user.last"></ui:form-input>
+                        </div>
+                        <div class="col-lg-4">
                             <ui:form-input type="text" id="lastName" label="Last name" ng-model="user.last"></ui:form-input>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-lg-6">
+                        <div class="col-lg-4">
                             <ui:form-input type="text" id="nationalId" label="National Id" ng-model="user.id"></ui:form-input>
                         </div>
-                        <div class="col-lg-6">
+                        <div class="col-lg-4">
+                            <ui:form-input type="checkbox" id="married" label="Are you married?" ng-model="user.married"></ui:form-input>
+                        </div>
+                        <div class="col-lg-4">
                             <ui:form-input type="checkbox" id="married" label="Are you married?" ng-model="user.married"></ui:form-input>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-lg-12">
                             <ui:form-input type="textarea" id="description" label="Description" orientation="horizontal"
-                                           label-size="3" ng-model="user.description"></ui:form-input>
+                                           label-size="2" ng-model="user.description"></ui:form-input>
                         </div>
                     </div>
                     <div class="pull-right">
