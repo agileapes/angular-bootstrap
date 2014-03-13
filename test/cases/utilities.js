@@ -4,7 +4,7 @@ describe("Function.prototype.bind([{*} context], [{*} parameters*])", function (
 
     var f = jasmine.createSpy("function");
 
-    it("should provide a default context should none be provided", function () {
+    it("provides a default context should none be provided", function () {
         var context = {
             name: "Context"
         };
@@ -17,7 +17,7 @@ describe("Function.prototype.bind([{*} context], [{*} parameters*])", function (
         });
     });
 
-    it("should provide initial arguments", function () {
+    it("can prepend arguments to the list of arguments, presetting starting arguments", function () {
         f.bind(null, 1, 2, 3)(4, null);
         expect(f).toHaveBeenCalled();
         expect(f).toHaveBeenCalledWith(1, 2, 3, 4, null);
@@ -33,25 +33,25 @@ describe("function evaluateExpression({string} expression) {}", function () {
         };
     });
 
-    it("should not throw when evaluating a valid expression", function () {
+    it("will not throw an error when evaluating a valid expression", function () {
         expect(evaluateExpression.bind(this, "this.target.value", false)).not.toThrow();
     });
 
-    it("should return the value of an expression if it is valid", function () {
+    it("returns the value of the expression if it is valid", function () {
         expect(evaluateExpression.call(this, "this.target")).toEqual(jasmine.objectContaining({
             value: 1
         }));
     });
 
-    it("should throw en error when evaluating the value of an invalid expression", function () {
+    it("throws an error when evaluating the value of an invalid expression", function () {
         expect(evaluateExpression.bind(this, "this.target2", false)).toThrow();
     });
 
-    it("should not throw an error when evaluating the value of an optional invalid expression", function () {
+    it("will not throw an error when evaluating the value of an optional, invalid expression", function () {
         expect(evaluateExpression.bind(this, "this.target2", true)).not.toThrow();
     });
 
-    it("should return 'null' when evaluating an optional invalid expression", function () {
+    it("returns 'null' when evaluating the value of an optional, invalid expression", function () {
         expect(evaluateExpression.call(this, "this.target2", true)).toBeNull();
     });
 
@@ -70,19 +70,19 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
         jasmine.clock().uninstall();
     });
 
-    it('should result in the function being called', function () {
+    it('results in the function being called', function () {
         f.postpone();
         jasmine.clock().tick(1);
         expect(f).toHaveBeenCalled();
     });
 
-    it('should result in the function having received its arguments', function () {
+    it('results in the function having received the arguments passed through the postpone() method', function () {
         f.postpone(null, [1, 2, 3]);
         jasmine.clock().tick(1);
         expect(f).toHaveBeenCalledWith(1, 2, 3);
     });
 
-    it('should result in the function having received its context', function () {
+    it('result in the function having received the context through the thisArg of the postpone() method', function () {
         var callContext = {
             someProperty: "someValue"
         };
@@ -94,7 +94,7 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
         });
     });
 
-    it('should be triggered after the given delay time', function () {
+    it('is triggered after the given delay time', function () {
         f.postpone(null, [], 100);
         expect(f).not.toHaveBeenCalled();
         jasmine.clock().tick(50);
@@ -105,7 +105,7 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
         expect(f).toHaveBeenCalled();
     });
 
-    it('should not be called unless the controller function tells it that it should', function () {
+    it('will not be called unless the controller function passed as the delay monitor tells it that it should by returning true', function () {
         var run = false;
         f.postpone(null, [], function () {
             return run;
@@ -118,7 +118,7 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
         expect(f).toHaveBeenCalled();
     });
 
-    it('should run its success callbacks in order', function () {
+    it('runs its success callbacks in the order they were added through the then() method returned from the postpone() method', function () {
         var result = [];
         var success = jasmine.createSpy("success", function () {
             result.push(result.length + 1);
@@ -138,7 +138,7 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
         expect(failure).not.toHaveBeenCalled();
     });
 
-    it("should honor its timeout and run failure callbacks when timeout occurs", function () {
+    it("honors its timeout and runs failure callbacks added through the then() method returned from the postpone() method when timeout occurs", function () {
         var result = [];
         var success = jasmine.createSpy("success", function () {
             //pushes 1, 2, ...
@@ -164,7 +164,7 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
         expect(result).toEqual([-1, -2]);
     });
 
-    it("should honor timeout and run failure callbacks when timeout occurs during execution with non-deterministic delay", function () {
+    it("honors timeout and runs failure callbacks when timeout occurs during execution with non-deterministic (controller function) delay", function () {
         var result = [];
         var success = jasmine.createSpy("success", function () {
             //pushes 1, 2, ...
@@ -195,7 +195,7 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
         expect(result).toEqual([-1, -2]);
     });
 
-    it("should allow for the user to stop the execution when the delay is deterministic", function () {
+    it("allows for the user to stop the execution when the delay is deterministic (an integer value)", function () {
         var result = [];
         var success = jasmine.createSpy("success", function () {
             //pushes 1, 2, ...
@@ -222,7 +222,7 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
         expect(f).not.toHaveBeenCalled();
     });
 
-    it("should allow for the user to stop the execution when the delay is non-deterministic", function () {
+    it("allows for the user to stop the execution when the delay is non-deterministic (a controller function)", function () {
         var result = [];
         var success = jasmine.createSpy("success", function () {
             //pushes 1, 2, ...
@@ -253,7 +253,7 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
         expect(f).not.toHaveBeenCalled();
     });
 
-    it("should run failure callbacks if the method throws an exception", function () {
+    it("runs failure callbacks added through the then() method returned from the postpone() method if the target function throws an exception", function () {
         var f = jasmine.createSpy("function").and.throwError();
         var success = jasmine.createSpy("success");
         var failure = jasmine.createSpy("failure");
@@ -282,7 +282,7 @@ describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} i
         jasmine.clock().uninstall();
     });
 
-    it("should receive the specified context", function () {
+    it("receives the specified context passed through the thisArg of the repeat function", function () {
         var context = {
             someProperty: "some value"
         };
@@ -296,7 +296,7 @@ describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} i
         });
     });
 
-    it("should receive the specified arguments through the call", function () {
+    it("receives the specified arguments through the call", function () {
         f.repeat(null, [1, 2, 3], 100);
         expect(f).not.toHaveBeenCalled();
         jasmine.clock().tick(101);
@@ -304,7 +304,7 @@ describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} i
         expect(f).toHaveBeenCalledWith(1, 2, 3);
     });
 
-    it("should repeat the execution of the function so long as the timer goes on", function () {
+    it("repeats the execution of the function so long as the timer goes on", function () {
         f.repeat(null, [], 10);
         expect(f).not.toHaveBeenCalled();
         for (var i = 0; i < 5; i ++) {
@@ -314,7 +314,7 @@ describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} i
         }
     });
     
-    it("should expose the number of times it has been called through count()", function () {
+    it("exposes the number of times it has been called through count()", function () {
         var count = 0;
         f.repeat(null, [], 10).then(function () {
             count ++;
@@ -327,7 +327,7 @@ describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} i
         }
     });
 
-    it("should execute success callbacks at each call", function () {
+    it("executes success callbacks added through the then() method returned from the repeat() method at each call", function () {
         var success = jasmine.createSpy("success");
         var failure = jasmine.createSpy("failure");
         f.repeat(null, [], 10).then(success, failure);
@@ -340,7 +340,7 @@ describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} i
         expect(success.calls.count()).toEqual(f.calls.count());
     });
 
-    it("should execute failure callbacks at each failed call", function () {
+    it("executes failure callbacks added through the then() method returned from the repeat() method at each failed call", function () {
         var success = jasmine.createSpy("success");
         var failure = jasmine.createSpy("failure");
         f.and.throwError().repeat(null, [], 10).then(success, failure);
@@ -353,7 +353,7 @@ describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} i
         expect(failure.calls.count()).toEqual(f.calls.count());
     });
 
-    it("should allow users to stop the repetition", function () {
+    it("allows users to stop the repetition by a call placed at the stop() method of the handler returned by the repeat() function", function () {
         var success = jasmine.createSpy("success");
         var failure = jasmine.createSpy("failure");
         var handle = f.repeat(null, [], 10).then(success, failure);
@@ -384,20 +384,20 @@ describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} i
 
 describe("String.prototype.repeat({int} times)", function () {
 
-    it("should return the empty string if the number of times required is negative", function () {
+    it("returns the empty string if the number of times required is negative", function () {
         expect("something".repeat(-1)).toEqual("");
     });
 
-    it("should return the empty string if the repetition number is zero", function () {
+    it("returns the empty string if the repetition number is zero", function () {
         expect("something".repeat(0)).toEqual("");
     });
 
-    it("should return the string itself if the repetition number is one", function () {
+    it("returns the string itself if the repetition number is one", function () {
         var text = "something";
         expect(text.repeat(1)).toEqual(text);
     });
 
-    it("should return the properly repeated string", function () {
+    it("returns the properly repeated string", function () {
         var text = "something";
         expect(text.repeat(3)).toEqual(text + text + text);
     });
