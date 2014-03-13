@@ -25,7 +25,12 @@ if (typeof Error == "undefined") {
  */
 function evaluateExpression(expression, optional) {
     try {
-        return eval(expression);
+        var object = eval(expression);
+        if (typeof object == "undefined") {
+            //noinspection ExceptionCaughtLocallyJS
+            throw new Error("Object not defined: " + expression);
+        }
+        return  object;
     } catch (e) {
         if (!optional) {
             throw new Error("Failed to obtain the value of expression '" + expression + "'", e);
@@ -44,6 +49,35 @@ function evaluateExpression(expression, optional) {
     $,
     //A global configuration object that will help startup the framework right
     globalConfig) {
+
+    //Stub for when the bind method has not been provided via the browser
+    if (!Function.prototype.bind) {
+        /**
+         * Binds the current function with the given context so that if no context is provided, then this context
+         * and the given replacement arguments can be used.
+         * @param {Object} [context] the context to use as default
+         * @param {*} [_] the arguments to use if needed
+         * @returns {Function}
+         */
+        Function.prototype.bind = function (context, _) {
+            var args = [];
+            var func = this;
+            for (var i = 1; i < arguments.length; i++) {
+                args.push(arguments[i]);
+            }
+            return function () {
+                var currentArgs = [];
+                var i;
+                for (i = 0; i < args.length; i++) {
+                    currentArgs.push(args[i]);
+                }
+                for (i = 0; i < arguments.length; i++) {
+                    currentArgs.push(arguments[i]);
+                }
+                func.apply(this && this != window ? this : context, currentArgs);
+            };
+        };
+    }
 
     /**
      * Postpones the execution of the function until a later time or a given criteria is met.
@@ -90,17 +124,23 @@ function evaluateExpression(expression, optional) {
             }
             return func;
         };
+        var stopped = null;
         if ($.isFunction(delay)) {
-            var stopped = false;
+            var failed = false;
             var controller;
             func.stop = function () {
-                stopped = true;
+                delete func.stop;
+                stopped = "Stopped by user";
             };
             var interval = setInterval(function () {
                 if (stopped) {
+                    if (failed) {
+                        return;
+                    }
+                    failed = true;
                     clearInterval(interval);
                     clearTimeout(controller);
-                    fail("Stopped by user");
+                    fail(stopped);
                     return;
                 }
                 if (delay()) {
@@ -111,29 +151,49 @@ function evaluateExpression(expression, optional) {
             }, 10);
             if (timeout) {
                 controller = setTimeout(function () {
-                    clearInterval(interval);
-                    clearTimeout(controller);
-                    fail("Action timed out after " + timeout);
+                    stopped = "Action timed out after " + timeout;
                     if (action) {
                         action = " '" + action + "'";
                     } else {
                         action = "";
                     }
-                    BootstrapUI.tools.console.debug("Abandoning action" + action + " after " + timeout);
+                    console.debug("Abandoning action" + action + " after " + timeout);
                 }, timeout);
             }
         } else {
+            stopped = false;
             func.stop = function () {
-                clearTimeout(controller);
+                delete func.stop;
+                stopped = true;
+                clearTimeout(callController);
                 fail("Stopped by user");
             };
-            controller = setTimeout(function () {
+            var callController = setTimeout(function () {
+                if (stopped) {
+                    return;
+                }
                 try {
                     done(func, func.apply(thisArg, args));
                 } catch (e) {
                     fail(e.message ? e.message : e);
                 }
             }, delay);
+            if (timeout) {
+                controller = setTimeout(function () {
+                    clearTimeout(controller);
+                    clearTimeout(callController);
+                    if (stopped) {
+                        return;
+                    }
+                    fail("Action timed out after " + timeout);
+                    if (action) {
+                        action = " '" + action + "'";
+                    } else {
+                        action = "";
+                    }
+                    console.debug("Abandoning action" + action + " after " + timeout);
+                }, timeout);
+            }
         }
         return this;
     };
