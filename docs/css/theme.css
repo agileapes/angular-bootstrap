@@ -83,3 +83,11 @@ pre code .annotation:hover {
     color: #000000;
 }
 
+/* AngularJS Animations */
+
+.reveal-animation {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+

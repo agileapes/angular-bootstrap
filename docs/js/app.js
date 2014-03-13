@@ -1,5 +1,5 @@
 (function (angular) {
-    var module = angular.module("BootstrapUIDocumentation", ["ngRoute"], null);
+    var module = angular.module("BootstrapUIDocumentation", ["ngRoute", "ngAnimate"], null);
     module.config(function ($routeProvider) {
         $routeProvider
             .when("/", {
@@ -18,4 +18,22 @@
                 redirectTo: "/"
             });
     });
+    module.animation('.reveal-animation', function() {
+        return {
+            enter: function(element, done) {
+                element.css('display', 'none');
+                element.fadeIn(250, done);
+                return function() {
+                    element.stop();
+                }
+            },
+            leave: function(element, done) {
+                element.fadeOut(250, done);
+                return function() {
+                    element.stop();
+                }
+            }
+        }
+    });
+
 })(angular);
