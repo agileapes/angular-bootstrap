@@ -2,6 +2,8 @@ body {
     margin: 10px;
 }
 
+/* Additions to Bootstrap's form control states */
+
 .has-info .help-block,
 .has-info .control-label,
 .has-info .radio,
@@ -28,6 +30,8 @@ body {
 .has-info .form-control-feedback {
     color: #5b738a;
 }
+
+/* Placeholder for form component */
 
 .form-group.placeholder {
     border: 1px dashed #808080;
@@ -63,17 +67,19 @@ body {
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #c0434e;
 }
 
+/* Fix for Bootstrap's treatment of form item feedback when in vertical mode */
+
 .has-feedback .checkbox .form-control-feedback, .has-feedback .radio .form-control-feedback {
     top: 0;
 }
 
-.hljs, .panel-footer pre {
-    background: #f7f7f7;
-}
+/* Fix for vertical alignment of <strong/> items in Bootstrap's alert component */
 
 .alert strong {
     vertical-align: middle;
 }
+
+/* Adding contextual coloring to Bootstrap's panel component */
 
 .panel-default > .panel-footer {
     color: #333;
@@ -109,76 +115,4 @@ body {
     color: #a94442;
     background-color: #f2dede;
     border-color: #ebccd1;
-}
-
-.page-options {
-    border: 1px solid #14475b;
-    display: block;
-    width: 40px;
-    height: 40px;
-    text-align: center;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    line-height: 20px;
-    clear: both;
-    background: #4f6985;
-    color: #ffffff;
-    font-weight: bold;
-    border-radius: 5px;
-    cursor: pointer;
-    -webkit-transition: background 0.5s, border 0.5s, text-shadow 0.5s;
-    -moz-transition: background 0.5s, border 0.5s, text-shadow 0.5s;
-    -ms-transition: background 0.5s, border 0.5s, text-shadow 0.5s;
-    -o-transition: background 0.5s, border 0.5s, text-shadow 0.5s;
-    transition: background 0.5s, border 0.5s, text-shadow 0.5s;
-}
-
-.page-options:hover {
-    background: #7298c6;
-    border: 1px solid #176077;
-    text-shadow: 0 1px 0 #000000;
-}
-
-code span.closer {
-    padding: 2px 4px;
-    font-size: 60%;
-    display: inline-block;
-    color: #c7254e;
-    white-space: nowrap;
-    background-color: #f8cdcb;
-    border-radius: 4px;
-    position: relative;
-    top: -2px;
-    left: 2px;
-    cursor: pointer;
-}
-
-pre code .annotation:before {
-    content: "{";
-}
-
-pre code .annotation {
-    font-weight: bold;
-    cursor: pointer;
-    opacity: 0.6;
-    -webkit-transition: all 0.25s;
-    -moz-transition: all 0.25s;
-    -ms-transition: all 0.25s;
-    -o-transition: all 0.25s;
-    transition: all 0.25s;
-}
-
-pre code .annotation:after {
-    content: "}";
-}
-
-pre code .annotation:hover {
-    opacity: 1;
-    background: #ffedf0;
-}
-
-.tooltip code {
-    background: #f0f0f0;
-    border: 1px solid #000000;
-    color: #000000;
 }
