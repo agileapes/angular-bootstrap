@@ -235,11 +235,14 @@ function evaluateExpression(expression, optional) {
             }
         };
         var interval = null;
+        var count = 0;
         var handler = {
             /**
              * The number of times the scheduler has fired the function since the beginning of its execution.
              */
-            count: 0,
+            count: function () {
+                return count;
+            },
             /**
              * Stops the scheduled execution. This action will result in the failure callbacks being fired, and it also
              * clears all the fields of the handler. After calling this method, no other interaction with the handler is
@@ -250,6 +253,7 @@ function evaluateExpression(expression, optional) {
                 fail(func, "Stopped by user");
                 delete handler.count;
                 delete handler.stop;
+                delete handler.then;
             },
             /**
              * Schedules success and failure callbacks for the execution.
@@ -263,10 +267,10 @@ function evaluateExpression(expression, optional) {
                 if ($.isFunction(failure)) {
                     failureQueue.push(failure);
                 }
+                return handler;
             }
         };
         interval = setInterval(function () {
-            handler.count ++;
             var context = thisArg, parameters = args;
             if ($.isFunction(context)) {
                 context = context(handler);
@@ -274,6 +278,7 @@ function evaluateExpression(expression, optional) {
             if ($.isFunction(parameters)) {
                 parameters = parameters(handler);
             }
+            count ++;
             func.postpone(context, parameters).then(done, fail);
         }, delay);
         return handler;

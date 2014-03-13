@@ -43,15 +43,15 @@ describe("function evaluateExpression(expression) {}", function () {
         }));
     });
 
-    it("Should throw en error when evaluating the value of an invalid expression", function () {
+    it("should throw en error when evaluating the value of an invalid expression", function () {
         expect(evaluateExpression.bind(this, "this.target2", false)).toThrow();
     });
 
-    it("Should not throw an error when evaluating the value of an optional invalid expression", function () {
+    it("should not throw an error when evaluating the value of an optional invalid expression", function () {
         expect(evaluateExpression.bind(this, "this.target2", true)).not.toThrow();
     });
 
-    it("Should return 'null' when evaluating an optional invalid expression", function () {
+    it("should return 'null' when evaluating an optional invalid expression", function () {
         expect(evaluateExpression.call(this, "this.target2", true)).toBeNull();
     });
 
@@ -60,7 +60,7 @@ describe("function evaluateExpression(expression) {}", function () {
 describe('Function.prototype.postpone(thisArg, arguments, delay, timeout, descriptor)', function () {
 
     var f;
-    
+
     beforeEach(function () {
         f = jasmine.createSpy("function");
         jasmine.clock().install();
@@ -251,6 +251,133 @@ describe('Function.prototype.postpone(thisArg, arguments, delay, timeout, descri
         jasmine.clock().tick(60);
         expect(handler.stop).toBeUndefined();
         expect(f).not.toHaveBeenCalled();
+    });
+
+    it("should run failure callbacks if the method throws an exception", function () {
+        var f = jasmine.createSpy("function").and.throwError();
+        var success = jasmine.createSpy("success");
+        var failure = jasmine.createSpy("failure");
+        f.postpone().then(success, failure);
+        expect(f).not.toHaveBeenCalled();
+        expect(success).not.toHaveBeenCalled();
+        expect(failure).not.toHaveBeenCalled();
+        jasmine.clock().tick(100);
+        expect(f).toHaveBeenCalled();
+        expect(success).not.toHaveBeenCalled();
+        expect(failure).toHaveBeenCalled();
+    });
+
+});
+
+describe("Function.prototype.repeat(thisArg, arguments, interval)", function () {
+
+    var f;
+
+    beforeEach(function () {
+        f = jasmine.createSpy("function");
+        jasmine.clock().install();
+    });
+
+    afterEach(function () {
+        jasmine.clock().uninstall();
+    });
+
+    it("should receive the specified context", function () {
+        var context = {
+            someProperty: "some value"
+        };
+        f.repeat(context, [], 100);
+        expect(f).not.toHaveBeenCalled();
+        jasmine.clock().tick(101);
+        expect(f).toHaveBeenCalled();
+        expect(f.calls.mostRecent()).toEqual({
+            object: context,
+            args: []
+        });
+    });
+
+    it("should receive the specified arguments through the call", function () {
+        f.repeat(null, [1, 2, 3], 100);
+        expect(f).not.toHaveBeenCalled();
+        jasmine.clock().tick(101);
+        expect(f).toHaveBeenCalled();
+        expect(f).toHaveBeenCalledWith(1, 2, 3);
+    });
+
+    it("should repeat the execution of the function so long as the timer goes on", function () {
+        f.repeat(null, [], 10);
+        expect(f).not.toHaveBeenCalled();
+        for (var i = 0; i < 5; i ++) {
+            jasmine.clock().tick(11);
+            expect(f).toHaveBeenCalled();
+            expect(f.calls.count()).toEqual(i + 1);
+        }
+    });
+    
+    it("should expose the number of times it has been called through count()", function () {
+        var count = 0;
+        f.repeat(null, [], 10).then(function () {
+            count ++;
+        });
+        expect(f).not.toHaveBeenCalled();
+        for (var i = 0; i < 100; i ++) {
+            jasmine.clock().tick(11);
+            expect(f).toHaveBeenCalled();
+            expect(count).toEqual(f.calls.count());
+        }
+    });
+
+    it("should execute success callbacks at each call", function () {
+        var success = jasmine.createSpy("success");
+        var failure = jasmine.createSpy("failure");
+        f.repeat(null, [], 10).then(success, failure);
+        expect(f).not.toHaveBeenCalled();
+        expect(success).not.toHaveBeenCalled();
+        expect(failure).not.toHaveBeenCalled();
+        jasmine.clock().tick(1000);
+        expect(success).toHaveBeenCalled();
+        expect(failure).not.toHaveBeenCalled();
+        expect(success.calls.count()).toEqual(f.calls.count());
+    });
+
+    it("should execute failure callbacks at each failed call", function () {
+        var success = jasmine.createSpy("success");
+        var failure = jasmine.createSpy("failure");
+        f.and.throwError().repeat(null, [], 10).then(success, failure);
+        expect(f).not.toHaveBeenCalled();
+        expect(success).not.toHaveBeenCalled();
+        expect(failure).not.toHaveBeenCalled();
+        jasmine.clock().tick(1000);
+        expect(success).not.toHaveBeenCalled();
+        expect(failure).toHaveBeenCalled();
+        expect(failure.calls.count()).toEqual(f.calls.count());
+    });
+
+    it("should allow users to stop the repetition", function () {
+        var success = jasmine.createSpy("success");
+        var failure = jasmine.createSpy("failure");
+        var handle = f.repeat(null, [], 10).then(success, failure);
+        expect(f).not.toHaveBeenCalled();
+        expect(success).not.toHaveBeenCalled();
+        expect(failure).not.toHaveBeenCalled();
+        expect(handle.count()).toEqual(0);
+        jasmine.clock().tick(1001); //1000 for all the calls, 1 for the postponing inside the repeat
+        expect(failure).not.toHaveBeenCalled();
+        expect(success).toHaveBeenCalled();
+        expect(f).toHaveBeenCalled();
+        expect(success.calls.count()).toEqual(f.calls.count());
+        expect(handle.count()).toEqual(f.calls.count());
+        var count = handle.count();
+        handle.stop();
+        jasmine.clock().tick(1000);
+        expect(handle.stop).toBeUndefined();
+        expect(handle.then).toBeUndefined();
+        expect(handle.count).toBeUndefined();
+        expect(f.calls.count()).toEqual(count);
+        expect(success.calls.count()).toEqual(count);
+        expect(failure).toHaveBeenCalled();
+        expect(failure.calls.count()).toEqual(1);
+        expect(failure.calls.mostRecent().args[1]).toMatch(/stopped/i);
     });
 
 });
