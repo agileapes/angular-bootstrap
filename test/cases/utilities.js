@@ -1,6 +1,6 @@
 'use strict';
 
-describe("Function.prototype.bind([context], [parameters*])", function () {
+describe("Function.prototype.bind([{*} context], [{*} parameters*])", function () {
 
     var f = jasmine.createSpy("function");
 
@@ -25,7 +25,7 @@ describe("Function.prototype.bind([context], [parameters*])", function () {
 
 });
 
-describe("function evaluateExpression(expression) {}", function () {
+describe("function evaluateExpression({string} expression) {}", function () {
 
     beforeEach(function () {
         this.target = {
@@ -57,7 +57,7 @@ describe("function evaluateExpression(expression) {}", function () {
 
 });
 
-describe('Function.prototype.postpone(thisArg, arguments, delay, timeout, descriptor)', function () {
+describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|Function} delay], [{int} timeout], [{string} descriptor])', function () {
 
     var f;
 
@@ -269,7 +269,7 @@ describe('Function.prototype.postpone(thisArg, arguments, delay, timeout, descri
 
 });
 
-describe("Function.prototype.repeat(thisArg, arguments, interval)", function () {
+describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} interval])", function () {
 
     var f;
 
@@ -379,5 +379,31 @@ describe("Function.prototype.repeat(thisArg, arguments, interval)", function () 
         expect(failure.calls.count()).toEqual(1);
         expect(failure.calls.mostRecent().args[1]).toMatch(/stopped/i);
     });
+
+});
+
+describe("String.prototype.repeat({int} times)", function () {
+
+    it("should return the empty string if the number of times required is negative", function () {
+        expect("something".repeat(-1)).toEqual("");
+    });
+
+    it("should return the empty string if the repetition number is zero", function () {
+        expect("something".repeat(0)).toEqual("");
+    });
+
+    it("should return the string itself if the repetition number is one", function () {
+        var text = "something";
+        expect(text.repeat(1)).toEqual(text);
+    });
+
+    it("should return the properly repeated string", function () {
+        var text = "something";
+        expect(text.repeat(3)).toEqual(text + text + text);
+    });
+
+});
+
+describe("String.prototype.fix({int} length, [{string} filler = ' '], [{boolean} prepend = true])", function () {
 
 });
