@@ -59,13 +59,10 @@ describe("function evaluateExpression(expression) {}", function () {
 
 describe('Function.prototype.postpone(thisArg, arguments, delay, timeout, descriptor)', function () {
 
-    var context = {
-        someMethod: function () {
-        }
-    };
-
+    var f;
+    
     beforeEach(function () {
-        spyOn(context, "someMethod");
+        f = jasmine.createSpy("function");
         jasmine.clock().install();
     });
 
@@ -74,197 +71,186 @@ describe('Function.prototype.postpone(thisArg, arguments, delay, timeout, descri
     });
 
     it('should result in the function being called', function () {
-        context.someMethod.postpone();
+        f.postpone();
         jasmine.clock().tick(1);
-        expect(context.someMethod).toHaveBeenCalled();
+        expect(f).toHaveBeenCalled();
     });
 
     it('should result in the function having received its arguments', function () {
-        context.someMethod.postpone(null, [1, 2, 3]);
+        f.postpone(null, [1, 2, 3]);
         jasmine.clock().tick(1);
-        expect(context.someMethod).toHaveBeenCalledWith(1, 2, 3);
+        expect(f).toHaveBeenCalledWith(1, 2, 3);
     });
 
     it('should result in the function having received its context', function () {
         var callContext = {
             someProperty: "someValue"
         };
-        context.someMethod.postpone(callContext, [1, 2, 3]);
+        f.postpone(callContext, [1, 2, 3]);
         jasmine.clock().tick(1);
-        expect(context.someMethod.calls.mostRecent()).toEqual({
+        expect(f.calls.mostRecent()).toEqual({
             object: callContext,
             args: [1, 2, 3]
         });
     });
 
     it('should be triggered after the given delay time', function () {
-        context.someMethod.postpone(null, [], 100);
-        expect(context.someMethod).not.toHaveBeenCalled();
+        f.postpone(null, [], 100);
+        expect(f).not.toHaveBeenCalled();
         jasmine.clock().tick(50);
-        expect(context.someMethod).not.toHaveBeenCalled();
+        expect(f).not.toHaveBeenCalled();
         jasmine.clock().tick(49);
-        expect(context.someMethod).not.toHaveBeenCalled();
+        expect(f).not.toHaveBeenCalled();
         jasmine.clock().tick(1);
-        expect(context.someMethod).toHaveBeenCalled();
+        expect(f).toHaveBeenCalled();
     });
 
     it('should not be called unless the controller function tells it that it should', function () {
         var run = false;
-        context.someMethod.postpone(null, [], function () {
+        f.postpone(null, [], function () {
             return run;
         });
-        expect(context.someMethod).not.toHaveBeenCalled();
+        expect(f).not.toHaveBeenCalled();
         run = true;
-        expect(context.someMethod).not.toHaveBeenCalled();
+        expect(f).not.toHaveBeenCalled();
         //10 for the controller check interval + 1 for the function to be executed = 11
         jasmine.clock().tick(11);
-        expect(context.someMethod).toHaveBeenCalled();
+        expect(f).toHaveBeenCalled();
     });
 
     it('should run its success callbacks in order', function () {
         var result = [];
-        context.success = function () {
+        var success = jasmine.createSpy("success", function () {
             result.push(result.length + 1);
-        };
-        context.failure = function () {
-        };
-        spyOn(context, "success").and.callThrough();
-        spyOn(context, "failure");
-        context.someMethod.postpone(null, [], 0)
-            .then(context.success)
-            .then(context.success);
-        expect(context.someMethod).not.toHaveBeenCalled();
+        }).and.callThrough();
+        var failure = jasmine.createSpy("failure");
+        f.postpone(null, [], 0)
+            .then(success, failure)
+            .then(success, failure);
+        expect(f).not.toHaveBeenCalled();
         expect(result.length).toEqual(0);
         jasmine.clock().tick(1);
-        expect(context.someMethod).toHaveBeenCalled();
+        expect(f).toHaveBeenCalled();
         expect(result.length).not.toEqual(0);
         expect(result).toEqual([1, 2]);
-        expect(context.success).toHaveBeenCalled();
-        expect(context.success.calls.count()).toEqual(2);
-        expect(context.failure).not.toHaveBeenCalled();
+        expect(success).toHaveBeenCalled();
+        expect(success.calls.count()).toEqual(2);
+        expect(failure).not.toHaveBeenCalled();
     });
 
     it("should honor its timeout and run failure callbacks when timeout occurs", function () {
         var result = [];
-        context.success = function () {
+        var success = jasmine.createSpy("success", function () {
             //pushes 1, 2, ...
             result.push(result.length + 1);
-        };
-        context.failure = function () {
+        }).and.callThrough();
+        var failure = jasmine.createSpy("failure", function () {
             //pushes -1, -2, ...
             result.push(-(result.length + 1));
-        };
-        spyOn(context, "success").and.callThrough();
-        spyOn(context, "failure").and.callThrough();
-        context.someMethod.postpone(null, [], 3000, 2000)
-            .then(context.success, context.failure)
-            .then(context.success, context.failure);
-        expect(context.someMethod).not.toHaveBeenCalled();
-        expect(context.success).not.toHaveBeenCalled();
-        expect(context.failure).not.toHaveBeenCalled();
+        }).and.callThrough();
+        f.postpone(null, [], 3000, 2000)
+            .then(success, failure)
+            .then(success, failure);
+        expect(f).not.toHaveBeenCalled();
+        expect(success).not.toHaveBeenCalled();
+        expect(failure).not.toHaveBeenCalled();
         jasmine.clock().tick(2500);
-        expect(context.failure).toHaveBeenCalled();
-        expect(context.failure.calls.count()).toEqual(2);
-        expect(context.success).not.toHaveBeenCalled();
+        expect(failure).toHaveBeenCalled();
+        expect(failure.calls.count()).toEqual(2);
+        expect(success).not.toHaveBeenCalled();
         jasmine.clock().tick(1000);
-        expect(context.someMethod).not.toHaveBeenCalled();
-        expect(context.success).not.toHaveBeenCalled();
+        expect(f).not.toHaveBeenCalled();
+        expect(success).not.toHaveBeenCalled();
         expect(result).toEqual([-1, -2]);
     });
 
     it("should honor timeout and run failure callbacks when timeout occurs during execution with non-deterministic delay", function () {
         var result = [];
-        context.success = function () {
+        var success = jasmine.createSpy("success", function () {
             //pushes 1, 2, ...
             result.push(result.length + 1);
-        };
-        context.failure = function () {
+        }).and.callThrough();
+        var failure = jasmine.createSpy("failure", function () {
             //pushes -1, -2, ...
             result.push(-(result.length + 1));
-        };
+        }).and.callThrough();
         var run = false;
-        spyOn(context, "success").and.callThrough();
-        spyOn(context, "failure").and.callThrough();
-        context.someMethod.postpone(null, [], function () {
+        f.postpone(null, [], function () {
             return run;
         }, 2000)
-            .then(context.success, context.failure)
-            .then(context.success, context.failure);
-        expect(context.someMethod).not.toHaveBeenCalled();
-        expect(context.success).not.toHaveBeenCalled();
-        expect(context.failure).not.toHaveBeenCalled();
+            .then(success, failure)
+            .then(success, failure);
+        expect(f).not.toHaveBeenCalled();
+        expect(success).not.toHaveBeenCalled();
+        expect(failure).not.toHaveBeenCalled();
         jasmine.clock().tick(2500);
-        expect(context.failure).toHaveBeenCalled();
-        expect(context.failure.calls.count()).toEqual(2);
-        expect(context.success).not.toHaveBeenCalled();
+        expect(failure).toHaveBeenCalled();
+        expect(failure.calls.count()).toEqual(2);
+        expect(success).not.toHaveBeenCalled();
         jasmine.clock().tick(1000);
         run = true;
         jasmine.clock().tick(100);
-        expect(context.someMethod).not.toHaveBeenCalled();
-        expect(context.success).not.toHaveBeenCalled();
+        expect(f).not.toHaveBeenCalled();
+        expect(success).not.toHaveBeenCalled();
         expect(result).toEqual([-1, -2]);
     });
 
     it("should allow for the user to stop the execution when the delay is deterministic", function () {
         var result = [];
-        context.success = function () {
+        var success = jasmine.createSpy("success", function () {
             //pushes 1, 2, ...
             result.push(result.length + 1);
-        };
-        context.failure = function () {
+        }).and.callThrough();
+        var failure = jasmine.createSpy("failure", function () {
             //pushes -1, -2, ...
             result.push(-(result.length + 1));
-        };
-        spyOn(context, "success").and.callThrough();
-        spyOn(context, "failure").and.callThrough();
-        var handler = context.someMethod.postpone(null, [], 100)
-            .then(context.success, context.failure)
-            .then(context.success, context.failure);
-        expect(context.someMethod).not.toHaveBeenCalled();
-        expect(context.success).not.toHaveBeenCalled();
-        expect(context.failure).not.toHaveBeenCalled();
+        }).and.callThrough();
+        var handler = f.postpone(null, [], 100)
+            .then(success, failure)
+            .then(success, failure);
+        expect(f).not.toHaveBeenCalled();
+        expect(success).not.toHaveBeenCalled();
+        expect(failure).not.toHaveBeenCalled();
         jasmine.clock().tick(60);
         handler.stop();
         jasmine.clock().tick(20);
-        expect(context.success).not.toHaveBeenCalled();
-        expect(context.failure).toHaveBeenCalled();
-        expect(context.failure.calls.count()).toEqual(2);
+        expect(success).not.toHaveBeenCalled();
+        expect(failure).toHaveBeenCalled();
+        expect(failure.calls.count()).toEqual(2);
         jasmine.clock().tick(60);
         expect(handler.stop).toBeUndefined();
-        expect(context.someMethod).not.toHaveBeenCalled();
+        expect(f).not.toHaveBeenCalled();
     });
 
     it("should allow for the user to stop the execution when the delay is non-deterministic", function () {
         var result = [];
-        context.success = function () {
+        var success = jasmine.createSpy("success", function () {
             //pushes 1, 2, ...
             result.push(result.length + 1);
-        };
-        context.failure = function () {
+        }).and.callThrough();
+        var failure = jasmine.createSpy("failure", function () {
             //pushes -1, -2, ...
             result.push(-(result.length + 1));
-        };
+        }).and.callThrough();
         var run = false;
-        spyOn(context, "success").and.callThrough();
-        spyOn(context, "failure").and.callThrough();
-        var handler = context.someMethod.postpone(null, [], function () {
+        var handler = f.postpone(null, [], function () {
             return run;
         })
-            .then(context.success, context.failure)
-            .then(context.success, context.failure);
-        expect(context.someMethod).not.toHaveBeenCalled();
-        expect(context.success).not.toHaveBeenCalled();
-        expect(context.failure).not.toHaveBeenCalled();
+            .then(success, failure)
+            .then(success, failure);
+        expect(f).not.toHaveBeenCalled();
+        expect(success).not.toHaveBeenCalled();
+        expect(failure).not.toHaveBeenCalled();
         jasmine.clock().tick(60);
         run = true;
         handler.stop();
         jasmine.clock().tick(20);
-        expect(context.success).not.toHaveBeenCalled();
-        expect(context.failure).toHaveBeenCalled();
-        expect(context.failure.calls.count()).toEqual(2);
+        expect(success).not.toHaveBeenCalled();
+        expect(failure).toHaveBeenCalled();
+        expect(failure.calls.count()).toEqual(2);
         jasmine.clock().tick(60);
         expect(handler.stop).toBeUndefined();
-        expect(context.someMethod).not.toHaveBeenCalled();
+        expect(f).not.toHaveBeenCalled();
     });
 
 });
