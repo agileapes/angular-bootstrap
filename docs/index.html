@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" ng-app="BootstrapUIDocumentation">
 <head>
     <meta charset="UTF-8">
     <title>BootstrapUI :: Documentation</title>
@@ -7,12 +7,17 @@
     <link rel="stylesheet" type="text/css" href="css/impress-box.min.css"/>
     <link rel="stylesheet" type="text/css" href="../bootstrapui/css/bootstrapui.css"/>
     <link rel="stylesheet" type="text/css" href="css/theme.css"/>
+    <script type="text/javascript" src="js/modernizr.js"></script>
+    <script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/angular.js"></script>
+    <script type="text/javascript" src="js/angular-route.js"></script>
+    <script type="text/javascript" src="js/highlight.pack.js"></script>
+    <script type="text/javascript" src="js/config.js"></script>
+    <script type="text/javascript" src="../bootstrapui/js/bootstrapui.js"></script>
+    <script type="text/javascript" src="js/app.js"></script>
 </head>
 <body>
-<div class="container">
-    <h1 class="page-header">BootstrapUI <small>write less, get more</small></h1>
-    <p>BootstrapUI aims to deliver the awesomeness of <a href="http://getbootstrap.com" target="_blank">Twitter Bootstrap</a>
-    via definition of <a href="http://angularjs.org">AngularJS</a> directives as a simple, intuitive DSL.</p>
-</div>
+<div class="container" ng-view></div>
 </body>
 </html>
