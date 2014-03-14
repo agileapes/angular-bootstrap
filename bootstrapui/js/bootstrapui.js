@@ -365,15 +365,18 @@ function evaluateExpression(expression, optional) {
     /**
      * Before doing anything else, we configure the framework and pre-apply any options
      */
-    (function (config) {
+    toolkit.configure = function (config) {
+        if (typeof toolkit.config == "undefined") {
+            toolkit.config = {};
+        }
         if (!config) {
             config = {};
         }
         if (!config.base) {
             config.base = ".";
         }
-        if (!config.templateBase) {
-            config.templateBase = "templates";
+        if (!config.templatesBase) {
+            config.templatesBase = "templates";
         }
         if (!config.directivesBase) {
             config.directivesBase = "js/directives";
@@ -382,7 +385,7 @@ function evaluateExpression(expression, optional) {
             config.filtersBase = "js/filters";
         }
         if (!config.namespace) {
-            config.namespace = "";
+            config.namespace = "ui";
         }
         if (!config.directives) {
             config.directives = [];
@@ -394,34 +397,94 @@ function evaluateExpression(expression, optional) {
             config.debug = false;
         }
         if (!config.ext) {
-            config.ext = {};
+            if (typeof toolkit.config.ext == "object") {
+                config.ext = toolkit.config.ext;
+            } else {
+                config.ext = {};
+            }
+        } else if (typeof toolkit.config.ext == "object") {
+            $.each(toolkit.config.ext, function (name, declaration) {
+                config.ext[name] = declaration;
+            });
+        }
+        if (!config.tools) {
+            if (typeof toolkit.config.tools == "object") {
+                config.tools = toolkit.config.tools;
+            } else {
+                config.tools = {};
+            }
+        } else if (typeof toolkit.config.tools == "object") {
+            $.each(toolkit.config.tools, function (name, declaration) {
+                if (typeof config.tools[name] == "undefined") {
+                    config.tools[name] = declaration;
+                }
+            });
         }
         if (typeof config.preloadAll == "undefined") {
             config.preloadAll = true;
         }
-        if (!config.console) {
-            config.console = {};
-        }
-        if (typeof config.console.replace == "undefined") {
-            config.console.replace = false;
-        }
-        if (typeof config.console.preserve == "undefined") {
-            config.console.preserve = config.console.replace;
-        }
-        if (typeof config.console.output == "undefined") {
-            config.console.output = true;
-        }
-        if (!config.console.format) {
-            config.console.format = "%s";
-        }
         toolkit.config = config;
         //We attempt to configure any tool for which both a configuring method exists
         $.each(toolkit.tools, function (name, tool) {
-            if ($.isFunction(tool.config)) {
-                tool.config.apply(null, [config[name] ? config[name] : {}, toolkit]);
+            if ($.isFunction(tool.configure)) {
+                tool.configure.apply(null, [config.tools[name] ? config.tools[name] : {}]);
             }
         });
-    })(globalConfig);
+    };
+    toolkit.reconfigure = function (config) {
+        toolkit.config = {};
+        toolkit.configure(config);
+    };
+    toolkit.reconfigure(globalConfig);
+
+    toolkit.extend = function (extension) {
+        if (typeof extension != "object") {
+            return;
+        }
+        if (typeof extension.tools == "object") {
+            $.each(extension.tools, function (name, declaration) {
+                if (typeof declaration != "object") {
+                    return;
+                }
+                if (!toolkit.tools) {
+                    toolkit.tools = {};
+                }
+                toolkit.tools[name] = declaration;
+                if ($.isFunction(declaration.configure)) {
+                    if (typeof toolkit.config != "object") {
+                        toolkit.config = {};
+                    }
+                    if (typeof toolkit.config.tools != "object") {
+                        toolkit.config.tools = {};
+                    }
+                    if (typeof toolkit.config.tools[name] != "object") {
+                        toolkit.config.tools[name] = {};
+                    }
+                    declaration.configure(toolkit.config.tools[name]);
+                }
+            });
+        }
+        if (typeof extension.ext == "object") {
+            $.each(extension.ext, function (name, declaration) {
+                if (typeof declaration != "object") {
+                    return;
+                }
+                if (!toolkit.ext) {
+                    toolkit.ext = {};
+                }
+                toolkit.ext[name] = declaration;
+                if (typeof toolkit.config != "object") {
+                    toolkit.config = {};
+                }
+                if (typeof toolkit.config.ext != "object") {
+                    toolkit.config.ext = {};
+                }
+                if (typeof toolkit.config.ext[name] != "object") {
+                    toolkit.config.ext[name] = {};
+                }
+            });
+        }
+    };
 
     toolkit.tools.loader = {};
     (function (loader) {
