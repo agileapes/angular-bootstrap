@@ -1,3 +1,4 @@
+'use strict';
 (function (angular) {
     var module = angular.module("BootstrapUIDocumentation", ["ngRoute", "ngAnimate"], null);
     module.config(function ($routeProvider) {
