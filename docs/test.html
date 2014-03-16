@@ -86,7 +86,7 @@
                 <h1>Profile <small>Edit</small></h1>
             </div>
             <ui:panel type="information" title="Personal Information">
-                <ui:form-container orientation="horizontal" label-size="6">
+                <ui:form-container orientation="vertical" label-size="6">
                     <div class="row">
                         <div class="col-lg-4">
                             <ui:form-input type="text" id="firstName" label="First name" ng-model="user.first"></ui:form-input>
@@ -110,7 +110,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-lg-12">
+                        <div class="col-lg-2">
                             <ui:form-input type="textarea" id="description" label="Description" orientation="horizontal"
                                            label-size="2" ng-model="user.description"></ui:form-input>
                         </div>

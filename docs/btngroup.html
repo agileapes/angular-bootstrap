@@ -31,7 +31,7 @@
             <h3 class="panel-title">Example</h3>
         </div>
         <div class="panel-body">
-            <ui:button-group>
+            <ui:button-group orientation="vertical">
                 <ui:group-button glyph="move"></ui:group-button>
                 <ui:group-button glyph="upload" kind="success"></ui:group-button>
                 <ui:group-button glyph="bullhorn" kind="information" label="Notify" position="after"></ui:group-button>
@@ -48,7 +48,7 @@
             </ui:button-group>
         </div>
         <div class="panel-footer">
-            <pre><code>&lt;ui:button-group&gt;
+            <pre><code>&lt;ui:button-group <span class="annotation" title="Sets the orientation of the button group. Possible values are <code>horizontal</code> and <code>vertical</code>">orientation="vertical"</span>&gt;
     &lt;ui:group-button glyph="move"&gt;&lt;/ui:group-button&gt;
     &lt;ui:group-button glyph="upload" kind="success"&gt;&lt;/ui:group-button&gt;
     &lt;ui:group-button glyph="bullhorn" kind="information" label="Notify" position="after"&gt;&lt;/ui:group-button&gt;

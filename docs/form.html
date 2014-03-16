@@ -402,6 +402,24 @@
             <div class="form-control-static col-sm-{{12 - options.labelSize}}"><code>{{values.sampleComboInput}} <span class="closer" ng-click="values.sampleComboInput=''">&times;</span></code></div>
         </div>
     </ui:panel>
+    <h3>Checklists</h3>
+    <p>A checklist will easily allow you to create a group of items, one or more of which can be selected.</p>
+    <h4>Selection mode: single</h4>
+    <ui:panel type="information" title="Example" ng-init="values.sampleSingleChecklist=['first']">
+        <ui:form-select selection="single" type="checkList" id="sampleSingleCheckList" label="Select one" descriptor="options" ng-model="values.sampleSingleChecklist">
+            <ui:form-select-item value="first">First item</ui:form-select-item>
+            <ui:form-select-item value="second">Second item</ui:form-select-item>
+            <ui:form-select-item value="third">Third item</ui:form-select-item>
+        </ui:form-select>
+    </ui:panel>
+    <h4>Selection mode: multiple</h4>
+    <ui:panel type="information" title="Example" ng-init="values.sampleMultipleChecklist=['first', 'second']">
+        <ui:form-select selection="multiple" type="checkList" id="sampleMultipleCheckList" label="Select some" descriptor="options" ng-model="values.sampleMultipleChecklist">
+            <ui:form-select-item value="first">First item</ui:form-select-item>
+            <ui:form-select-item value="second">Second item</ui:form-select-item>
+            <ui:form-select-item value="third">Third item</ui:form-select-item>
+        </ui:form-select>
+    </ui:panel>
 </div>
 </body>
 </html>
