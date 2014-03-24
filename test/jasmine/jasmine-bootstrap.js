@@ -67,6 +67,9 @@
                 toString: function () {
                     var values = [];
                     $.each(parameters.map, function (key, value) {
+                        if (!key) {
+                            return;
+                        }
                         values.push(encodeURIComponent(key) + "=" + encodeURIComponent(value));
                     });
                     return "?" + values.join("&");
@@ -109,6 +112,9 @@
                 return result.join(" ");
             };
             this.render = function () {
+                var sanitize = function (string) {
+                    return string.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+                };
                 var element, target;
                 if (type == "root") {
                     element = $("<div class='container-fluid'><div class='report col-sm-9 col-sm-offset-3'><div class='row'><h1 class='page-header'>Test Execution Report<small class='pull-right'></small></h1></div></div></div><div class='navigation'><ul class='nav nav-pills nav-stacked'>" +
@@ -120,18 +126,21 @@
                         "<li class='successful'><a href='javascript:void(0);' onclick='jasmine.menu(this);'>Passed tests<span class='badge pull-right'>" + testCollection.count.succeeded + "</span></a></li>" +
                         "</ul><div class='container'><label class='checkbox-inline'><input type='checkbox'> raise exceptions </label></div></div>");
                     target = element.find(".report");
-                    if (!jasmine.getEnv().catchingExceptions()) {
-                        element.find("input[type=checkbox]").attr('checked', 'checked').click(function () {
-                            if ($.isFunction(jasmine.onRaiseExceptionsClick)) {
-                                jasmine.onRaiseExceptionsClick.apply(this, arguments);
-                            }
-                        });
+                    var raiseExceptionsCheckbox = element.find("input[type=checkbox]");
+                    raiseExceptionsCheckbox.click(function () {
+                        if ($.isFunction(jasmine.onRaiseExceptionsClick)) {
+                            jasmine.onRaiseExceptionsClick.apply(this, arguments);
+                        }
+                        queryString.setParam("catch", this.checked);
+                    });
+                    if (queryString.getParam("catch") === true) {
+                        raiseExceptionsCheckbox.attr('checked', 'checked');
                     }
                 } else if (type == "suite") {
-                    element = $("<div class='test-suite " + this.getClassName() + "' id='" + descriptor.id + "'><h4 class='suite-title'><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + "\">" + descriptor.description + " &hellip;</a></h4><div class='suite-body'></div></div>");
+                    element = $("<div class='test-suite " + this.getClassName() + "' id='" + descriptor.id + "'><h4 class='suite-title'><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + "\">" + sanitize(descriptor.description) + " &hellip;</a></h4><div class='suite-body'></div></div>");
                     target = element.find(".suite-body");
                 } else if (type == "spec") {
-                    target = element = $("<div class='test-specification " + this.getClassName() + "' id='" + descriptor.id + "'><span class='icon'></span><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + "\">&hellip; " + descriptor.description + "</a></div>");
+                    target = element = $("<div class='test-specification " + this.getClassName() + "' id='" + descriptor.id + "'><span class='icon'></span><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + "\">&hellip; " + sanitize(descriptor.description) + "</a></div>");
                 } else {
                     return $("<div class='alert alert-danger'>We don't quite know how to render a result node of type <strong>" + type + "</strong></div>");
                 }
@@ -194,12 +203,12 @@
                     element.append("<div class='expectations'></div>");
                     var expectations = element.find(".expectations");
                     $(descriptor.failedExpectations).each(function () {
-                        expectations.append("<div><span></span>" + this.message + "</div>");
+                        expectations.append("<div><span></span>" + sanitize(this.message) + "</div>");
                     });
                 }
                 if (type == "spec") {
                     element.find(".icon").tooltip({
-                        title: descriptor.fullName.replace(/\n/g, "<br/>"),
+                        title: sanitize(descriptor.fullName),
                         placement: "auto left",
                         html: true,
                         animation: false
@@ -294,6 +303,10 @@
         this.initialize = function () {
         };
         this.jasmineStarted = function (options) {
+            if (queryString.getParam("catch") === null) {
+                queryString.setParam("catch", "true");
+                return;
+            }
             testCollection.count.total = options.totalSpecsDefined;
         };
         this.jasmineDone = function () {
