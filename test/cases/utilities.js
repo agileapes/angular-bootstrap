@@ -4,6 +4,11 @@ describe("ECMA5 Standard Function.prototype.bind([{*} context], [{*} parameters*
 
     var f = jasmine.createSpy("function");
 
+    it("returns a function that can be called at a later time", function () {
+        var bound = f.bind();
+        expect($.isFunction(bound)).toBeTruthy();
+    });
+
     it("provides a default context should none be provided", function () {
         var context = {
             name: "Context"
