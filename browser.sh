@@ -3,6 +3,10 @@ echoerr() {
     echo "$@" 1>&2;
 }
 port=8879
+if [ "$1" != "" ];
+then
+    port="$1"
+fi
 #Count running instances
 count=$(ps -ea | grep python | grep ${port} | grep -v grep | wc -l)
 count=`expr ${count} + 0`
@@ -14,10 +18,12 @@ then
 fi
 #This is to enable job control
 set -m
-#Start a simple server and send it to the background
-python -m SimpleHTTPServer 8879 &
-#Open up the test suite in the default browser
 url="http://localhost:${port}/test"
+#Start a simple server and send it to the background
+echoerr "Starting local server on port ${port}"
+echoerr "Browsing to ${url}"
+python -m SimpleHTTPServer ${port} &
+#Open up the test suite in the default browser
 if command -v open > /dev/null
 then
     if [ "$BROWSER" != "" ];
