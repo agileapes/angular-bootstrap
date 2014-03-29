@@ -140,6 +140,12 @@
                     }
                     if (descriptor.request.method == method && descriptor.request.url == url) {
                         descriptor.called = true;
+                        var responseCodeGroup = descriptor.response.status % 100;
+                        if (responseCodeGroup == 4 || responseCodeGroup == 5) {
+                            actions.push(function () {
+                                deferred.reject("Error " + descriptor.response.status, descriptor.response.status, descriptor.response.headers, config);
+                            });
+                        }
                         actions.push(function () {
                             if (options.cache) {
                                 options.cache.put(url, descriptor.response.data);
