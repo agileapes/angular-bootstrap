@@ -17,7 +17,7 @@ body {
 }
 
 .report.collapsed {
-    margin-left: 120px;
+    margin-left: 90px;
     width: auto;
 }
 
@@ -157,7 +157,7 @@ li.pending.nonempty a {
 }
 
 .navigation.collapsed {
-    width: 90px;
+    width: 65px;
 }
 
 .navigation .tooltip {
@@ -191,7 +191,8 @@ li.pending.nonempty a {
     display: none;
 }
 
-.navigation.collapsed span.glyphicon {
+.navigation.collapsed span.badge {
+    display: none;
 }
 
 .navigation .expander .whileExpanded {
@@ -224,7 +225,7 @@ li.pending.nonempty a {
 }
 
 .navigation.collapsed .container {
-    width: 70px;
+    width: 50px;
     text-align: right;
 }
 
