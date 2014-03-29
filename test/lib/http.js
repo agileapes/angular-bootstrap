@@ -250,7 +250,7 @@
                     var urls = [];
                     for (var i = 0; i < expectations.length; i++) {
                         var obj = expectations[i];
-                        urls.push(obj.request.method + " " + obj.request.url);
+                        urls.push("`" + obj.method + " " + obj.url + "`");
                     }
                     urls = urls.join(", ");
                     throw {
@@ -266,7 +266,7 @@
                 for (var i = 0; i < requests.length; i++) {
                     var obj = requests[i];
                     if (!obj.called) {
-                        outstanding.push(obj.request.method + " " + obj.request.url);
+                        outstanding.push("`" + obj.request.method + " " + obj.request.url + "`");
                     }
                 }
                 if (outstanding.length > 0) {
