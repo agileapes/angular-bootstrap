@@ -158,6 +158,18 @@ li.pending.nonempty a {
 
 .navigation.collapsed {
     width: 65px;
+    border-right: 1px solid #dfdfdf;
+    padding-right: 10px;
+    opacity: 0.1;
+    -webkit-transition: all 0.4s;
+    -moz-transition: all 0.4s;
+    -ms-transition: all 0.4s;
+    -o-transition: all 0.4s;
+    transition: all 0.4s;
+}
+
+.navigation.collapsed:hover {
+    opacity: 1;
 }
 
 .navigation .tooltip {
@@ -172,11 +184,6 @@ li.pending.nonempty a {
 .navigation.collapsed li a {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
-}
-
-.navigation.collapsed {
-    border-right: 1px solid #dfdfdf;
-    padding-right: 10px;
 }
 
 .navigation label .glyphicon {
@@ -229,3 +236,17 @@ li.pending.nonempty a {
     text-align: right;
 }
 
+.report.collapsed .test-suite {
+    opacity: 0.3;
+    -webkit-transition: all 0.4s;
+    -moz-transition: all 0.4s;
+    -ms-transition: all 0.4s;
+    -o-transition: all 0.4s;
+    transition: all 0.4s;
+    border-radius: 5px;
+}
+
+.report.collapsed .test-suite.failed, .report.collapsed .test-suite:hover {
+    opacity: 1;
+    background: #f8f8f8;
+}

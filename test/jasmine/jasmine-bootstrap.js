@@ -155,10 +155,10 @@
                         placement: "right"
                     });
                 } else if (type == "suite") {
-                    element = $("<div class='test-suite " + this.getClassName() + "' id='" + descriptor.id + "'><h4 class='suite-title'><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + "\">" + sanitize(descriptor.description) + " &hellip;</a></h4><div class='suite-body'></div></div>");
+                    element = $("<div class='test-suite " + this.getClassName() + "' id='" + descriptor.id + "'><h4 class='suite-title'><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + (queryString.getParam("minimal") ? "&amp;minimal=" + queryString.getParam("minimal") : "") + "\">" + sanitize(descriptor.description) + " &hellip;</a></h4><div class='suite-body'></div></div>");
                     target = element.find(".suite-body");
                 } else if (type == "spec") {
-                    target = element = $("<div class='test-specification " + this.getClassName() + "' id='" + descriptor.id + "'><span class='icon'></span><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + "\">&hellip; " + sanitize(descriptor.description) + "</a></div>");
+                    target = element = $("<div class='test-specification " + this.getClassName() + "' id='" + descriptor.id + "'><span class='icon'></span><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + (queryString.getParam("minimal") ? "&amp;minimal=" + queryString.getParam("minimal") : "") + "\">&hellip; " + sanitize(descriptor.description) + "</a></div>");
                 } else {
                     return $("<div class='alert alert-danger'>We don't quite know how to render a result node of type <strong>" + type + "</strong></div>");
                 }
@@ -168,7 +168,7 @@
                 }
                 if (type == "root") {
                     if (queryString.getParam("spec")) {
-                        target.find(".test-suite").first().before("<div class='run-all'><a class='btn btn-primary' href='?'>Run all tests</a></div>");
+                        target.find(".test-suite").first().before("<div class='run-all'><a class='btn btn-primary' href='?" + (queryString.getParam("minimal") ? "&amp;minimal=" + queryString.getParam("minimal") : "") + "'>Run all tests</a></div>");
                     }
                     if (testCollection.count.failed > 0) {
                         target.find(".test-suite").first().before("<div class='alert alert-danger'><button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;</button><p><strong><span class='glyphicon glyphicon-eye-open'></span> Attention</strong> There have been <a href='javascript:jasmine.menu(\"failed\");' class='alert-link'>" + testCollection.count.failed + " test failures.</a></p></div>");
