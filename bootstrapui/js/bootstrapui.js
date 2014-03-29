@@ -664,7 +664,11 @@ function evaluateExpression(expression, optional) {
      */
     BootstrapUI.classes.TemplateCache = function ($http, $cacheFactory) {
         var self = this;
-        var templateCache = $cacheFactory("buTemplateCache");
+        var cacheId = "buTemplateCache";
+        var templateCache = $cacheFactory.get(cacheId);
+        if (!templateCache) {
+            templateCache = $cacheFactory(cacheId);
+        }
         this.info = function () {
             return templateCache.info();
         };
