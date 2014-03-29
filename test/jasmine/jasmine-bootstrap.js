@@ -117,16 +117,18 @@
                 };
                 var element, target;
                 if (type == "root") {
-                    element = $("<div class='container-fluid'><div class='report col-sm-9 col-sm-offset-3'><div class='row'><h1 class='page-header'>Test Execution Report<small class='pull-right'></small></h1></div></div></div><div class='navigation'><ul class='nav nav-pills nav-stacked'>" +
-                        "<li class='active running'><a href='javascript:void(0);' onclick='jasmine.menu(this);'>Active tests<span class='badge pull-right'>" + (testCollection.count.total - testCollection.count.disabled) + "</span></a></li>" +
-                        "<li class='not-running'><a href='javascript:void(0);' onclick='jasmine.menu(this);'>Disabled tests<span class='badge pull-right'>" + testCollection.count.disabled + "</span></a></li>" +
-                        "<li class='all'><a href='javascript:void(0);' onclick='jasmine.menu(this);'>All tests<span class='badge pull-right'>" + testCollection.count.total + "</span></a></li>" +
-                        "<li class='failed'><a href='javascript:void(0);' onclick='jasmine.menu(this);'>Failed tests<span class='badge pull-right'>" + testCollection.count.failed + "</span></a></li>" +
-                        "<li class='pending'><a href='javascript:void(0);' onclick='jasmine.menu(this);'>Pending tests<span class='badge pull-right'>" + testCollection.count.pending + "</span></a></li>" +
-                        "<li class='successful'><a href='javascript:void(0);' onclick='jasmine.menu(this);'>Passed tests<span class='badge pull-right'>" + testCollection.count.succeeded + "</span></a></li>" +
-                        "</ul><div class='container'><label class='checkbox-inline'><input type='checkbox'> raise exceptions </label></div></div>");
+                    element = $("<div class='container-fluid'><div class='report'><div class='row'><h1 class='page-header'>Test Execution Report<small class='pull-right'></small></h1></div></div></div><div class='navigation'><ul class='nav nav-pills nav-stacked'>" +
+                        "<li class='active running' title='Active tests'><a href='javascript:void(0);' onclick='jasmine.menu(this);'><span class='glyphicon glyphicon-check'></span> <em>Active tests</em><span class='badge pull-right'>" + (testCollection.count.total - testCollection.count.disabled) + "</span></a></li>" +
+                        "<li class='not-running' title='Disabled tests'><a href='javascript:void(0);' onclick='jasmine.menu(this);'><span class='glyphicon glyphicon-unchecked'></span> <em>Disabled tests</em><span class='badge pull-right'>" + testCollection.count.disabled + "</span></a></li>" +
+                        "<li class='all' title='All tests'><a href='javascript:void(0);' onclick='jasmine.menu(this);'><span class='glyphicon glyphicon-list'></span> <em>All tests</em><span class='badge pull-right'>" + testCollection.count.total + "</span></a></li>" +
+                        "<li class='failed" + (testCollection.count.failed ? " nonempty" : "") + "' title='Failed tests'><a href='javascript:void(0);' onclick='jasmine.menu(this);'><span class='glyphicon glyphicon-exclamation-sign'></span> <em>Failed tests</em><span class='badge pull-right'>" + testCollection.count.failed + "</span></a></li>" +
+                        "<li class='pending" + (testCollection.count.failed ? " nonempty" : "") + "' title='Pending tests'><a href='javascript:void(0);' onclick='jasmine.menu(this);'><span class='glyphicon glyphicon-time'></span> <em>Pending tests</em><span class='badge pull-right'>" + testCollection.count.pending + "</span></a></li>" +
+                        "<li class='successful' title='Passed tests'><a href='javascript:void(0);' onclick='jasmine.menu(this);'><span class='glyphicon glyphicon-ok'></span> <em>Passed tests</em><span class='badge pull-right'>" + testCollection.count.succeeded + "</span></a></li>" +
+                        "</ul><div class='container' title='Catch exceptions'><label class='checkbox-inline'><input type='checkbox' class='exceptions-check'><span class='glyphicon glyphicon-screenshot'></span><em>Raise exceptions</em></label></div>" +
+                        "<div class='container' title='Show a minimal interface'><label class='checkbox-inline'><input type='checkbox' class='minimal-check'><span class='glyphicon glyphicon-eye-open'></span><em>Minimal interface</em></label></div>" +
+                        "<div class='container' title='Expand the navigation bar'><a href='javascript:void(0);' class='expander'><span class='whileExpanded'><span class='glyphicon glyphicon-chevron-left'></span> Collapse</span><span class='whileCollapsed'><span class='glyphicon glyphicon-chevron-right'></span></span></a></div>");
                     target = element.find(".report");
-                    var raiseExceptionsCheckbox = element.find("input[type=checkbox]");
+                    var raiseExceptionsCheckbox = element.find("input.exceptions-check");
                     raiseExceptionsCheckbox.click(function () {
                         if ($.isFunction(jasmine.onRaiseExceptionsClick)) {
                             jasmine.onRaiseExceptionsClick.apply(this, arguments);
@@ -136,6 +138,22 @@
                     if (queryString.getParam("catch") === true) {
                         raiseExceptionsCheckbox.attr('checked', 'checked');
                     }
+                    var minimalInterface = element.find("input.minimal-check");
+                    minimalInterface.click(function () {
+                        queryString.setParam('minimal', this.checked);
+                    });
+                    if (queryString.getParam("minimal") === true) {
+                        minimalInterface.attr('checked', 'checked');
+                    }
+                    var expander = element.find("a.expander");
+                    expander.click(function () {
+                        $(".navigation").toggleClass("collapsed");
+                        target.toggleClass("collapsed");
+                    });
+                    element.find("li").add(element.find(".container")).tooltip({
+                        container: element,
+                        placement: "right"
+                    });
                 } else if (type == "suite") {
                     element = $("<div class='test-suite " + this.getClassName() + "' id='" + descriptor.id + "'><h4 class='suite-title'><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + "\">" + sanitize(descriptor.description) + " &hellip;</a></h4><div class='suite-body'></div></div>");
                     target = element.find(".suite-body");
@@ -311,6 +329,10 @@
         };
         this.jasmineDone = function () {
             $(options.getContainer()).append(testCollection.suites.render());
+            if (queryString.getParam("minimal")) {
+                $(".navigation .expander").click();
+                $(".report .alert").hide();
+            }
             ReportHelper.menu(null);
         };
         this.suiteStarted = function (suite) {

@@ -2,14 +2,6 @@ body {
     font-size: 14px;
 }
 
-.navigation {
-    position: fixed;
-    left: 10px;
-    top: 50px;
-    width: 23%;
-    z-index: 1500;
-}
-
 .breadcrumb {
     position: fixed;
     width: 100%;
@@ -19,6 +11,14 @@ body {
 .report {
     margin-top: 40px;
     z-index: 1000;
+    margin-left: 25%;
+    margin-right: 30px;
+    width: 73%;
+}
+
+.report.collapsed {
+    margin-left: 120px;
+    width: auto;
 }
 
 .status-report {
@@ -135,3 +135,96 @@ body {
 .test-specification.failed .expectations div span:before {
     content: "\e080";
 }
+
+li.nonempty {
+    font-weight: bold;
+}
+
+li.failed.nonempty a {
+    color: #bb3239;
+}
+
+li.pending.nonempty a {
+    color: #c3921f;
+}
+
+.navigation {
+    position: fixed;
+    left: 10px;
+    top: 50px;
+    width: 23%;
+    z-index: 1500;
+}
+
+.navigation.collapsed {
+    width: 90px;
+}
+
+.navigation .tooltip {
+    visibility: hidden;
+}
+
+.navigation.collapsed .tooltip {
+    visibility: visible;
+    white-space: nowrap;
+}
+
+.navigation.collapsed li a {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.navigation.collapsed {
+    border-right: 1px solid #dfdfdf;
+    padding-right: 10px;
+}
+
+.navigation label .glyphicon {
+    display: none;
+}
+
+.navigation.collapsed label .glyphicon {
+    display: inline-block;
+}
+
+.navigation.collapsed em {
+    display: none;
+}
+
+.navigation.collapsed span.glyphicon {
+}
+
+.navigation .expander .whileExpanded {
+    display: inline-block;
+}
+
+.navigation .expander .whileCollapsed {
+    display: none;
+}
+
+.navigation.collapsed .expander .whileExpanded {
+    display: none;
+}
+
+.navigation.collapsed .expander .whileCollapsed {
+    display: inline-block;
+}
+
+.navigation ul {
+    border-bottom: 1px solid #dfdfdf;
+    margin-bottom: 5px;
+}
+
+.navigation em {
+    font-style: normal;
+}
+
+.navigation .container {
+    margin-top: 5px;
+}
+
+.navigation.collapsed .container {
+    width: 70px;
+    text-align: right;
+}
+
