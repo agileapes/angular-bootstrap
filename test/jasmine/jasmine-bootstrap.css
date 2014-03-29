@@ -1,3 +1,11 @@
+* {
+    -webkit-transition: all 0.2s;
+    -moz-transition: all 0.2s;
+    -ms-transition: all 0.2s;
+    -o-transition: all 0.2s;
+    transition: all 0.2s;
+}
+
 body {
     font-size: 14px;
 }
@@ -161,11 +169,6 @@ li.pending.nonempty a {
     border-right: 1px solid #dfdfdf;
     padding-right: 10px;
     opacity: 0.1;
-    -webkit-transition: all 0.4s;
-    -moz-transition: all 0.4s;
-    -ms-transition: all 0.4s;
-    -o-transition: all 0.4s;
-    transition: all 0.4s;
 }
 
 .navigation.collapsed:hover {
@@ -238,11 +241,6 @@ li.pending.nonempty a {
 
 .report.collapsed .test-suite {
     opacity: 0.3;
-    -webkit-transition: all 0.4s;
-    -moz-transition: all 0.4s;
-    -ms-transition: all 0.4s;
-    -o-transition: all 0.4s;
-    transition: all 0.4s;
     border-radius: 10px;
 }
 
