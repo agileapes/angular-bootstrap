@@ -144,6 +144,10 @@
                     });
                     if (queryString.getParam("minimal") === true) {
                         minimalInterface.attr('checked', 'checked');
+                        if (testCollection.count.failed) {
+                            $(".navigation").addClass("dim");
+                            $(".report").addClass("dim");
+                        }
                     }
                     var expander = element.find("a.expander");
                     expander.click(function () {
@@ -332,6 +336,10 @@
             if (queryString.getParam("minimal")) {
                 $(".navigation .expander").click();
                 $(".report .alert").hide();
+                if (testCollection.count.failed) {
+                    $(".navigation").addClass("dim");
+                    $(".report").addClass("dim");
+                }
             }
             ReportHelper.menu(null);
         };

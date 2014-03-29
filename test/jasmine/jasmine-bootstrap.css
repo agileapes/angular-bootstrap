@@ -239,24 +239,24 @@ li.pending.nonempty a {
     text-align: right;
 }
 
-.report.collapsed .test-suite {
+.report.dim .test-suite {
     opacity: 0.3;
     border-radius: 10px;
 }
 
-.report.collapsed .test-suite:hover {
+.report.dim .test-suite:hover {
     opacity: 1;
 }
 
-.report.collapsed .test-suite.passed:hover {
+.report.dim .test-suite.passed:hover {
     background: #f7fffc;
 }
 
-.report.collapsed .test-suite.pending:hover {
+.report.dim .test-suite.pending:hover {
     background: #fff6f2;
 }
 
-.report.collapsed .test-suite.failed {
+.report.dim .test-suite.failed {
     background: #faf1f0;
     opacity: 1;
 }
