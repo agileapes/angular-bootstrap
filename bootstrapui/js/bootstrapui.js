@@ -12,7 +12,7 @@ if (typeof Error == "undefined") {
         this.message = message;
         this.cause = cause;
         this.toString = function () {
-            return message;
+            return message + (this.cause ? "\ncaused by: " + this.cause : "");
         }
     }
 }
@@ -46,9 +46,7 @@ function evaluateExpression(expression, optional) {
     //A reference to the AngularJS framework's main instance
     angular,
     //Shorthand for window.jQuery
-    $,
-    //A global configuration object that will help startup the framework right
-    globalConfig) {
+    $) {
 
     //Stub for when the bind method has not been provided via the browser
     if (!Function.prototype.bind) {
@@ -349,320 +347,12 @@ function evaluateExpression(expression, optional) {
 
 
     /**
-     * The main instance of the framework, wherein all the namespaces are individually defined, but not populated.
-     * @type {Object}
-     */
-    window.BootstrapUI = {
-        version: "0.6",
-        classes: {},
-        tools: {},
-        ext: {},
-        config: {}
-    };
-
-    var toolkit = BootstrapUI;
-
-    /**
-     * Before doing anything else, we configure the framework and pre-apply any options
-     */
-    toolkit.configure = function (config) {
-        if (typeof toolkit.config == "undefined") {
-            toolkit.config = {};
-        }
-        if (!config) {
-            config = {};
-        }
-        if (!config.base) {
-            config.base = ".";
-        }
-        if (!config.templatesBase) {
-            config.templatesBase = "templates";
-        }
-        if (!config.directivesBase) {
-            config.directivesBase = "js/directives";
-        }
-        if (!config.filtersBase) {
-            config.filtersBase = "js/filters";
-        }
-        if (!config.namespace) {
-            config.namespace = "ui";
-        }
-        if (!config.directives) {
-            config.directives = [];
-        }
-        if (!config.filters) {
-            config.filters = [];
-        }
-        if (!config.debug) {
-            config.debug = false;
-        }
-        if (!config.ext) {
-            if (typeof toolkit.config.ext == "object") {
-                config.ext = toolkit.config.ext;
-            } else {
-                config.ext = {};
-            }
-        } else if (typeof toolkit.config.ext == "object") {
-            $.each(toolkit.config.ext, function (name, declaration) {
-                config.ext[name] = declaration;
-            });
-        }
-        if (!config.tools) {
-            if (typeof toolkit.config.tools == "object") {
-                config.tools = toolkit.config.tools;
-            } else {
-                config.tools = {};
-            }
-        } else if (typeof toolkit.config.tools == "object") {
-            $.each(toolkit.config.tools, function (name, declaration) {
-                if (typeof config.tools[name] == "undefined") {
-                    config.tools[name] = declaration;
-                }
-            });
-        }
-        if (typeof config.preloadAll == "undefined") {
-            config.preloadAll = true;
-        }
-        toolkit.config = config;
-        //We attempt to configure any tool for which both a configuring method exists
-        $.each(toolkit.tools, function (name, tool) {
-            if ($.isFunction(tool.configure)) {
-                tool.configure.apply(null, [config.tools[name] ? config.tools[name] : {}]);
-            }
-        });
-    };
-    toolkit.reconfigure = function (config) {
-        toolkit.config = {};
-        toolkit.configure(config);
-    };
-    toolkit.reconfigure(globalConfig);
-
-    toolkit.extend = function (extension) {
-        if (typeof extension != "object") {
-            return;
-        }
-        if (typeof extension.tools == "object") {
-            $.each(extension.tools, function (name, declaration) {
-                if (typeof declaration != "object") {
-                    return;
-                }
-                if (!toolkit.tools) {
-                    toolkit.tools = {};
-                }
-                toolkit.tools[name] = declaration;
-                if ($.isFunction(declaration.configure)) {
-                    if (typeof toolkit.config != "object") {
-                        toolkit.config = {};
-                    }
-                    if (typeof toolkit.config.tools != "object") {
-                        toolkit.config.tools = {};
-                    }
-                    if (typeof toolkit.config.tools[name] != "object") {
-                        toolkit.config.tools[name] = {};
-                    }
-                    declaration.configure(toolkit.config.tools[name]);
-                }
-            });
-        }
-        if (typeof extension.ext == "object") {
-            $.each(extension.ext, function (name, declaration) {
-                if (typeof declaration != "object") {
-                    return;
-                }
-                if (!toolkit.ext) {
-                    toolkit.ext = {};
-                }
-                toolkit.ext[name] = declaration;
-                if (typeof toolkit.config != "object") {
-                    toolkit.config = {};
-                }
-                if (typeof toolkit.config.ext != "object") {
-                    toolkit.config.ext = {};
-                }
-                if (typeof toolkit.config.ext[name] != "object") {
-                    toolkit.config.ext[name] = {};
-                }
-            });
-        }
-    };
-
-    toolkit.tools.loader = {};
-    (function (loader) {
-        var items = {};
-        /**
-         * Schedules the load of a new item. The actual loading has to be handled by the handler function
-         * @param {string} item
-         * @param {Function} loadHandler
-         * @param {int} [timeout]
-         */
-        loader.schedule = function (item, loadHandler, timeout) {
-            var deferred = loader.get(item, timeout);
-            //if the promise has been fulfilled or if we are in the process of doing so we don't do anything more
-            if (deferred.state() == "resolved" || deferred.initialized || (deferred.original && deferred.original.initialized)) {
-                return deferred;
-            }
-            //This line prevents the loading handler being fired again if more than one loader is scheduled
-            //for the same time before any of them can safely return
-            deferred.initialized = true;
-            //if the deferred has been wrapped with a timeout, we will still need to send the signal to the original
-            if (deferred.original) {
-                deferred.original.initialized = true;
-            }
-            var loaded = loadHandler(item, loader, toolkit);
-            if (!loaded || !$.isFunction(loaded.then)) {
-                throw new Error("The result of the load operation for " + item + " does not support the deferred or promise interface.");
-            }
-            loaded.then(function () {
-                //we pass any arguments available to us after having the item load to the listening parties
-                deferred.resolve.apply(deferred, arguments);
-            });
-            return deferred;
-        };
-
-        /**
-         * Returns a promise that is resolved when the item is available (which might be immediately).
-         * @param {string} item
-         * @param {int} [timeout]
-         * @returns {then:then}
-         */
-        loader.get = function (item, timeout) {
-            if (!items[item]) {
-                //If the item is not there yet, we return a promise that it will be there at some point
-                items[item] = $.Deferred();
-            }
-            if (typeof timeout == "number") {
-                return toolkit.tools.applyTimeout(items[item], timeout);
-            }
-            return items[item];
-        };
-
-        /**
-         * Will load all the items given the load handler and then resolve the returned promise.
-         *
-         * @param {Function} loadHandler the load handler that will be used for all items.
-         * @param {string} item the name of the item to be loaded
-         * @param {string} [_]
-         * @return {then:then}
-         */
-        loader.load = function (loadHandler, item, _) {
-            var promises = [];
-            for (var i = 1; i < arguments.length; i++) {
-                var task = arguments[i];
-                promises.push(loader.schedule(task, loadHandler));
-            }
-            console.log(promises);
-            return toolkit.tools.promises(promises);
-        };
-    })(toolkit.tools.loader);
-
-    /**
-     * This function will take in a list of promises and return a promise that will be resolved when all of the given
-     * promises have been satisfied. It will fail should any one of the promises fail. An optional timeout can be
-     * specified that will be used to reject the promise when the timeout occurs.
-     * @param {Array} items a list of promises which must be resolved
-     * @param {int} [timeout] an optional timeout for the promises
-     */
-    toolkit.tools.promises = function (items, timeout) {
-        var descriptor = $.Deferred();
-        var pending = [];
-        var count = 0;
-        var failed = false;
-        $(items).each(function (index) {
-            var promise = this;
-            //we first have to check the validity of the promises
-            if (!promise || !promise.then || !$.isFunction(promise.then)) {
-                throw new Error("Item " + index + " is not a promise");
-            }
-            var id = pending.length;
-            //we keep count of how many items we expect to resolve first
-            count ++;
-            //then we keep track of the pending items
-            pending.push({
-                index: index,
-                promise: promise
-            });
-            promise.then(function () {
-                if (failed) {
-                    return;
-                }
-                //if the promise is resolved and no timeout has occurred we count one down.
-                pending[id] = null;
-                count --;
-                descriptor.notify.apply(descriptor, arguments);
-            }, function () {
-                //if the promise has failed we tell the listeners of the occurrence
-                pending[id].rejection = arguments;
-                descriptor.reject("A general error has occurred", pending);
-            });
-        });
-        //we check for status every time the descriptor is notified
-        descriptor.progress(function () {
-            //if the promise has already timed out we don't check any further
-            if (failed) {
-                descriptor.reject("Timed out waiting for promises to resolve", pending);
-                return;
-            }
-            //if there are no more promises we consider the matter resolved
-            if (count == 0) {
-                descriptor.resolve();
-            }
-        });
-        //if a timeout has been set, we should honor it.
-        if (typeof timeout == "number") {
-            var timeoutHandle = setTimeout(function () {
-                failed = true;
-                descriptor.notify();
-            }, timeout);
-            //if the descriptor is resolved prior to the timeout handle going off, we should cancel the timeout
-            descriptor.then(function () {
-                clearTimeout(timeoutHandle);
-            });
-        }
-        return descriptor;
-    };
-
-    /**
-     * Applies a timeout to a given deferred object
-     */
-    toolkit.tools.applyTimeout = function (deferred, timeout) {
-        var result = $.Deferred();
-        result.original = deferred;
-        deferred.then(function () {
-            result.resolve.apply(result, arguments);
-        }, function () {
-            result.reject.apply(result, arguments);
-        });
-        var timeoutHandle = setTimeout(function () {
-            deferred.reject("Timed out");
-        }, timeout);
-        result.then(function () {
-            clearTimeout(timeoutHandle);
-        });
-        return result;
-    };
-
-    toolkit.classes.Directive = function (version, templateUrl, factory, requirements) {
-        this.version = version;
-        this.templateUrl = toolkit.classes.Directive.path(templateUrl);
-        this.factory = function ($injector) {
-            var directive = $injector.invoke(factory);
-        };
-    };
-
-    /**
-     * Given a relative template url this static method will resolve its path
-     */
-    toolkit.classes.Directive.path = function (templateUrl) {
-        return toolkit.config.base + "/" + toolkit.config.templateBase + "/" + templateUrl;
-    };
-
-    /**
      * TemplateCache class that should be registered as a service with the module to provide template interception.
      * @param $http AngularJS HTTP service
      * @param $cacheFactory AngularJS cache factory
      * @constructor
      */
-    BootstrapUI.classes.TemplateCache = function ($http, $cacheFactory) {
+    var TemplateCache = function ($http, $cacheFactory) {
         var self = this;
         var cacheId = "buTemplateCache";
         var templateCache = $cacheFactory.get(cacheId);
@@ -688,8 +378,8 @@ function evaluateExpression(expression, optional) {
             return $http.get(key, {
                 cache: templateCache
             }).then(function (result) {
-                for (var i = 0; i < BootstrapUI.classes.TemplateCache.interceptors.length; i++) {
-                    var interceptor = BootstrapUI.classes.TemplateCache.interceptors[i];
+                for (var i = 0; i < TemplateCache.interceptors.length; i++) {
+                    var interceptor = TemplateCache.interceptors[i];
                     var returned = interceptor.apply(self, [result.data, key]);
                     if (returned) {
                         result.data = returned;
@@ -700,6 +390,275 @@ function evaluateExpression(expression, optional) {
         };
     };
 
-    BootstrapUI.classes.TemplateCache.interceptors = [];
+    TemplateCache.interceptors = [];
 
-})(evaluateExpression("window.angular"), evaluateExpression("window.jQuery"), evaluateExpression("window.BootstrapUIConfig", true));
+    /**
+     * Defines module buMain to be used for AngularJS applications
+     * @type {module}
+     */
+    var toolkit = angular.module("buMain", []);
+    toolkit.value("version", "0.7");
+
+    /**
+     * Global configuration object accessible via 'bu.config'
+     */
+    toolkit.provider('bu$configuration', function () {
+
+        var augment = function (first, second) {
+            var result = first;
+            $.each(second, function (key, value) {
+                if (typeof result[key] == "object" && typeof value == "object") {
+                    result[key] = augment(result[key], value);
+                } else {
+                    result[key] = value;
+                }
+            });
+            return result;
+        };
+
+        var read = function (obj, property) {
+            if (property.indexOf(".") == -1) {
+                return obj[property];
+            }
+            var split = property.split(".");
+            if (typeof obj[split[0]] == "object") {
+                return read(obj[split[0]], split.splice(1).join("."));
+            }
+            return undefined;
+        };
+
+        var write = function (obj, property, value) {
+            if (property.indexOf('.') == -1) {
+                obj[property] = value;
+                return obj;
+            }
+            var split = property.split(".");
+            if (typeof obj[split[0]] == "undefined") {
+                obj[split[0]] = {};
+            }
+            if (typeof obj[split[0]] == "object") {
+                obj[split[0]] = write(obj[split[0]], split.splice(1).join("."), value);
+            }
+            return obj;
+        };
+
+        var config;
+
+        this.reset = function () {
+            config = function (key, value) {
+                if (typeof value == "undefined") {
+                    return read(config, key);
+                } else {
+                    config = write(config, key, value);
+                    return config;
+                }
+            };
+        };
+        this.reset();
+        this.set = function (configuration) {
+            if (typeof configuration != "object") {
+                return;
+            }
+            config = augment(config, configuration);
+        };
+        this.$get = function () {
+            if (!config.base) {
+                config.base = ".";
+            }
+            if (!config.templatesBase) {
+                config.templatesBase = "templates";
+            }
+            if (!config.directivesBase) {
+                config.directivesBase = "js/directives";
+            }
+            if (!config.filtersBase) {
+                config.filtersBase = "js/filters";
+            }
+            if (!config.namespace) {
+                config.namespace = "ui";
+            }
+            if (!config.directives) {
+                config.directives = [];
+            }
+            if (!config.filters) {
+                config.filters = [];
+            }
+            if (!config.debug) {
+                config.debug = false;
+            }
+            if (typeof config.preloadAll == "undefined") {
+                config.preloadAll = true;
+            }
+            if (typeof config.ext != "object") {
+                config.ext = {};
+            }
+            if (typeof config.tools != "object") {
+                config.tools = {};
+            }
+            return config;
+        };
+    });
+
+    /**
+     * Registry factory provider
+     */
+    toolkit.provider("bu$registryFactory", function () {
+        var registries = {};
+        var recreationDisallowed = true;
+        var initOnDemand = false;
+        this.allowRecreation = function (allow) {
+            recreationDisallowed = !allow;
+        };
+        this.allowInitOnDemand = function (allow) {
+            initOnDemand = allow;
+        };
+        var init = function (name) {
+            var storage = {};
+            var callbacks = {};
+            var runCallbacks = function (event, original, context, args) {
+                if (!callbacks[event]) {
+                    return original;
+                }
+                for (var i = 0; i < callbacks[event].length; i++) {
+                    var currentArgs = args;
+                    if ($.isFunction(currentArgs)) {
+                        currentArgs = currentArgs.apply(context, [event, original]);
+                    }
+                    var returned = callbacks[event][i].apply(context, currentArgs);
+                    if (returned !== null && typeof returned != "undefined") {
+                        original = returned;
+                    }
+                }
+                return original;
+            };
+            var size = 0;
+            var registry = registries[name] = {
+                register: function (id, item) {
+                    storage[id] = runCallbacks('register', item, registry, function (event, original) {
+                        return [id, original];
+                    });
+                    if (typeof storage[id] != "undefined") {
+                        size ++;
+                    }
+                },
+                unregister: function (id) {
+                    runCallbacks('unregister', storage[id], registry, [id, storage[id]]);
+                    if (typeof storage[id] != "undefined") {
+                        size --;
+                    }
+                    delete storage[id];
+                },
+                get: function (id) {
+                    return runCallbacks('get', storage[id], registry, function (event, original) {
+                        return [id, original];
+                    });
+                },
+                list: function () {
+                    var list = [];
+                    $.each(storage, function (key) {
+                        list.push(key);
+                    });
+                    return list;
+                },
+                info: function () {
+                    return {
+                        id: name,
+                        size: size
+                    };
+                },
+                on: function (event, callback) {
+                    if (typeof callbacks[event] == "undefined") {
+                        callbacks[event] = [];
+                    }
+                    callbacks[event].push(callback);
+                    return callbacks[event].length - 1;
+                },
+                off: function (event, callbackIndex) {
+                    if (typeof callbacks[event] == "undefined" || callbackIndex < 0 || callbackIndex >= callbacks[event].length) {
+                        return false;
+                    }
+                    callbacks[event].splice(callbackIndex, 1);
+                    return true;
+                },
+                trigger: function (event) {
+                    var args = [];
+                    for (var i = 1; i < arguments.length; i++) {
+                        args.push(arguments[i]);
+                    }
+                    runCallbacks(event, {}, registry, args);
+                }
+            };
+        };
+        var registryFactory = function (name) {
+            if (recreationDisallowed && typeof registries[name] != "undefined") {
+                throw new Error("Registry id " + name + " has already been taken");
+            }
+            init(name);
+            return registries[name];
+        };
+        registryFactory.get = function (name) {
+            if (typeof registries[name] == "undefined") {
+                if (initOnDemand) {
+                    init(name);
+                } else {
+                    throw new Error("Unknown registry " + name);
+                }
+            }
+            return registries[name];
+        };
+        this.$get = function () {
+            return registryFactory;
+        };
+    });
+
+    toolkit.service("bu$toolRegistry", ["bu$registryFactory", "bu$configuration", function (registryFactory, configuration) {
+        var toolRegistry = registryFactory("bu$toolRegistry");
+        var toolConfigurator = function (id, tool) {
+            if (!$.isFunction(tool.configure)) {
+                return;
+            }
+            var toolConfiguration = configuration("tools." + id);
+            if (typeof toolConfiguration != "undefined") {
+                tool.configure(toolConfiguration);
+            }
+        };
+        toolRegistry.on("register", toolConfigurator);
+        this.register = function (id, tool) {
+            toolRegistry.register(id, tool);
+        };
+        this.get = function (id) {
+            return toolRegistry.get(id);
+        };
+        this.list = function () {
+            return toolRegistry.list();
+        };
+        this.reconfigure = function () {
+            var tools = this.list();
+            for (var i = 0; i < tools.length; i++) {
+                var id = tools[i];
+                var tool = this.get(id);
+                toolConfigurator(id, tool);
+            }
+        };
+    }]);
+
+    toolkit.service("bu$extensionRegistry", ["bu$registryFactory", function (registryFactory) {
+        var extensionRegistry = registryFactory("bu$registryFactory");
+        this.register = function (id, extension) {
+            extensionRegistry.register(id, extension);
+        };
+        this.get = function (id) {
+            return extensionRegistry.get(id);
+        };
+        this.list = function () {
+            return extensionRegistry.list();
+        };
+        this.on = function (event, callback) {
+            return extensionRegistry.on(event, callback);
+        };
+        this.off = function (event, callbackIndex) {
+            return extensionRegistry.off(event, callbackIndex);
+        };
+    }]);
+
+})(evaluateExpression("window.angular"), evaluateExpression("window.jQuery"));
