@@ -1,7 +1,6 @@
 (function () {
     'use strict';
     window.$_http = function (genericOptions) {
-        var urls = [];
         var requests = [];
         var expectations = [];
         var actions = [];
@@ -33,7 +32,7 @@
                         if (typeof headers == "undefined") {
                             headers = [];
                         }
-                        urls.push({
+                        requests.push({
                             called: false,
                             request: {
                                 method: method,
