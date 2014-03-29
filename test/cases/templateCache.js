@@ -1,6 +1,6 @@
 describe("TemplateCache", function () {
 
-    var templateCache, $cacheFactory, $http, delegateCache, firstUrl, secondUrl, loadTimeout = 1000;
+    var templateCache, $http, delegateCache, firstUrl, secondUrl, loadTimeout = 1000;
     var firstTemplate = "<h1>First</h1>";
     var secondTemplate = "<h1>Second</h1>";
 
@@ -42,22 +42,20 @@ describe("TemplateCache", function () {
         });
 
         it("will correctly retrieve and return the loaded template", function () {
-            pending();
+            $http.expect("GET", firstUrl).respond(firstTemplate);
             var onLoad = jasmine.createSpy("templateLoaded");
             templateCache.get(firstUrl).then(onLoad);
-            expect($http.status).toEqual("working");
-            jasmine.clock().tick(loadTimeout + 1);
-            expect($http.status).toEqual("idle");
+            expect(onLoad).not.toHaveBeenCalled();
+            $http.flush();
             expect(onLoad).toHaveBeenCalled();
-            expect(onLoad).toHaveBeenCalledWith(jasmine.objectContaining({
-                data: firstTemplate
-            }));
+            expect(onLoad).toHaveBeenCalledWith(firstTemplate);
         });
 
         it("will store the loaded template into the delegate cache", function () {
-            pending();
+            $http.expect("GET", firstUrl).respond(firstTemplate);
             templateCache.get(firstUrl);
-            jasmine.clock().tick(loadTimeout + 1);
+            expect(delegateCache.put).not.toHaveBeenCalled();
+            $http.flush(1);
             expect(delegateCache.put).toHaveBeenCalled();
             expect(delegateCache.put).toHaveBeenCalledWith(firstUrl, firstTemplate);
             expect(delegateCache.get(firstUrl)).toEqual(firstTemplate);
