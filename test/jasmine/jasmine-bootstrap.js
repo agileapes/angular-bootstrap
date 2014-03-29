@@ -118,7 +118,7 @@
                 var element, target;
                 if (type == "root") {
                     element = $("<div class='container-fluid'><div class='report'><div class='row'><h1 class='page-header'>Test Execution Report<small class='pull-right'></small></h1></div></div></div><div class='navigation'><ul class='nav nav-pills nav-stacked'>" +
-                        "<li class='active running' title='Active tests'><a href='javascript:void(0);' onclick='jasmine.menu(this);'><span class='glyphicon glyphicon-check'></span> <em>Active tests</em><span class='badge pull-right'>" + (testCollection.count.total - testCollection.count.disabled) + "</span></a></li>" +
+                        "<li class='running' title='Active tests'><a href='javascript:void(0);' onclick='jasmine.menu(this);'><span class='glyphicon glyphicon-check'></span> <em>Active tests</em><span class='badge pull-right'>" + (testCollection.count.total - testCollection.count.disabled) + "</span></a></li>" +
                         "<li class='not-running' title='Disabled tests'><a href='javascript:void(0);' onclick='jasmine.menu(this);'><span class='glyphicon glyphicon-unchecked'></span> <em>Disabled tests</em><span class='badge pull-right'>" + testCollection.count.disabled + "</span></a></li>" +
                         "<li class='all' title='All tests'><a href='javascript:void(0);' onclick='jasmine.menu(this);'><span class='glyphicon glyphicon-list'></span> <em>All tests</em><span class='badge pull-right'>" + testCollection.count.total + "</span></a></li>" +
                         "<li class='failed" + (testCollection.count.failed ? " nonempty" : "") + "' title='Failed tests'><a href='javascript:void(0);' onclick='jasmine.menu(this);'><span class='glyphicon glyphicon-exclamation-sign'></span> <em>Failed tests</em><span class='badge pull-right'>" + testCollection.count.failed + "</span></a></li>" +
@@ -333,15 +333,16 @@
         };
         this.jasmineDone = function () {
             $(options.getContainer()).append(testCollection.suites.render());
+            ReportHelper.menu(null);
             if (queryString.getParam("minimal")) {
                 $(".navigation .expander").click();
                 $(".report .alert").hide();
                 if (testCollection.count.failed) {
                     $(".navigation").addClass("dim");
                     $(".report").addClass("dim");
+                    ReportHelper.menu("failed");
                 }
             }
-            ReportHelper.menu(null);
         };
         this.suiteStarted = function (suite) {
             ReportHelper.ReportNode.startSuite(suite);
