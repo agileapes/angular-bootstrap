@@ -243,10 +243,22 @@ li.pending.nonempty a {
     -ms-transition: all 0.4s;
     -o-transition: all 0.4s;
     transition: all 0.4s;
-    border-radius: 5px;
+    border-radius: 10px;
 }
 
-.report.collapsed .test-suite.failed, .report.collapsed .test-suite:hover {
+.report.collapsed .test-suite:hover {
     opacity: 1;
-    background: #f8f8f8;
+}
+
+.report.collapsed .test-suite.passed:hover {
+    background: #f7fffc;
+}
+
+.report.collapsed .test-suite.pending:hover {
+    background: #fff6f2;
+}
+
+.report.collapsed .test-suite.failed {
+    background: #faf1f0;
+    opacity: 1;
 }
