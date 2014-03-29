@@ -140,12 +140,11 @@
                     }
                     if (descriptor.request.method == method && descriptor.request.url == url) {
                         descriptor.called = true;
-                        var responseData = descriptor.response.data;
-                        if (options.cache) {
-                            options.cache.put(url, descriptor.response.data);
-                        }
                         actions.push(function () {
-                            deferred.resolve(responseData, descriptor.response.status, descriptor.response.headers, config);
+                            if (options.cache) {
+                                options.cache.put(url, descriptor.response.data);
+                            }
+                            deferred.resolve(descriptor.response.data, descriptor.response.status, descriptor.response.headers, config);
                         });
                         resolved = true;
                     }
