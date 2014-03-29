@@ -1,12 +1,10 @@
 describe("TemplateCache", function () {
 
-    var templateCache, $http, delegateCache, firstUrl, secondUrl, loadTimeout = 1000;
+    var templateCache, $http, delegateCache, firstUrl;
     var firstTemplate = "<h1>First</h1>";
-    var secondTemplate = "<h1>Second</h1>";
 
     beforeEach(inject(function ($cacheFactory) {
         firstUrl = "1.html";
-        secondUrl = "2.html";
         delegateCache = $cacheFactory("buTemplateCache");
         $http = window.$_http();
         templateCache = new BootstrapUI.classes.TemplateCache($http, $cacheFactory);
@@ -47,7 +45,7 @@ describe("TemplateCache", function () {
 
     it("will store the loaded template into the delegate cache", function () {
         $http.expect("GET", firstUrl).respond(firstTemplate);
-        var loadedTemplate;
+        var loadedTemplate = null;
         templateCache.get(firstUrl).then(function (data) {
             loadedTemplate = data;
         });
