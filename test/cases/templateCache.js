@@ -1,19 +1,38 @@
 describe("TemplateCache", function () {
 
+    angular.module('myApplicationModule', ["buMain", "cachingHttp"])
+        //This is a cache factory that will instantiate and return a simple cache all the time
+        .provider("myCacheFactory", function ($cacheFactoryProvider) {
+            this.$get = function () {
+                var cacheFactory = $cacheFactoryProvider.$get();
+                try {
+                    delegateCache = cacheFactory("buTemplateCache");
+                } catch (e) {
+                    delegateCache = cacheFactory.get("buTemplateCache");
+                }
+                return function () {
+                    return delegateCache;
+                };
+            };
+        })
+        .config(function ($templateCacheProvider) {
+            //we are plugging in the aforementioned cache into the template cache so that our dummy cache
+            //is used all the time for internal purposes and so that we can track its content.
+            $templateCacheProvider.$get.$inject = ["bu$cachingHttp", "myCacheFactory"];
+        });
+
     var templateCache, $http, delegateCache, firstUrl;
     var firstTemplate = "<h1>First</h1>";
 
-    beforeEach(inject(function ($cacheFactory) {
+    beforeEach(module("myApplicationModule"));
+
+    beforeEach(inject(function ($templateCache, bu$cachingHttp) {
         firstUrl = "1.html";
-        delegateCache = $cacheFactory("buTemplateCache");
-        $http = window.$_http();
-        templateCache = new BootstrapUI.classes.TemplateCache($http, $cacheFactory);
+        $http = bu$cachingHttp;
+        templateCache = $templateCache;
         spyOn(delegateCache, "get").and.callThrough();
         spyOn(delegateCache, "put").and.callThrough();
-        spyOn(delegateCache, "remove").and.callThrough();
-        spyOn(delegateCache, "removeAll").and.callThrough();
-        spyOn(delegateCache, "info").and.callThrough();
-        spyOn(delegateCache, "destroy").and.callThrough();
+        spyOn($http, "get").and.callThrough();
     }));
 
     afterEach(function () {
@@ -29,23 +48,23 @@ describe("TemplateCache", function () {
         //initially the http service is not used
         templateCache.get(url);
         //the http service must first call the delegate cache
-        expect(delegateCache.get).toHaveBeenCalled();
-        expect(delegateCache.get).toHaveBeenCalledWith(url);
+        expect($http.get).toHaveBeenCalled();
+        expect($http.get).toHaveBeenCalledWith(url, jasmine.objectContaining({}));
     });
 
-    it("will correctly retrieve and return the loaded template", function () {
+    it("will correctly retrieve and return the loaded template", inject(function ($q) {
         $http.expect("GET", firstUrl).respond(firstTemplate);
-        var onLoad = jasmine.createSpy("templateLoaded");
+        var onLoad = jasmine.createSpy("for when template has been loaded");
         templateCache.get(firstUrl).then(onLoad);
         expect(onLoad).not.toHaveBeenCalled();
-        $http.flush();
+        $http.flush(1);
         expect(onLoad).toHaveBeenCalled();
         expect(onLoad).toHaveBeenCalledWith(firstTemplate);
-    });
+    }));
 
     it("will store the loaded template into the delegate cache", function () {
         $http.expect("GET", firstUrl).respond(firstTemplate);
-        var loadedTemplate = null;
+        var loadedTemplate = "test";
         templateCache.get(firstUrl).then(function (data) {
             loadedTemplate = data;
         });

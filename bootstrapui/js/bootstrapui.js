@@ -345,59 +345,71 @@ function evaluateExpression(expression, optional) {
         return " ".repeat(Math.floor((length - str.length) / 2)) + str + " ".repeat(Math.ceil((length - str.length) / 2));
     };
 
-
-    /**
-     * TemplateCache class that should be registered as a service with the module to provide template interception.
-     * @param $http AngularJS HTTP service
-     * @param $cacheFactory AngularJS cache factory
-     * @constructor
-     */
-    var TemplateCache = function ($http, $cacheFactory) {
-        var self = this;
-        var cacheId = "buTemplateCache";
-        var templateCache = $cacheFactory.get(cacheId);
-        if (!templateCache) {
-            templateCache = $cacheFactory(cacheId);
-        }
-        this.info = function () {
-            return templateCache.info();
-        };
-        this.put = function (key, template) {
-            templateCache.put(key, template);
-        };
-        this.remove = function (key) {
-            templateCache.remove(key);
-        };
-        this.removeAll = function () {
-            templateCache.removeAll();
-        };
-        this.destroy = function () {
-            templateCache.destroy();
-        };
-        this.get = function (key) {
-            return $http.get(key, {
-                cache: templateCache
-            }).then(function (result) {
-                for (var i = 0; i < TemplateCache.interceptors.length; i++) {
-                    var interceptor = TemplateCache.interceptors[i];
-                    var returned = interceptor.apply(self, [result.data, key]);
-                    if (returned) {
-                        result.data = returned;
-                    }
-                }
-                return result;
-            });
-        };
-    };
-
-    TemplateCache.interceptors = [];
-
     /**
      * Defines module buMain to be used for AngularJS applications
      * @type {module}
      */
     var toolkit = angular.module("buMain", []);
     toolkit.value("version", "0.7");
+
+    (function () {
+        /**
+         * TemplateCache class that should be registered as a service with the module to provide template interception.
+         * @param $http AngularJS HTTP service
+         * @param templateCache a cache to be used internally
+         * @constructor
+         */
+        var TemplateCache = function ($http, templateCache) {
+            var self = this;
+            var cacheId = "buTemplateCache";
+            this.info = function () {
+                return templateCache.info();
+            };
+            this.put = function (key, template) {
+                templateCache.put(key, template);
+            };
+            this.remove = function (key) {
+                templateCache.remove(key);
+            };
+            this.removeAll = function () {
+                templateCache.removeAll();
+            };
+            this.destroy = function () {
+                templateCache.destroy();
+            };
+            this.get = function (key) {
+                return $http.get(key, {
+                    cache: templateCache
+                }).then(function (result) {
+                    for (var i = 0; i < TemplateCache.interceptors.length; i++) {
+                        var interceptor = TemplateCache.interceptors[i];
+                        var returned = interceptor.apply(self, [result.data, key]);
+                        if (returned) {
+                            result.data = returned;
+                        }
+                    }
+                    return result;
+                });
+            };
+        };
+
+        TemplateCache.interceptors = [];
+
+        toolkit.provider("$templateCache", function () {
+            this.$get = function ($http, $cacheFactory) {
+                var cache;
+                try {
+                    cache = $cacheFactory("buTemplateCache");
+                } catch (e) {
+                    cache = $cacheFactory.get("buTemplateCache");
+                }
+                return new TemplateCache($http, cache);
+            };
+            //this is to avoid confusing bugs when minifying/uglifying the code
+            this.$get.$inject = ["$http", "$cacheFactory"];
+        });
+
+    })();
 
     /**
      * Global configuration object accessible via 'bu.config'
