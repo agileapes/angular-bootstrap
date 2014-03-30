@@ -1,10 +1,96 @@
 (function () {
     'use strict';
-    window.$_http = function (genericOptions) {
-        var requests = [];
-        var expectations = [];
-        var actions = [];
-        var $http = {
+    var module = angular.module("cachingHttp", []);
+    module.provider('bu$cachingHttp', function () {
+        this.$get = function ($cacheFactory) {
+            var cache = $cacheFactory("buCachingHttpMock");
+            var requests = [];
+            var expectations = [];
+            var actions = [];
+            var $http = function (configuration) {
+                var deferred = $.Deferred();
+                var resolved = false;
+                if (!configuration) {
+                    configuration = {};
+                }
+                if (!configuration.method) {
+                    configuration.method = "GET";
+                }
+                if (!configuration.url) {
+                    configuration.url = "";
+                }
+                if (!configuration.headers) {
+                    configuration.headers = {};
+                }
+                if (configuration.cache) {
+                    if (configuration.cache === true) {
+                        configuration.cache = cache;
+                    }
+                    var cachedData = configuration.cache.get(configuration.url);
+                    if (cachedData) {
+                        actions.push(function () {
+                            deferred.resolve(cachedData, 200, [], configuration);
+                        });
+                        return deferred.promise;
+                    }
+                }
+                for (var i = 0; i < expectations.length; i++) {
+                    var expectation = expectations[i];
+                    if (expectation.method != configuration.method) {
+                        break;
+                    }
+                    if (expectation.url != configuration.url) {
+                        break;
+                    }
+                    if (typeof configuration.data != "undefined" && expectation.data && !angular.equals(configuration.data, expectation.data)) {
+                        break;
+                    }
+                    if (typeof configuration.headers != "undefined" && expectation.headers && !angular.equals(configuration.headers, expectation.headers)) {
+                        break;
+                    }
+                    expectations.splice(i, 1);
+                }
+                $(requests).each(function () {
+                    if (resolved) {
+                        return;
+                    }
+                    var descriptor = this;
+                    if (descriptor.request.method != configuration.method) {
+                        return;
+                    }
+                    if (descriptor.request.url != configuration.url) {
+                        return;
+                    }
+                    if (typeof configuration.data != "undefined" && descriptor.request.data && !angular.equals(configuration.data, descriptor.request.data)) {
+                        return;
+                    }
+                    if (typeof configuration.headers != "undefined" && descriptor.request.headers && !angular.equals(configuration.headers, descriptor.request.headers)) {
+                        return;
+                    }
+                    if (descriptor.request.method == configuration.method && descriptor.request.url == configuration.url) {
+                        descriptor.called = true;
+                        var responseCodeGroup = descriptor.response.status % 100;
+                        if (responseCodeGroup == 4 || responseCodeGroup == 5) {
+                            actions.push(function () {
+                                deferred.reject("Error " + descriptor.response.status, descriptor.response.status, descriptor.response.headers, configuration);
+                            });
+                        }
+                        actions.push(function () {
+                            if (configuration.cache) {
+                                configuration.cache.put(configuration.url, descriptor.response.data);
+                            }
+                            deferred.resolve(descriptor.response.data, descriptor.response.status, descriptor.response.headers, configuration);
+                        });
+                        resolved = true;
+                    }
+                });
+                if (!resolved) {
+                    actions.push(function () {
+                        deferred.reject("Not found", 404, {}, configuration);
+                    });
+                }
+                return deferred.promise();
+            };
             /**
              * Sets up a request-response set
              * @param {String} method the HTTP method used for the request
@@ -13,7 +99,7 @@
              * @param {Array} [headers] the headers for the request
              * @returns {{respond: respond}}
              */
-            when: function (method, url, data, headers) {
+            $http.when = function (method, url, data, headers) {
                 var requestHeaders = headers;
                 var requestData = data;
                 return {
@@ -48,7 +134,7 @@
                         });
                     }
                 }
-            },
+            };
             /**
              * Same as 'when', only sets up an expectation so that we can ensure that the request has
              * been made.
@@ -58,7 +144,7 @@
              * @param {Array} [headers] the headers for the request
              * @returns {{respond: respond}}
              */
-            expect: function (method, url, data, headers) {
+            $http.expect = function (method, url, data, headers) {
                 expectations.push({
                     method: method,
                     url: url,
@@ -66,102 +152,15 @@
                     headers: headers
                 });
                 return $http.when(method, url, data, headers);
-            },
-            /**
-             * Sends a request to the backend. The request will not be fulfilled unless a call to
-             * 'flush' has been made.
-             * @param {String} method the HTTP method
-             * @param {String} url the url to which the request should be sent
-             * @param {Object} [options] the options for the request. At the moment only 'cache' is supported
-             * @param {Object} [data] the data to be sent to the backend
-             * @param {Array} [headers] the headers for the request
-             * @returns {*} a promise for the future fulfilment of the request
-             */
-            send: function (method, url, options, data, headers) {
-                var deferred = $.Deferred();
-                var resolved = false;
-                var config = {
-                    method: method,
-                    url: url,
-                    data: data,
-                    headers: headers
-                };
-                options = $.extend(options, genericOptions);
-                if (!headers && options.headers) {
-                    headers = options.headers;
-                }
-                if (!url && options.url) {
-                    url = options.url;
-                }
-                if (!method && options.method) {
-                    method = options.method;
-                }
-                if (options.cache) {
-                    var cachedData = options.cache.get(url);
-                    if (cachedData) {
-                        actions.push(function () {
-                            deferred.resolve(cachedData, 200, [], config);
-                        });
-                        return deferred.promise();
-                    }
-                }
-                for (var i = 0; i < expectations.length; i++) {
-                    var expectation = expectations[i];
-                    if (expectation.method != method) {
-                        break;
-                    }
-                    if (expectation.url != url) {
-                        break;
-                    }
-                    if (typeof data != "undefined" && expectation.data && !angular.equals(data, expectation.data)) {
-                        break;
-                    }
-                    if (typeof headers != "undefined" && expectation.headers && !angular.equals(headers, expectation.headers)) {
-                        break;
-                    }
-                    expectations.splice(i, 1);
-                }
-                $(requests).each(function () {
-                    if (resolved) {
-                        return;
-                    }
-                    var descriptor = this;
-                    if (descriptor.request.method != method) {
-                        return;
-                    }
-                    if (descriptor.request.url != url) {
-                        return;
-                    }
-                    if (typeof data != "undefined" && descriptor.request.data && !angular.equals(data, descriptor.request.data)) {
-                        return;
-                    }
-                    if (typeof headers != "undefined" && descriptor.request.headers && !angular.equals(headers, descriptor.request.headers)) {
-                        return;
-                    }
-                    if (descriptor.request.method == method && descriptor.request.url == url) {
-                        descriptor.called = true;
-                        var responseCodeGroup = descriptor.response.status % 100;
-                        if (responseCodeGroup == 4 || responseCodeGroup == 5) {
-                            actions.push(function () {
-                                deferred.reject("Error " + descriptor.response.status, descriptor.response.status, descriptor.response.headers, config);
-                            });
-                        }
-                        actions.push(function () {
-                            if (options.cache) {
-                                options.cache.put(url, descriptor.response.data);
-                            }
-                            deferred.resolve(descriptor.response.data, descriptor.response.status, descriptor.response.headers, config);
-                        });
-                        resolved = true;
-                    }
-                });
-                if (!resolved) {
-                    actions.push(function () {
-                        deferred.reject("Not found", 404, [], config);
-                    });
-                }
-                return deferred.promise();
-            },
+            };
+            $http.send = function (method, url, options, data, headers) {
+                options = options || {};
+                options.method = method || "GET";
+                options.headers = headers || options.headers;
+                options.url = url || options.url;
+                options.data = data || options.data;
+                return $http(options);
+            };
             /**
              * Makes a GET request to the HTTP backend
              * @param {String} url the URL
@@ -169,9 +168,9 @@
              * @param {Array} [headers]
              * @returns {*} promise
              */
-            get: function (url, options, headers) {
+            $http.get = function (url, options, headers) {
                 return $http.send("GET", url, options, undefined, headers);
-            },
+            };
             /**
              * Makes a HEAD request to the HTTP backend
              * @param {String} url the URL
@@ -179,9 +178,9 @@
              * @param {Array} [headers]
              * @returns {*} promise
              */
-            head: function (url, options, headers) {
+            $http.head = function (url, options, headers) {
                 return $http.send("HEAD", url, options, undefined, headers);
-            },
+            };
             /**
              * Makes a POST request to the HTTP backend
              * @param {String} url
@@ -190,9 +189,9 @@
              * @param {Array} [headers]
              * @returns {*}
              */
-            post: function (url, options, data, headers) {
+            $http.post = function (url, options, data, headers) {
                 return $http.send("POST", url, options, data, headers);
-            },
+            };
             /**
              * Makes a DELETE request to the HTTP backend
              * @param {String} url
@@ -200,9 +199,9 @@
              * @param {Array} [headers]
              * @returns {*}
              */
-            'delete': function (url, options, headers) {
+            $http['delete'] = function (url, options, headers) {
                 return $http.send("DELETE", url, options, undefined, headers);
-            },
+            };
             /**
              * Makes a PATCH request to the HTTP backend
              * @param {String} url
@@ -211,9 +210,9 @@
              * @param {Array} [headers]
              * @returns {*}
              */
-            patch: function (url, options, data, headers) {
+            $http.patch = function (url, options, data, headers) {
                 return $http.send("PATCH", url, options, data, headers);
-            },
+            };
             /**
              * Makes a PUT request to the HTTP backend
              * @param {String} url
@@ -222,15 +221,15 @@
              * @param {Array} [headers]
              * @returns {*}
              */
-            put: function (url, options, data, headers) {
+            $http.put = function (url, options, data, headers) {
                 return $http.send("PUT", url, options, data, headers);
-            },
+            };
             /**
              * Flushes any outstanding requests, fulfilling any that has been set up properly and clearing
              * any expectations met.
              * @param {int} [count] the number of operations to perform as the backend. Default is all.
              */
-            flush: function (count) {
+            $http.flush = function (count) {
                 if (typeof count == "undefined") {
                     count = actions.length;
                 }
@@ -239,17 +238,17 @@
                     var action = toFlush[i];
                     action.call();
                 }
-            },
+            };
             /**
              * Resets all the expectations
              */
-            resetExpectations: function () {
+            $http.resetExpectations = function () {
                 expectations.length = 0;
-            },
+            };
             /**
              * Verifies that no outstanding expectations have been made
              */
-            verifyNoOutstandingExpectation: function () {
+            $http.verifyNoOutstandingExpectation = function () {
                 if (expectations.length > 0) {
                     var urls = [];
                     for (var i = 0; i < expectations.length; i++) {
@@ -261,11 +260,11 @@
                         message: "Expected URLs to have been queried: " + urls
                     };
                 }
-            },
+            };
             /**
              * Verifies that no outstanding requests are left hanging
              */
-            verifyNoOutstandingRequest: function () {
+            $http.verifyNoOutstandingRequest = function () {
                 var outstanding = [];
                 for (var i = 0; i < requests.length; i++) {
                     var obj = requests[i];
@@ -278,8 +277,9 @@
                         message: "Outstanding requests not fulfilled: " + outstanding.join(", ")
                     };
                 }
-            }
+            };
+            return $http;
         };
-        return  $http;
-    };
+        this.$get.$inject = ["$cacheFactory"];
+    });
 })();
