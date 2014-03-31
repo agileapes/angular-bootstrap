@@ -44,9 +44,7 @@ function evaluateExpression(expression, optional) {
  */
 (function (
     //A reference to the AngularJS framework's main instance
-    angular,
-    //Shorthand for window.jQuery
-    $) {
+    angular) {
 
     //Stub for when the bind method has not been provided via the browser
     if (!Function.prototype.bind) {
@@ -114,16 +112,16 @@ function evaluateExpression(expression, optional) {
             }
         };
         func.then = function (success, failure) {
-            if ($.isFunction(success)) {
+            if (angular.isFunction(success)) {
                 successQueue.push(success);
             }
-            if ($.isFunction(failure)) {
+            if (angular.isFunction(failure)) {
                 failureQueue.push(failure);
             }
             return func;
         };
         var stopped = null;
-        if ($.isFunction(delay)) {
+        if (angular.isFunction(delay)) {
             var failed = false;
             var controller;
             func.stop = function () {
@@ -259,10 +257,10 @@ function evaluateExpression(expression, optional) {
              * @param {Function} [failure] Schedules failure callback `failure(function, reason);`
              */
             then: function (success, failure) {
-                if ($.isFunction(success)) {
+                if (angular.isFunction(success)) {
                     successQueue.push(success);
                 }
-                if ($.isFunction(failure)) {
+                if (angular.isFunction(failure)) {
                     failureQueue.push(failure);
                 }
                 return handler;
@@ -270,10 +268,10 @@ function evaluateExpression(expression, optional) {
         };
         interval = setInterval(function () {
             var context = thisArg, parameters = args;
-            if ($.isFunction(context)) {
+            if (angular.isFunction(context)) {
                 context = context(handler);
             }
-            if ($.isFunction(parameters)) {
+            if (angular.isFunction(parameters)) {
                 parameters = parameters(handler);
             }
             count ++;
@@ -361,7 +359,6 @@ function evaluateExpression(expression, optional) {
          */
         var TemplateCache = function ($http, templateCache) {
             var self = this;
-            var cacheId = "buTemplateCache";
             this.info = function () {
                 return templateCache.info();
             };
@@ -418,7 +415,7 @@ function evaluateExpression(expression, optional) {
 
         var augment = function (first, second) {
             var result = first;
-            $.each(second, function (key, value) {
+            angular.forEach(second, function (value, key) {
                 if (typeof result[key] == "object" && typeof value == "object") {
                     result[key] = augment(result[key], value);
                 } else {
@@ -518,9 +515,13 @@ function evaluateExpression(expression, optional) {
         var registries = {};
         var recreationDisallowed = true;
         var initOnDemand = false;
+        //this is an API, usage should not be analyzed
+        //noinspection JSUnusedGlobalSymbols
         this.allowRecreation = function (allow) {
             recreationDisallowed = !allow;
         };
+        //this is an API, usage should not be analyzed
+        //noinspection JSUnusedGlobalSymbols
         this.allowInitOnDemand = function (allow) {
             initOnDemand = allow;
         };
@@ -533,7 +534,7 @@ function evaluateExpression(expression, optional) {
                 }
                 for (var i = 0; i < callbacks[event].length; i++) {
                     var currentArgs = args;
-                    if ($.isFunction(currentArgs)) {
+                    if (angular.isFunction(currentArgs)) {
                         currentArgs = currentArgs.apply(context, [event, original]);
                     }
                     var returned = callbacks[event][i].apply(context, currentArgs);
@@ -544,6 +545,8 @@ function evaluateExpression(expression, optional) {
                 return original;
             };
             var size = 0;
+            //this is an API, usage should not be analyzed
+            //noinspection JSUnusedGlobalSymbols
             var registry = registries[name] = {
                 register: function (id, item) {
                     storage[id] = runCallbacks('register', item, registry, function (event, original) {
@@ -567,7 +570,7 @@ function evaluateExpression(expression, optional) {
                 },
                 list: function () {
                     var list = [];
-                    $.each(storage, function (key) {
+                    angular.forEach(storage, function (value, key) {
                         list.push(key);
                     });
                     return list;
@@ -626,7 +629,7 @@ function evaluateExpression(expression, optional) {
     toolkit.service("bu$toolRegistry", ["bu$registryFactory", "bu$configuration", function (registryFactory, configuration) {
         var toolRegistry = registryFactory("bu$toolRegistry");
         var toolConfigurator = function (id, tool) {
-            if (!$.isFunction(tool.configure)) {
+            if (!angular.isFunction(tool.configure)) {
                 return;
             }
             var toolConfiguration = configuration("tools." + id);
@@ -673,4 +676,232 @@ function evaluateExpression(expression, optional) {
         };
     }]);
 
-})(evaluateExpression("window.angular"), evaluateExpression("window.jQuery"));
+    toolkit.service("bu$name", ["bu$configuration", function (config) {
+        this.directive = function (name) {
+            if (!config.namespace) {
+                return name;
+            }
+            return config.namespace + name[0].toUpperCase() + name.substring(1);
+        };
+        this.normalize = function (domName) {
+            //turn DOM name into lower case for unification purposes
+            domName = domName.toLowerCase();
+            //strip xHTML and HTML5 prefixes
+            domName = domName.replace(/^(x|data)-/, '');
+            //turn domName into camel case
+            domName = domName.split(/[\-:]/);
+            for (var i = 1; i < domName.length; i++) {
+                domName[i] = domName[i][0].toUpperCase() + domName[i].substring(1);
+            }
+            domName = domName.join("");
+            //return the result
+            return domName;
+        };
+        this.domNames = function (directiveName) {
+            var names = [];
+            //we first reverse the camel case into dash separated
+            directiveName = directiveName.replace(/([A-Z])/g, "-$1").toLowerCase();
+            names.push(directiveName);
+            //we include a variant with the first term as a namespace
+            if (directiveName.indexOf("-") != -1) {
+                names.push(directiveName.replace(/\-/, ':'));
+            }
+            //we then include the HTML5 and xHTML variants
+            names.push("data-" + directiveName);
+            names.push("x-" + directiveName);
+            return names;
+        };
+    }]);
+
+    toolkit.provider("bu$compile", ["bu$registryFactoryProvider", "$compileProvider", function (bu$registryFactoryProvider, $compileProvider) {
+        //this is a simple trick so that we can avoid defining the dependencies of the $get method after
+        //we have defined it. Here, we are actually telling before-hand that we want the declaration to
+        //be done afterwards
+        (function () {
+            //noinspection JSPotentiallyInvalidUsageOfThis
+            this.$get.$inject = ["$compile", "$rootElement", "$injector", "bu$name"];
+        }).postpone(this);
+        var directiveRegistry = bu$registryFactoryProvider.$get()("bu$directiveRegistry");
+        this.$get = function ($compile, $rootElement, $injector, bu$name) {
+            return function (directiveName, directiveFactory) {
+                //a directive name is the least requirement for working with directives
+                if (!directiveName) {
+                    throw new Error("Directive name cannot be empty " + directiveName);
+                }
+                var directiveDescriptor = directiveRegistry.get(directiveName);
+                if (!directiveDescriptor) {
+                    if (angular.isUndefined(directiveFactory)) {
+                        throw new Error("No previous description was found for directive " + directiveName);
+                    }
+                    //invoke the factory with its dependencies
+                    var directive = $injector.invoke(directiveFactory, {
+                        //this is to signal to the directive factory that we are just pre-loading
+                        //the directive, so that if differentiation between an actual angular-driven
+                        //construction and this one is necessary it can be done properly by querying
+                        //the value 'this.bu$Preload' inside the constructor to see if it is '=== true'
+                        bu$Preload: true
+                    });
+                    if (angular.isFunction(directive)) {
+                        //if the result is a function, we assume that it is the post-link method
+                        directive = {
+                            link: {
+                                post: directive
+                            }
+                        };
+                    } else if (angular.isArray(directive) && directive.length > 0 && angular.isFunction(directive[directive.length - 1])) {
+                        //if the directive is a function wrapped in bracket dependency notation we assume it to be
+                        //the post-link method with its dependencies explicitly defined
+                        directive = {
+                            link: {
+                                post: directive
+                            }
+                        };
+                    } else if (!angular.isObject(directive)) {
+                        throw new Error("Invalid directive definition provided for " + directiveName);
+                    }
+                    //if no restriction is set, the default behaviour of AngularJS is attribute
+                    if (!directive.restrict) {
+                        directive.restrict = "A";
+                    }
+                    var currentName = bu$name.directive(directiveName);
+                    var domNames = bu$name.domNames(currentName);
+                    var filters = [];
+                    //here, we set up filters that can select nodes to be processed by the compiler
+                    //registering element type filter
+                    if (directive.restrict.indexOf("E") != -1) {
+                        filters.push(function (node) {
+                            if (node.nodeType != 1) { //only select element nodes
+                                return null;
+                            }
+                            if (bu$name.normalize(node.nodeName) == currentName) {
+                                return node;
+                            }
+                            return null;
+                        });
+                    }
+                    //registering attribute type filter
+                    if (directive.restrict.indexOf("A") != -1) {
+                        filters.push(function (node) {
+                            if (node.nodeType != 1) { //only select element nodes
+                                return null;
+                            }
+                            for (var i = 0; i < node.attributes.length; i++) {
+                                var attributeName = node.attributes.item(i).name;
+                                if (bu$name.normalize(attributeName) == currentName) {
+                                    return node;
+                                }
+                            }
+                            return null;
+                        });
+                    }
+                    //registering class type filter
+                    if (directive.restrict.indexOf("C") != -1) {
+                        filters.push(function (node) {
+                            if (node.nodeType != 1 || !node.className) { //select an element node with a class attribute
+                                return null;
+                            }
+                            for (var i = 0; i < domNames.length; i++) {
+                                var domName = domNames[i];
+                                if (node.className.indexOf(domName) != -1) {
+                                    return node;
+                                }
+                            }
+                            return null;
+                        });
+                    }
+                    //registering comment type filter
+                    if (directive.restrict.indexOf("I") != -1) {
+                        filters.push(function (node) {
+                            if (node.nodeType != 8) { //only select from comment nodes
+                                return null;
+                            }
+                            //to be safe, we recompile all comments again
+                            return node.parentNode;
+                        });
+                    }
+                    //we now register the loaded directive definition for later reference
+                    directiveDescriptor = {
+                        //the raw name of the directive without any namespace prefixing
+                        name: directiveName,
+                        //the actual directive after having been invoked via the factory
+                        directive: directive,
+                        //
+                        factory: directiveFactory,
+                        //this filter will apply all created filters and find if any of them applies
+                        //the first that picks anything out
+                        filter: function (node) {
+                            for (var i = 0; i < filters.length; i++) {
+                                var chosen = filters[i].call(null, node);
+                                if (chosen) {
+                                    return chosen;
+                                }
+                            }
+                            return null;
+                        },
+                        compile: function (element, compileFunction) {
+                            //if no root element has been specified, we assume that we will need to traverse
+                            //the ng-app in its entirety
+                            if (!element) {
+                                element = $rootElement;
+                            } else {
+                                element = angular.element(element);
+                            }
+                            //now, let's walk
+                            var nodes = [];
+                            var collect = function (node) {
+                                while (node) {
+                                    //if the node has already been considered we ignore it
+                                    var $node = angular.element(node);
+                                    if ($node.data('bu-compiled') && $node.data('bu-compiled')[currentName]) {
+                                        node = node.nextSibling;
+                                        continue;
+                                    }
+                                    var chosen = directiveDescriptor.filter(node);
+                                    if (chosen) {
+                                        nodes.push(chosen);
+                                    } else {
+                                        collect(node.firstChild);
+                                    }
+                                    node = node.nextSibling;
+                                }
+                            };
+                            var processor = function (node) {
+                                var $node = angular.element(node);
+                                if ($node.data('bu-compile') && $node.data('bu-compile')[currentName]) {
+                                    return;
+                                }
+                                var scope = angular.element(node).scope();
+                                scope.$apply(function () {
+                                    var $node = angular.element(node);
+                                    compileFunction.apply(scope, [$node, scope, function (result) {
+                                        $node = angular.element(result);
+                                    }]);
+                                    //we are keeping track of what sort of compiling we have previously performed
+                                    //on each element so that we can improve performance.
+                                    //this also is necessary to prevent mixed results when recompiling elements that
+                                    //have ng-transclude enabled.
+                                    //you could manually change the compiled flag to false, so that recompilation is
+                                    //done regardless, for any element of your choosing.
+                                    var data = $node.data('bu-compiled') || {};
+                                    data[currentName] = true;
+                                    $node.data('bu-compiled', data);
+                                });
+                            };
+                            if (!angular.isFunction(compileFunction)) {
+                                compileFunction = function (node, scope, offerResult) {
+                                    offerResult($compile(node)(scope));
+                                };
+                            }
+                            collect(element[0]);
+                            angular.forEach(nodes, processor);
+                        }
+                    };
+                    directiveRegistry.register(directiveName, directiveDescriptor);
+                    $compileProvider.directive(bu$name.directive(directiveName), directiveFactory);
+                }
+                return directiveDescriptor.compile;
+            };
+        };
+    }]);
+
+})(evaluateExpression("window.angular"));
