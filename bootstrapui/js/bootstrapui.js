@@ -733,6 +733,63 @@ function evaluateExpression(expression, optional) {
                     if (angular.isUndefined(directiveFactory)) {
                         throw new Error("No previous description was found for directive " + directiveName);
                     }
+                    var originalFactory = directiveFactory;
+                    var isFunction = function (target) {
+                        return angular.isFunction(target) || (angular.isArray(target) && target.length > 0 && angular.isFunction(target[target.length - 1]));
+                    };
+                    directiveFactory = function ($injector) {
+                        var directive = $injector.invoke(originalFactory, this);
+                        if (isFunction(directive)) {
+                            //If the result is a function, we assume that it is the link method. Alternately,
+                            //if the directive is a function wrapped in bracket dependency notation we assume it to be
+                            //the link method with its dependencies explicitly defined
+                            directive = {
+                                link: directive                            };
+                        } else if (!angular.isObject(directive)) {
+                            throw new Error("Invalid directive definition provided for " + directiveName);
+                        }
+                        if (isFunction(directive.link)) {
+                            //if specifics have not been mentioned, the link function is assumed to be the post-link
+                            //function
+                            directive.link = {
+                                pre: function () {},
+                                post: directive.link
+                            };
+                        }
+                        var controller = function () {};
+                        if (isFunction(directive.controller)) {
+                            controller = directive.controller;
+                        }
+                        if (angular.isUndefined(directive.scope)) {
+                            directive.scope = false;
+                        }
+                        directive.controller = function ($timeout, $injector, $scope, $element, $attrs) {
+                            var context = this;
+                            $timeout(function () {
+                                console.log('here');
+                                if (angular.isObject(directive.scope) && angular.isObject(directive.defaults)) {
+                                    angular.forEach(directive.scope, function (value, key) {
+                                        if (angular.isUndefined($scope[key]) && angular.isDefined(directive.defaults[key])) {
+                                            var defaultValue = directive.defaults[key];
+                                            if (isFunction(defaultValue)) {
+                                                defaultValue = $injector.invoke(defaultValue, context);
+                                            }
+                                            $scope[key] = defaultValue;
+                                        }
+                                    });
+                                }
+                                $injector.invoke(controller, context, {
+                                    $scope: $scope,
+                                    $element: $element,
+                                    $attrs: $attrs,
+                                    $timeout: $timeout
+                                });
+                            });
+                        };
+                        directive.controller.$inject = ["$timeout", "$injector", "$scope", "$element", "$attrs"];
+                        return  directive;
+                    };
+                    directiveFactory.$inject = ["$injector"];
                     //invoke the factory with its dependencies
                     var directive = $injector.invoke(directiveFactory, {
                         //this is to signal to the directive factory that we are just pre-loading
@@ -741,24 +798,6 @@ function evaluateExpression(expression, optional) {
                         //the value 'this.bu$Preload' inside the constructor to see if it is '=== true'
                         bu$Preload: true
                     });
-                    if (angular.isFunction(directive)) {
-                        //if the result is a function, we assume that it is the post-link method
-                        directive = {
-                            link: {
-                                post: directive
-                            }
-                        };
-                    } else if (angular.isArray(directive) && directive.length > 0 && angular.isFunction(directive[directive.length - 1])) {
-                        //if the directive is a function wrapped in bracket dependency notation we assume it to be
-                        //the post-link method with its dependencies explicitly defined
-                        directive = {
-                            link: {
-                                post: directive
-                            }
-                        };
-                    } else if (!angular.isObject(directive)) {
-                        throw new Error("Invalid directive definition provided for " + directiveName);
-                    }
                     //if no restriction is set, the default behaviour of AngularJS is attribute
                     if (!directive.restrict) {
                         directive.restrict = "A";
@@ -825,7 +864,9 @@ function evaluateExpression(expression, optional) {
                         name: directiveName,
                         //the actual directive after having been invoked via the factory
                         directive: directive,
-                        //
+                        //this is the factory used for instantiating the directive definition
+                        //since masking is being performed, this is actually overridden to be
+                        //a function which proxies the actual factory with masking capabilities.
                         factory: directiveFactory,
                         //this filter will apply all created filters and find if any of them applies
                         //the first that picks anything out
