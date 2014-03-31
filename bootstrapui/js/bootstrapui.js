@@ -45,6 +45,7 @@ function evaluateExpression(expression, optional) {
 (function (
     //A reference to the AngularJS framework's main instance
     angular) {
+    'use strict';
 
     //Stub for when the bind method has not been provided via the browser
     if (!Function.prototype.bind) {
