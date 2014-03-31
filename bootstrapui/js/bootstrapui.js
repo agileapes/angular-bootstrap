@@ -766,7 +766,6 @@ function evaluateExpression(expression, optional) {
                         directive.controller = function ($timeout, $injector, $scope, $element, $attrs) {
                             var context = this;
                             $timeout(function () {
-                                console.log('here');
                                 if (angular.isObject(directive.scope) && angular.isObject(directive.defaults)) {
                                     angular.forEach(directive.scope, function (value, key) {
                                         if (angular.isUndefined($scope[key]) && angular.isDefined(directive.defaults[key])) {
