@@ -30,10 +30,13 @@ describe("bu$compile service", function () {
     beforeEach(function () {
         //changing the test root to be <DIV#testRoot/> instead of <HTML/>
         var body = angular.element(document.documentElement).find("body");
-        body.append("<div id='testRoot'></div>");
+        body.append("<div id='testRoot' style='display: none;'></div>");
         testRoot = angular.element(document.getElementById("testRoot"));
         angular.module("myApplication")
-            .value("$rootElement", testRoot);
+            .value("$rootElement", testRoot)
+            .config(function (bu$configurationProvider) {
+                bu$configurationProvider.reset();
+            });
         //loading module
         module("myApplication");
     });
@@ -302,6 +305,84 @@ describe("bu$compile service", function () {
             node.nodeType = 1;
             expect(filter(node)).toBeNull();
         });
+
+    });
+    
+    describe("by masking the directive returned from the factory", function () {
+
+        var registry;
+
+        beforeEach(function () {
+            inject(function (bu$registryFactory) {
+                registry = bu$registryFactory.get("bu$directiveRegistry");
+            });
+        });
+    
+        it("always returns a directive definition object", inject(function (bu$compile) {
+            bu$compile("sample", function () {
+                return function () {}
+            });
+            //even though we return a function, that function will be returned as directive.link.post
+            var directive = registry.get("sample").directive;
+            expect(angular.isFunction(directive)).toBeFalsy();
+            expect(angular.isObject(directive)).toBeTruthy();
+        }));
+        
+        it("returns the link function as the post-link", inject(function (bu$compile) {
+            var linker = jasmine.createSpy("linker");
+            bu$compile("sample", function () {
+                return linker;
+            });
+            var directive = registry.get("sample").directive;
+            expect(directive.link).not.toBeUndefined();
+            expect(directive.link.post).not.toBeUndefined();
+            expect(angular.isFunction(directive.link.post)).toBeTruthy();
+            expect(linker).not.toHaveBeenCalled();
+            directive.link.post();
+            expect(linker).toHaveBeenCalled();
+        }));
+
+        it("sets up a complete object model", inject(function (bu$compile) {
+            bu$compile("sample", function () {
+                return {};
+            });
+            var directive = registry.get("sample").directive;
+            expect(directive.restrict).toEqual("A");
+            expect(directive.scope).toBe(false);
+            expect(directive.replace).toBe(false);
+            expect(directive.transclude).toBe(false);
+            expect(directive.priority).toBe(0);
+            expect(directive.require).toBeNull();
+            expect(directive.link).not.toBeUndefined();
+            expect(directive.link.pre).not.toBeUndefined();
+            expect(directive.link.post).not.toBeUndefined();
+            expect(angular.isFunction(directive.link.pre)).toBeTruthy();
+            expect(angular.isFunction(directive.link.post)).toBeTruthy();
+            expect(directive.compile).not.toBeUndefined();
+            expect(angular.isFunction(directive.compile)).toBeTruthy();
+            expect(directive.compile()).toEqual(directive.link);
+        }));
+
+        it("allows defaults to be placed", inject(function (bu$compile, $timeout) {
+            var first = "defaultValue";
+            var second = "123";
+            testRoot.append("<ui:sample another-variable='" + second + "'></ui:sample>");
+            bu$compile("sample", function () {
+                return {
+                    restrict: "E",
+                    template: "{{variable}}+{{anotherVariable}}",
+                    scope: {
+                        variable: "@",
+                        anotherVariable: "@"
+                    },
+                    defaults: {
+                        variable: first
+                    }
+                };
+            })(testRoot);
+            $timeout.flush();
+            expect(testRoot.text()).toBe(first + "+" + second);
+        }));
 
     });
 

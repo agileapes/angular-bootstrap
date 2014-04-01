@@ -724,10 +724,10 @@ function evaluateExpression(expression, optional) {
         //be done afterwards
         (function () {
             //noinspection JSPotentiallyInvalidUsageOfThis
-            this.$get.$inject = ["$compile", "$rootElement", "$injector", "bu$name"];
+            this.$get.$inject = ["$compile", "$rootElement", "$injector", "bu$name", "$rootScope"];
         }).postpone(this);
         var directiveRegistry = bu$registryFactoryProvider.$get()("bu$directiveRegistry");
-        this.$get = function ($compile, $rootElement, $injector, bu$name) {
+        this.$get = function ($compile, $rootElement, $injector, bu$name, $rootScope) {
             return function (directiveName, directiveFactory) {
                 //a directive name is the least requirement for working with directives
                 if (!directiveName) {
@@ -749,7 +749,8 @@ function evaluateExpression(expression, optional) {
                             //if the directive is a function wrapped in bracket dependency notation we assume it to be
                             //the link method with its dependencies explicitly defined
                             directive = {
-                                link: directive                            };
+                                link: directive
+                            };
                         } else if (!angular.isObject(directive)) {
                             throw new Error("Invalid directive definition provided for " + directiveName);
                         }
@@ -765,9 +766,53 @@ function evaluateExpression(expression, optional) {
                         if (isFunction(directive.controller)) {
                             controller = directive.controller;
                         }
+                        if (angular.isUndefined(directive.link)) {
+                            directive.link = {};
+                        }
+                        if (!angular.isFunction(directive.link.pre)) {
+                            directive.link.pre = function () {};
+                        }
+                        if (!angular.isFunction(directive.link.post)) {
+                            directive.link.post = function () {};
+                        }
                         if (angular.isUndefined(directive.scope)) {
                             directive.scope = false;
                         }
+                        if (angular.isUndefined(directive.replace)) {
+                            directive.replace = false;
+                        }
+                        if (angular.isUndefined(directive.transclude)) {
+                            directive.transclude = false;
+                        }
+                        if (angular.isUndefined(directive.priority)) {
+                            directive.priority = 0;
+                        }
+                        if (angular.isUndefined(directive.require)) {
+                            directive.require = null;
+                        }
+                        if (!angular.isFunction(directive.compile)) {
+                            directive.compile = function () {};
+                        }
+                        var originalCompile = directive.compile;
+                        directive.compile = function (tElement, tAttrs) {
+                            var linker = $injector.invoke(originalCompile, this, {
+                                tElement: tElement,
+                                tAttrs: tAttrs,
+                                element: tElement,
+                                attrs: tAttrs,
+                                $element: tElement,
+                                $attrs: tAttrs
+                            });
+                            if (angular.isFunction(linker)) {
+                                linker = {
+                                    post: linker
+                                };
+                            }
+                            if (!angular.isObject(linker)) {
+                                linker = directive.link;
+                            }
+                            return linker;
+                        };
                         directive.controller = function ($timeout, $injector, $scope, $element, $attrs) {
                             var context = this;
                             $timeout(function () {
@@ -916,6 +961,9 @@ function evaluateExpression(expression, optional) {
                                     return;
                                 }
                                 var scope = angular.element(node).scope();
+                                if (angular.isUndefined(scope)) {
+                                    scope = $rootScope;
+                                }
                                 scope.$apply(function () {
                                     var $node = angular.element(node);
                                     compileFunction.apply(scope, [$node, scope, function (result) {
