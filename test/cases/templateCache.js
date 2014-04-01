@@ -23,19 +23,24 @@ describe("TemplateCache", function () {
             $templateCacheProvider.$get.$inject = ["bu$cachingHttp", "myCacheFactory"];
         });
 
-    var templateCache, $http, delegateCache, firstUrl;
+    var templateCache, $http, delegateCache, firstUrl, templateCacheProvider;
     var firstTemplate = "<h1>First</h1>";
 
-    beforeEach(module("myApplicationModule"));
-
-    beforeEach(inject(function ($templateCache, bu$cachingHttp) {
-        firstUrl = "1.html";
-        $http = bu$cachingHttp;
-        templateCache = $templateCache;
-        spyOn(delegateCache, "get").and.callThrough();
-        spyOn(delegateCache, "put").and.callThrough();
-        spyOn($http, "get").and.callThrough();
-    }));
+    beforeEach(function () {
+        angular.module('myApplicationModule')
+            .config(function ($templateCacheProvider) {
+                templateCacheProvider = $templateCacheProvider;
+            });
+        module("myApplicationModule");
+        inject(function ($templateCache, bu$cachingHttp) {
+            firstUrl = "1.html";
+            $http = bu$cachingHttp;
+            templateCache = $templateCache;
+            spyOn(delegateCache, "get").and.callThrough();
+            spyOn(delegateCache, "put").and.callThrough();
+            spyOn($http, "get").and.callThrough();
+        });
+    });
 
     afterEach(function () {
         $http.verifyNoOutstandingExpectation();
@@ -88,6 +93,45 @@ describe("TemplateCache", function () {
         $http.flush(1);
         expect(success).not.toHaveBeenCalled();
         expect(failure).toHaveBeenCalled();
+    });
+
+    it("accepts interceptors and lets template values be modified upon `.put(...)`", function () {
+        var interceptor = jasmine.createSpy("interceptor").and.callFake(function (template) {
+            return template.replace(/x/g, '');
+        });
+        var url = "/some/template.html";
+        var template = "axbxc";
+        templateCacheProvider.intercept({
+            put: interceptor
+        });
+        expect(interceptor).not.toHaveBeenCalled();
+        templateCache.put(url, template);
+        expect(interceptor).toHaveBeenCalled();
+        expect(interceptor).toHaveBeenCalledWith(template, url);
+        templateCache.get(url).then(function (template) {
+            expect(template).not.toBeFalsy();
+            expect(template).toBe("abc");
+        });
+    });
+
+    it("accepts interceptors and lets template values be modified upon `.get(...)`", function () {
+        var interceptor = jasmine.createSpy("interceptor").and.callFake(function (template) {
+            return template.replace(/x/g, '');
+        });
+        var url = "/some/template.html";
+        var template = "axbxc";
+        templateCacheProvider.intercept({
+            get: interceptor
+        });
+        expect(interceptor).not.toHaveBeenCalled();
+        templateCache.put(url, template);
+        expect(interceptor).not.toHaveBeenCalled();
+        templateCache.get(url).then(function (template) {
+            expect(interceptor).toHaveBeenCalled();
+            expect(interceptor).toHaveBeenCalledWith(template, url);
+            expect(template).not.toBeFalsy();
+            expect(template).toBe("abc");
+        });
     });
 
     describe("when no templates have been loaded yet", function () {

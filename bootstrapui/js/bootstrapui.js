@@ -364,6 +364,13 @@ function evaluateExpression(expression, optional) {
                 return templateCache.info();
             };
             this.put = function (key, template) {
+                for (var i = 0; i < TemplateCache.interceptors.length; i++) {
+                    var interceptor = TemplateCache.interceptors[i].put;
+                    var returned = interceptor.apply(self, [template, key]);
+                    if (returned) {
+                        template = returned;
+                    }
+                }
                 templateCache.put(key, template);
             };
             this.remove = function (key) {
@@ -380,7 +387,7 @@ function evaluateExpression(expression, optional) {
                     cache: templateCache
                 }).then(function (result) {
                     for (var i = 0; i < TemplateCache.interceptors.length; i++) {
-                        var interceptor = TemplateCache.interceptors[i];
+                        var interceptor = TemplateCache.interceptors[i].get;
                         var returned = interceptor.apply(self, [result.data, key]);
                         if (returned) {
                             result.data = returned;
@@ -394,6 +401,20 @@ function evaluateExpression(expression, optional) {
         TemplateCache.interceptors = [];
 
         toolkit.provider("$templateCache", function () {
+            this.intercept = function (interceptor) {
+                if (angular.isFunction(interceptor)) {
+                    interceptor = {
+                        put: interceptor
+                    };
+                }
+                if (!angular.isFunction(interceptor.get)) {
+                    interceptor.get = function (x) {return x};
+                }
+                if (!angular.isFunction(interceptor.put)) {
+                    interceptor.put = function (x) {return x};
+                }
+                TemplateCache.interceptors.push(interceptor);
+            };
             this.$get = function ($http, $cacheFactory) {
                 var cache;
                 try {
