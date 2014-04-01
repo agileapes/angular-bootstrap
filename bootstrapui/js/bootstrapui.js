@@ -829,7 +829,7 @@ function evaluateExpression(expression, optional) {
                                 return null;
                             }
                             for (var i = 0; i < node.attributes.length; i++) {
-                                var attributeName = node.attributes.item(i).name;
+                                var attributeName = node.attributes.item(i).name.toLowerCase();
                                 if (bu$name.normalize(attributeName) == currentName) {
                                     return node;
                                 }
