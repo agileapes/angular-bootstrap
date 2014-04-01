@@ -39,11 +39,11 @@ describe("TemplateCache", function () {
         $http.verifyNoOutstandingExpectation();
     });
 
-    it("knows itself using the id 'buTemplateCache'", function () {
+    it("knows itself using the id `buTemplateCache`", function () {
         expect(templateCache.info().id).toEqual("buTemplateCache");
     });
 
-    it("will facilitate a $http.get(...) to the specified url for the template to be cached", function () {
+    it("will facilitate a `$http.get(...)` to the specified url for the template to be cached", function () {
         var url = "url/for/a/template.html";
         //initially the http service is not used
         templateCache.get(url);
@@ -52,7 +52,7 @@ describe("TemplateCache", function () {
         expect($http.get).toHaveBeenCalledWith(url, jasmine.objectContaining({}));
     });
 
-    it("will correctly retrieve and return the loaded template", inject(function ($q) {
+    it("will correctly retrieve and return the loaded template", function () {
         $http.expect("GET", firstUrl).respond(firstTemplate);
         var onLoad = jasmine.createSpy("for when template has been loaded");
         templateCache.get(firstUrl).then(onLoad);
@@ -60,7 +60,7 @@ describe("TemplateCache", function () {
         $http.flush(1);
         expect(onLoad).toHaveBeenCalled();
         expect(onLoad).toHaveBeenCalledWith(firstTemplate);
-    }));
+    });
 
     it("will store the loaded template into the delegate cache", function () {
         $http.expect("GET", firstUrl).respond(firstTemplate);

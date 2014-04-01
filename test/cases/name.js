@@ -1,6 +1,6 @@
 angular.module("myApplication", ["buMain"]);
 
-describe("bu$name.directive()", function () {
+describe("Directive helper `bu$name.directive()`", function () {
 
     var configProvider;
 
@@ -34,21 +34,21 @@ describe("bu$name.directive()", function () {
 
 });
 
-describe("bu$name.normalize()", function () {
+describe("Normalization helper `bu$name.normalize()`", function () {
 
     beforeEach(module('myApplication'));
 
-    it("strips the FIRST 'x-' prefix", inject(function (bu$name) {
+    it("strips the FIRST `x-` prefix", inject(function (bu$name) {
         expect(bu$name.normalize('x-test')).toBe('test');
         expect(bu$name.normalize('x-x-test')).toBe('xTest');
     }));
 
-    it("strips the FIRST 'data-' prefix", inject(function (bu$name) {
+    it("strips the FIRST `data-` prefix", inject(function (bu$name) {
         expect(bu$name.normalize('data-test')).toBe('test');
         expect(bu$name.normalize('data-data-test')).toBe('dataTest');
     }));
 
-    it("strips 'data-' OR 'x-' prefix", inject(function (bu$name) {
+    it("strips `data-` OR `x-` prefix", inject(function (bu$name) {
         expect(bu$name.normalize('data-x-test')).toBe('xTest');
         expect(bu$name.normalize('x-data-test')).toBe('dataTest');
     }));
@@ -63,7 +63,7 @@ describe("bu$name.normalize()", function () {
 
 });
 
-describe("bu$name.domNames", function () {
+describe("Camel-case to DOM converter `bu$name.domNames`", function () {
 
     beforeEach(module('myApplication'));
 
@@ -75,11 +75,11 @@ describe("bu$name.domNames", function () {
         expect(bu$name.domNames('myDirective')).toContain('my:directive');
     }));
 
-    it("includes the 'x-' prefix version", inject(function (bu$name) {
+    it("includes the `x-` prefix version", inject(function (bu$name) {
         expect(bu$name.domNames('myDirective')).toContain('x-my-directive');
     }));
 
-    it("includes the 'data-' prefix version", inject(function (bu$name) {
+    it("includes the `data-` prefix version", inject(function (bu$name) {
         expect(bu$name.domNames('myDirective')).toContain('data-my-directive');
     }));
 

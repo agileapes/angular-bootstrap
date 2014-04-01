@@ -19,7 +19,7 @@ describe("bu$registryFactory", function () {
             expect(registry).not.toBeNull();
         }));
 
-        it("after a registry has been instantiated will return it again using '.get()'", inject(function (bu$registryFactory) {
+        it("after a registry has been instantiated will return it again using `.get()`", inject(function (bu$registryFactory) {
             bu$registryFactory("myRegistry").someVariable = "someValue";
             var registry = bu$registryFactory.get("myRegistry");
             expect(registry).not.toBeUndefined();
@@ -39,7 +39,7 @@ describe("bu$registryFactory", function () {
 
     });
 
-    describe("when recreation has been turned on using '.allowRecreation(true)' on the provider", function () {
+    describe("when recreation has been turned on using `.allowRecreation(true)` on the provider", function () {
 
         var bu$registryFactory;
 
@@ -53,7 +53,7 @@ describe("bu$registryFactory", function () {
             bu$registryFactory("someRegistry");
         });
 
-        it("will override the object every time the instantiation routine through the 'bu$registryFactory(...)' is called", function () {
+        it("will override the object every time the instantiation routine through the `bu$registryFactory(...)` is called", function () {
             bu$registryFactory("someRegistry").someVariable = "someValue";
             expect(bu$registryFactory.get("someRegistry").someVariable).not.toBeUndefined();
             bu$registryFactory("someRegistry");
@@ -62,7 +62,7 @@ describe("bu$registryFactory", function () {
 
     });
     
-    describe("when allowing init-on-demand through '.allowInitOnDemand(true)' on the provider", function () {
+    describe("when allowing init-on-demand through `.allowInitOnDemand(true)` on the provider", function () {
 
         var bu$registryFactory;
 
@@ -126,7 +126,7 @@ describe("Registry", function () {
         }));
     });
 
-    it("allows for registering ('.on()') and unregistering ('.off()') event handlers for the 'register' event", function () {
+    it("allows for registering (`.on(...)`) and unregistering (`.off(...)`) event handlers for the `register` event", function () {
         var callback = jasmine.createSpy("eventListener");
         var callbackIndex = registry.on('register', callback);
         expect(callback).not.toHaveBeenCalled();
@@ -139,7 +139,7 @@ describe("Registry", function () {
         expect(callback.calls.count()).toBe(1);
     });
 
-    it("allows for registering ('.on()') and unregistering ('.off()') event handlers for the 'unregister' event", function () {
+    it("allows for registering (`.on(...)`) and unregistering (`.off(...)`) event handlers for the `unregister` event", function () {
         var callback = jasmine.createSpy("eventListener");
         var callbackIndex = registry.on('unregister', callback);
         expect(callback).not.toHaveBeenCalled();
@@ -163,7 +163,7 @@ describe("Registry", function () {
         expect(registry.get('item')).toBe(4); //(3 - 1) * 2 == 4
     });
 
-    it("allows triggering ('.trigger()') and responding ('.on()') to custom events", function () {
+    it("allows triggering (`.trigger(...)`) and responding (`.on(...)`) to custom events", function () {
         var spy = jasmine.createSpy("eventHandler");
         registry.on('myEvent', spy);
         expect(spy).not.toHaveBeenCalled();

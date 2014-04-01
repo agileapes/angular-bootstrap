@@ -1,6 +1,6 @@
 'use strict';
 
-describe("ECMA5 Standard Function.prototype.bind([{*} context], [{*} parameters*])", function () {
+describe("ECMA5 Standard `Function.bind([{*} context], [{*} parameters*])`", function () {
 
     var f = jasmine.createSpy("function");
 
@@ -30,7 +30,7 @@ describe("ECMA5 Standard Function.prototype.bind([{*} context], [{*} parameters*
 
 });
 
-describe("function evaluateExpression({string} expression) {}", function () {
+describe("function `evaluateExpression({string} expression) {}`", function () {
 
     beforeEach(function () {
         this.target = {
@@ -62,7 +62,7 @@ describe("function evaluateExpression({string} expression) {}", function () {
 
 });
 
-describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|Function} delay], [{int} timeout], [{string} descriptor])', function () {
+describe('`Function.postpone([{*} thisArg], [{array} arguments], [{int|Function} delay], [{int} timeout], [{string} descriptor])`', function () {
 
     var f;
 
@@ -81,13 +81,13 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
         expect(f).toHaveBeenCalled();
     });
 
-    it('results in the function having received the arguments passed through the postpone() method', function () {
+    it('results in the function having received the arguments passed through the `.postpone()` method', function () {
         f.postpone(null, [1, 2, 3]);
         jasmine.clock().tick(1);
         expect(f).toHaveBeenCalledWith(1, 2, 3);
     });
 
-    it('result in the function having received the context through the thisArg of the postpone() method', function () {
+    it('result in the function having received the context through the `thisArg` of the `.postpone()` method', function () {
         var callContext = {
             someProperty: "someValue"
         };
@@ -110,7 +110,7 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
         expect(f).toHaveBeenCalled();
     });
 
-    it('will not be called unless the controller function passed as the delay monitor tells it that it should by returning true', function () {
+    it('will not be called unless the controller function passed as the delay monitor tells it that it should by returning `true`', function () {
         var run = false;
         f.postpone(null, [], function () {
             return run;
@@ -123,7 +123,7 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
         expect(f).toHaveBeenCalled();
     });
 
-    it('runs its success callbacks in the order they were added through the then() method returned from the postpone() method', function () {
+    it('runs its success callbacks in the order they were added through the `.then()` method returned from the `.postpone()` method', function () {
         var result = [];
         var success = jasmine.createSpy("success", function () {
             result.push(result.length + 1);
@@ -143,7 +143,7 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
         expect(failure).not.toHaveBeenCalled();
     });
 
-    it("honors its timeout and runs failure callbacks added through the then() method returned from the postpone() method when timeout occurs", function () {
+    it("honors its timeout and runs failure callbacks added through the `.then()` method returned from the `.postpone()` method when timeout occurs", function () {
         var result = [];
         var success = jasmine.createSpy("success", function () {
             //pushes 1, 2, ...
@@ -258,7 +258,7 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
         expect(f).not.toHaveBeenCalled();
     });
 
-    it("runs failure callbacks added through the then() method returned from the postpone() method if the target function throws an exception", function () {
+    it("runs failure callbacks added through the `.then()` method returned from the `.postpone()` method if the target function throws an exception", function () {
         var f = jasmine.createSpy("function").and.throwError();
         var success = jasmine.createSpy("success");
         var failure = jasmine.createSpy("failure");
@@ -274,7 +274,7 @@ describe('Function.prototype.postpone([{*} thisArg], [{array} arguments], [{int|
 
 });
 
-describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} interval])", function () {
+describe("`Function.repeat([{*} thisArg], [{array} arguments], [{int} interval])`", function () {
 
     var f;
 
@@ -319,7 +319,7 @@ describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} i
         }
     });
     
-    it("exposes the number of times it has been called through count()", function () {
+    it("exposes the number of times it has been called through `.count()`", function () {
         var count = 0;
         f.repeat(null, [], 10).then(function () {
             count ++;
@@ -332,7 +332,7 @@ describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} i
         }
     });
 
-    it("executes success callbacks added through the then() method returned from the repeat() method at each call", function () {
+    it("executes success callbacks added through the then() method returned from the `.repeat()` method at each call", function () {
         var success = jasmine.createSpy("success");
         var failure = jasmine.createSpy("failure");
         f.repeat(null, [], 10).then(success, failure);
@@ -345,7 +345,7 @@ describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} i
         expect(success.calls.count()).toEqual(f.calls.count());
     });
 
-    it("executes failure callbacks added through the then() method returned from the repeat() method at each failed call", function () {
+    it("executes failure callbacks added through the then() method returned from the `.repeat()` method at each failed call", function () {
         var success = jasmine.createSpy("success");
         var failure = jasmine.createSpy("failure");
         f.and.throwError().repeat(null, [], 10).then(success, failure);
@@ -358,7 +358,7 @@ describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} i
         expect(failure.calls.count()).toEqual(f.calls.count());
     });
 
-    it("allows users to stop the repetition by a call placed at the stop() method of the handler returned by the repeat() function", function () {
+    it("allows users to stop the repetition by a call placed at the `.stop()` method of the handler returned by the `.repeat()` function", function () {
         var success = jasmine.createSpy("success");
         var failure = jasmine.createSpy("failure");
         var handle = f.repeat(null, [], 10).then(success, failure);
@@ -387,9 +387,9 @@ describe("Function.prototype.repeat([{*} thisArg], [{array} arguments], [{int} i
 
 });
 
-describe("String.prototype.repeat({int} times)", function () {
+describe("`String.repeat({int} times)`", function () {
 
-    it("returns the empty string if the number of times required is negative", function () {
+    it("returns the empty string (`\"\"`) if the number of times required is negative", function () {
         expect("something".repeat(-1)).toEqual("");
     });
 
@@ -409,9 +409,9 @@ describe("String.prototype.repeat({int} times)", function () {
 
 });
 
-describe("String.prototype.fix({int} length, [{string} filler = ' '], [{boolean} prepend = true])", function () {
+describe("`String.fix({int} length, [{string} filler = ' '], [{boolean} prepend = true])`", function () {
 
-    it("fixes a string to the empty string if the length specified is zero", function () {
+    it("fixes a string to the empty string (`\"\"`) if the length specified is zero", function () {
         expect("something".fix(0)).toEqual("");
     });
 
@@ -428,11 +428,11 @@ describe("String.prototype.fix({int} length, [{string} filler = ' '], [{boolean}
         expect("something".fix(5, " ", true)).toEqual("thing");
     });
 
-    it("pads from the left with the ' ' string if fixing a smaller string and is set to prepend with no specific filler", function () {
+    it("pads from the left with `\"\"` string if fixing a smaller string and is set to prepend with no specific filler", function () {
         expect("some".fix(6)).toEqual("  some");
     });
 
-    it("pads from the right with the ' ' string if fixing a smaller string and is set to append with no specific filler", function () {
+    it("pads from the right with the `\"\"` string if fixing a smaller string and is set to append with no specific filler", function () {
         expect("some".fix(6, null, false)).toEqual("some  ");
     });
 
@@ -446,7 +446,7 @@ describe("String.prototype.fix({int} length, [{string} filler = ' '], [{boolean}
 
 });
 
-describe("String.prototype.center({int} length)", function () {
+describe("`String.center({int} length)`", function () {
 
     it("returns the same string if the length is smaller than the actual string", function () {
         expect("123456".center(4)).toEqual("123456");

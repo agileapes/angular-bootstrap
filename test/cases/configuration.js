@@ -11,11 +11,11 @@ describe("BootstrapUI's configuration", function () {
         });
     });
 
-    it("allows for accessing properties using named indices (config(...))", inject(function (bu$configuration) {
+    it("allows for accessing properties using named indices `config(...)`", inject(function (bu$configuration) {
         expect(bu$configuration("namespace")).not.toBeUndefined();
     }));
 
-    it("allows for modifying properties using named indices (config(..., ...))", inject(function (bu$configuration) {
+    it("allows for modifying properties using named indices `config(..., ...)`", inject(function (bu$configuration) {
         expect(bu$configuration("something.random")).toBeUndefined();
         bu$configuration("something.random", "value");
         expect(bu$configuration("something.random")).toBe("value");
@@ -23,57 +23,57 @@ describe("BootstrapUI's configuration", function () {
 
     describe("when no external change has been applied", function () {
 
-        it("is applied when BootstrapUIConfig is not present", inject(function (bu$configuration) {
+        it("is applied when no external change has been made", inject(function (bu$configuration) {
             expect(bu$configuration).not.toBeNull();
         }));
 
-        it("will set base location to the current directory (config.base)", inject(function (bu$configuration) {
+        it("will set base location to the current directory `config.base`", inject(function (bu$configuration) {
             expect(bu$configuration.base).toBe(".");
         }));
 
-        it("sets the location for directive JavaScript files (config.directivesBase)", inject(function (bu$configuration) {
+        it("sets the location for directive JavaScript files `config.directivesBase`", inject(function (bu$configuration) {
             expect(bu$configuration.directivesBase).toBe("js/directives");
         }));
 
-        it("sets the location for filter JavaScript files (config.filtersBase)", inject(function (bu$configuration) {
+        it("sets the location for filter JavaScript files `config.filtersBase`", inject(function (bu$configuration) {
             expect(bu$configuration.filtersBase).toBe("js/filters");
         }));
 
-        it("sets the location of templates (config.templatesBase)", inject(function (bu$configuration) {
+        it("sets the location of templates `config.templatesBase`", inject(function (bu$configuration) {
             expect(bu$configuration.templatesBase).toBe("templates");
         }));
 
-        it("sets the default HTML tag <namespace:*/> to ui (config.namespace)", inject(function (bu$configuration) {
+        it("sets the default HTML tag <namespace:*/> to ui `config.namespace`", inject(function (bu$configuration) {
             expect(bu$configuration.namespace).toBe("ui");
         }));
 
-        it("expects no additional directives to be loaded (config.directives)", inject(function (bu$configuration) {
+        it("expects no additional directives to be loaded `config.directives`", inject(function (bu$configuration) {
             expect(bu$configuration.directives).toEqual([]);
         }));
 
-        it("expects no additional filters ot be loaded (config.filters)", inject(function (bu$configuration) {
+        it("expects no additional filters ot be loaded `config.filters`", inject(function (bu$configuration) {
             expect(bu$configuration.filters).toEqual([]);
         }));
 
-        it("sets the debug mode to 'false' (config.debug)", inject(function (bu$configuration) {
+        it("sets the debug mode to 'false' `config.debug`", inject(function (bu$configuration) {
             expect(bu$configuration.debug).toBe(false);
         }));
 
-        it("expects all directives to be preloaded (config.preloadAll)", inject(function (bu$configuration) {
+        it("expects all directives to be preloaded `config.preloadAll`", inject(function (bu$configuration) {
             expect(bu$configuration.preloadAll).toBe(true);
         }));
 
-        it("sets up namespace for extensions to be configured (config.ext)", inject(function (bu$configuration) {
+        it("sets up namespace for extensions to be configured `config.ext`", inject(function (bu$configuration) {
             expect(bu$configuration.ext).not.toBeUndefined();
         }));
 
-        it("sets up namespace for tools to be configured (config.tools)", inject(function (bu$configuration) {
+        it("sets up namespace for tools to be configured `config.tools`", inject(function (bu$configuration) {
             expect(bu$configuration.tools).not.toBeUndefined();
         }));
 
     });
 
-    describe("when a call to reset is made", function () {
+    describe("when a call to `bu$configurationProvider.reset()` is made", function () {
 
         it("preserves all essential configurations", function () {
             configurationProvider.reset();
@@ -106,9 +106,9 @@ describe("BootstrapUI's configuration", function () {
 
     });
 
-    describe("when working with tools (through the 'bu$toolRegistry' service)", function () {
+    describe("when working with tools (through the `bu$toolRegistry` service)", function () {
 
-        it("configures loaded tools by calling to their configure() method", inject(function (bu$toolRegistry) {
+        it("configures loaded tools by calling to their `.configure(...)` method", inject(function (bu$toolRegistry) {
             configurationProvider.set({
                 tools: {
                     myTool: {
