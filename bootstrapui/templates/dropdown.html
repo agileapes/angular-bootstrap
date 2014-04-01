@@ -1,8 +1,0 @@
-<div class="dropdown" ng-class="{'btn-group': isBtnGroup()}" xmlns:bootstrapui="http://www.agileapes.com/ui">
-    <a class="btn dropdown-toggle" ng-class="{'btn-default': isBtnGroup() || !kind || kind == 'normal', 'btn-primary': kind == 'primary', 'btn-warning': kind == 'warning', 'btn-info': kind == 'information', 'btn-success': kind == 'success', 'btn-danger': kind == 'danger','btn-lg': size == 'large', 'btn-sm': size == 'small', 'btn-xs': size == 'tiny'}" type="button" id="{{id}}" data-toggle="dropdown">
-        <span ng-show="glyph && (!position || position == 'before')"><bootstrapui:icon glyph="print"></bootstrapui:icon></span> {{label}} <span ng-show="glyph && position == 'after'" class="glyphicon glyphicon-{{glyph}}"></span>
-        <span ng-class="{caret: caret || isBtnGroup()}"></span>
-    </a>
-    <ul class="dropdown-menu" role="menu" aria-labelledby="{{id}}" ng-transclude>
-    </ul>
-</div>
