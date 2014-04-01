@@ -79,7 +79,7 @@ describe("BootstrapUI's configuration", function () {
 
         it("preserves all essential configurations", function () {
             configurationProvider.reset();
-            bu$configuration = configurationProvider.$get();
+            var bu$configuration = configurationProvider.$get();
             expect(bu$configuration.x).toBeUndefined();
             expect(bu$configuration).not.toBeNull();
             expect(bu$configuration.base).toBe(".");
