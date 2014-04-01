@@ -341,6 +341,10 @@
                     $(".navigation").addClass("dim");
                     $(".report").addClass("dim");
                     ReportHelper.menu("failed");
+                } else if (testCollection.count.pending) {
+                    $(".navigation").addClass("dim dim-secondary");
+                    $(".report").addClass("dim dim-secondary");
+                    ReportHelper.menu("pending");
                 }
             }
         };

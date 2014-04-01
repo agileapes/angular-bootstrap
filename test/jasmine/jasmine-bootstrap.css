@@ -248,8 +248,13 @@ li.pending.nonempty a {
     opacity: 1;
 }
 
-.report.dim .test-suite.passed:hover {
+.report.dim .test-suite.passed:hover{
     background: #f7fffc;
+}
+
+.report.dim-secondary .test-suite.pending {
+    background: #fff6f2;
+    opacity: 1;
 }
 
 .report.dim .test-suite.pending:hover {
