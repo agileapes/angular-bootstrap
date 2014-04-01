@@ -42,9 +42,8 @@ function evaluateExpression(expression, optional) {
 /**
  * Starts the BootstrapUI framework with the dependencies injected via evaluation.
  */
-(function (
-    //A reference to the AngularJS framework's main instance
-    angular) {
+(function (//A reference to the AngularJS framework's main instance
+           angular) {
     'use strict';
 
     //Stub for when the bind method has not been provided via the browser
@@ -275,7 +274,7 @@ function evaluateExpression(expression, optional) {
             if (angular.isFunction(parameters)) {
                 parameters = parameters(handler);
             }
-            count ++;
+            count++;
             func.postpone(context, parameters).then(done, fail);
         }, delay);
         return handler;
@@ -291,7 +290,7 @@ function evaluateExpression(expression, optional) {
             times = 0;
         }
         var result = "";
-        for (var i = 0; i < times; i ++) {
+        for (var i = 0; i < times; i++) {
             result += this;
         }
         return result;
@@ -349,7 +348,7 @@ function evaluateExpression(expression, optional) {
      * @type {module}
      */
     var toolkit = angular.module("buMain", []);
-    toolkit.value("version", "0.7");
+    toolkit.value("bu.version", "0.7");
 
     (function () {
         /**
@@ -408,10 +407,14 @@ function evaluateExpression(expression, optional) {
                     };
                 }
                 if (!angular.isFunction(interceptor.get)) {
-                    interceptor.get = function (x) {return x};
+                    interceptor.get = function (x) {
+                        return x
+                    };
                 }
                 if (!angular.isFunction(interceptor.put)) {
-                    interceptor.put = function (x) {return x};
+                    interceptor.put = function (x) {
+                        return x
+                    };
                 }
                 TemplateCache.interceptors.push(interceptor);
             };
@@ -575,13 +578,13 @@ function evaluateExpression(expression, optional) {
                         return [id, original];
                     });
                     if (typeof storage[id] != "undefined") {
-                        size ++;
+                        size++;
                     }
                 },
                 unregister: function (id) {
                     runCallbacks('unregister', storage[id], registry, [id, storage[id]]);
                     if (typeof storage[id] != "undefined") {
-                        size --;
+                        size--;
                     }
                     delete storage[id];
                 },
@@ -745,10 +748,10 @@ function evaluateExpression(expression, optional) {
         //be done afterwards
         (function () {
             //noinspection JSPotentiallyInvalidUsageOfThis
-            this.$get.$inject = ["$compile", "$rootElement", "$injector", "bu$name", "$rootScope", "$q"];
+            this.$get.$inject = ["$compile", "$rootElement", "$injector", "bu$name", "$rootScope", "$q", "bu$configuration", "$timeout"];
         }).postpone(this);
         var directiveRegistry = bu$registryFactoryProvider.$get()("bu$directiveRegistry");
-        this.$get = function ($compile, $rootElement, $injector, bu$name, $rootScope, $q) {
+        this.$get = function ($compile, $rootElement, $injector, bu$name, $rootScope, $q, bu$configuration, $timeout) {
             return function (directiveName, directiveFactory) {
                 //a directive name is the least requirement for working with directives
                 if (!directiveName) {
@@ -779,11 +782,13 @@ function evaluateExpression(expression, optional) {
                             //if specifics have not been mentioned, the link function is assumed to be the post-link
                             //function
                             directive.link = {
-                                pre: function () {},
+                                pre: function () {
+                                },
                                 post: directive.link
                             };
                         }
-                        var controller = function () {};
+                        var controller = function () {
+                        };
                         if (isFunction(directive.controller)) {
                             controller = directive.controller;
                         }
@@ -791,10 +796,12 @@ function evaluateExpression(expression, optional) {
                             directive.link = {};
                         }
                         if (!angular.isFunction(directive.link.pre)) {
-                            directive.link.pre = function () {};
+                            directive.link.pre = function () {
+                            };
                         }
                         if (!angular.isFunction(directive.link.post)) {
-                            directive.link.post = function () {};
+                            directive.link.post = function () {
+                            };
                         }
                         if (angular.isUndefined(directive.scope)) {
                             directive.scope = false;
@@ -812,7 +819,12 @@ function evaluateExpression(expression, optional) {
                             directive.require = null;
                         }
                         if (!angular.isFunction(directive.compile)) {
-                            directive.compile = function () {};
+                            directive.compile = function () {
+                            };
+                        }
+                        if (angular.isDefined(directive.templateUrl) && !/\.[^\.]+$/.test(directive.templateUrl)) {
+                            directive.templateUrl = bu$configuration.base + "/" + bu$configuration.templatesBase + "/" + directive.templateUrl + ".html";
+                            directive.templateUrl = directive.templateUrl.replace(/\/{2,}/g, "/");
                         }
                         var originalCompile = directive.compile;
                         directive.compile = function (tElement, tAttrs) {
@@ -1066,20 +1078,22 @@ function evaluateExpression(expression, optional) {
                                 if (angular.isUndefined(scope)) {
                                     scope = $rootScope;
                                 }
-                                scope.$apply(function () {
-                                    var $node = angular.element(node);
-                                    compileFunction.apply(scope, [$node, scope, function (result) {
-                                        $node = angular.element(result);
-                                    }]);
-                                    //we are keeping track of what sort of compiling we have previously performed
-                                    //on each element so that we can improve performance.
-                                    //this also is necessary to prevent mixed results when recompiling elements that
-                                    //have ng-transclude enabled.
-                                    //you could manually change the compiled flag to false, so that recompilation is
-                                    //done regardless, for any element of your choosing.
-                                    var data = $node.data('bu-compiled') || {};
-                                    data[currentName] = true;
-                                    $node.data('bu-compiled', data);
+                                $timeout(function () {
+                                    scope.$apply(function () {
+                                        var $node = angular.element(node);
+                                        compileFunction.apply(scope, [$node, scope, function (result) {
+                                            $node = angular.element(result);
+                                        }]);
+                                        //we are keeping track of what sort of compiling we have previously performed
+                                        //on each element so that we can improve performance.
+                                        //this also is necessary to prevent mixed results when recompiling elements that
+                                        //have ng-transclude enabled.
+                                        //you could manually change the compiled flag to false, so that recompilation is
+                                        //done regardless, for any element of your choosing.
+                                        var data = $node.data('bu-compiled') || {};
+                                        data[currentName] = true;
+                                        $node.data('bu-compiled', data);
+                                    });
                                 });
                             };
                             if (!angular.isFunction(compileFunction)) {
@@ -1096,6 +1110,135 @@ function evaluateExpression(expression, optional) {
                 }
                 return directiveDescriptor.compile;
             };
+        };
+    }]);
+
+    toolkit.value("bu$Directive", function (requirements, factory) {
+        if (angular.isUndefined(factory)) {
+            if (angular.isFunction(requirements) || (angular.isArray(requirements) && angular.isFunction(requirements[requirements.length - 1]))) {
+                factory = requirements;
+                requirements = [];
+            } else {
+                throw new Error("Cannot instantiate a directive without a factory function");
+            }
+        }
+        this.requirements = requirements;
+        this.factory = factory;
+    });
+
+    toolkit.provider("bu$loader", ["bu$registryFactoryProvider", "bu$configurationProvider", "$injector", function (bu$registryFactoryProvider, bu$configurationProvider, $injector) {
+        var provider = this;
+        var registry = $injector.invoke(bu$registryFactoryProvider.$get)("bu$loader");
+        var config = $injector.invoke(bu$configurationProvider.$get);
+        var pathResolvers = {
+            directive: function (item) {
+                return (config.base + "/" + config.directivesBase + "/" + item.identifier + ".js").replace(/\/{2,}/g, "/");
+            },
+            filter: function (item) {
+                return (config.base + "/" + config.filtersBase + "/" + item.identifier + ".js").replace(/\/{2,}/g, "/");
+            }
+        };
+        this.addType = function (type, pathResolver) {
+            pathResolvers[type] = pathResolver;
+        };
+        this.$get = function ($http, $q, $rootScope, $injector, $timeout) {
+            var loader = {
+                load: function (item) {
+                    if (angular.isUndefined(item.type)) {
+                        throw new Error("Cannot load item without a type");
+                    }
+                    if (angular.isUndefined(item.identifier)) {
+                        throw new Error("Cannot load item without an identifier");
+                    }
+                    var qualifiedName = item.type + ":" + item.identifier;
+                    var loaded = registry.get(qualifiedName);
+                    if (loaded) {
+                        return loaded;
+                    }
+                    var deferred = $q.defer();
+                    loaded = deferred.promise;
+                    registry.register(qualifiedName, loaded);
+                    var path = item.path;
+                    if (!path) {
+                        if (item.pathResolver) {
+                            if (!pathResolvers[item.type]) {
+                                provider.addType(item.type, item.pathResolver);
+                            }
+                            path = item.pathResolver.call(null, item);
+                        } else if (pathResolvers[item.type]) {
+                            path = pathResolvers[item.type].call(null, item);
+                        }
+                    }
+                    if (!path) {
+                        throw new Error("Failed to resolve a path for item '" + item.identifier + "' of type '" + item.type + "'");
+                    }
+                    $http.get(path, {
+                        cache: true
+                    }).then(function (result) {
+                        var script = result.data;
+                        try {
+                            eval(script);
+                        } catch (e) {
+                            $timeout(function () {
+                                $rootScope.$apply(function () {
+                                    deferred.reject(e);
+                                });
+                            });
+                            return;
+                        }
+                        $timeout(function () {
+                            $rootScope.$apply(function () {
+                                deferred.resolve({
+                                    identifier: item.identifier,
+                                    path: path,
+                                    type: item.type
+                                });
+                            });
+                        });
+                    }, function (reason) {
+                        $timeout(function () {
+                            $rootScope.$apply(function () {
+                                deferred.reject(reason);
+                            });
+                        });
+                    });
+                    return loaded;
+                },
+                directive: function (identifier) {
+                    return loader.load({
+                        identifier: identifier,
+                        type: 'directive'
+                    });
+                },
+                filter: function (identifier) {
+                    return loader.load({
+                        identifier: identifier,
+                        type: 'filter'
+                    });
+                }
+            };
+            return loader;
+        };
+        this.$get.$inject = ["$http", "$q", "$rootScope", "$injector", "$timeout"];
+    }]);
+
+    toolkit.service("bu$directives", ["bu$registryFactory", "bu$Directive", "bu$compile", function (bu$registryFactory, bu$Directive, bu$compile) {
+        var registry = bu$registryFactory("bu$directives");
+        registry.on('register', function (id, item) {
+            bu$compile(id, item.factory)();
+            return item;
+        });
+        this.register = function (id, item) {
+            registry.register(id, item);
+        };
+        this.get = function (id) {
+            return registry.get(id);
+        };
+        this.list = function () {
+            return registry.list();
+        };
+        this.instantiate = function (requirements, factory) {
+            return new bu$Directive(requirements, factory);
         };
     }]);
 
