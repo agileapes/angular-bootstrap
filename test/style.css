@@ -1,0 +1,16 @@
+.list-group .list-group-item em {
+    position: absolute;
+    display: inline-block;
+    float: left;
+    width: 50px;
+    text-align: center;
+    min-height: 100%;
+    font-style: normal;
+    font-size: 30px;
+    font-weight: bold;
+    color: #dbdbdb;
+}
+
+.list-group .list-group-item div {
+    margin-left: 60px;
+}

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>BootstrapUI Tests</title>
     <link rel="stylesheet" type="text/css" href="../docs/css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="style.css"/>
 </head>
 <body>
 <div class="container">
@@ -11,44 +12,78 @@
         <small>the whole lot</small>
     </h1>
     <p>Here, a comprehensive overview of the testing and specifications provided for BootstrapUI is presented.</p>
+
     <p>Each collection consists of a set of specifications written using <a href="http://jasmine.github.io">Jasmine</a>
-    and are run inside the browser.</p>
+        and are run inside the browser.</p>
+
     <h2>Basics</h2>
+
     <div class="list-group">
         <a href="utilities.html" class="list-group-item">
-            <h4 class="list-group-item-heading">Utilities</h4>
-            <p class="list-group-item-text">All the utilities that are built to help make the awesomeness that is
-                BootstrapUI work out. They are however not an essential part of the framework itself, and can be used
-                and seen individually and outside the package. These are essentially extensions to the standard
-            ECMA5Script specification.</p>
+            <em>41</em>
+
+            <div><h4 class="list-group-item-heading">Utilities</h4>
+
+                <p class="list-group-item-text">All the utilities that are built to help make the awesomeness that is
+                    BootstrapUI work out. They are however not an essential part of the framework itself, and can be
+                    used
+                    and seen individually and outside the package. These are essentially extensions to the standard
+                    ECMA5Script specification.</p>
+            </div>
         </a>
         <a href="configuration.html" class="list-group-item">
-            <h4 class="list-group-item-heading">Configuration</h4>
-            <p class="list-group-item-text">The tests in this specification will decide how a configuration should
-                be presented, and what minimal configuration the system requires to be provided with. The configuration
-            is accessed via <code>bu$configuration</code> and modified via <code>bu$configurationProvider</code></p>
+            <em>18</em>
+
+            <div><h4 class="list-group-item-heading">Configuration</h4>
+
+                <p class="list-group-item-text">The tests in this specification will decide how a configuration should
+                    be presented, and what minimal configuration the system requires to be provided with. The
+                    configuration
+                    is accessed via <code>bu$configuration</code> and modified via <code>bu$configurationProvider</code>
+                </p>
+            </div>
         </a>
         <a href="templateCache.html" class="list-group-item">
-            <h4 class="list-group-item-heading">Template Cache</h4>
-            <p class="list-group-item-text">BootstrapUI relies on an internal implementation of template cache
-            which will replace the original <code>$templateCache</code> service by AngularJS and is able to perform some
-            post-processing on templates.</p>
+            <em>6</em>
+
+            <div><h4 class="list-group-item-heading">Template Cache</h4>
+
+                <p class="list-group-item-text">BootstrapUI relies on an internal implementation of template cache
+                    which will replace the original <code>$templateCache</code> service by AngularJS and is able to
+                    perform
+                    some
+                    post-processing on templates.</p>
+            </div>
         </a>
         <a href="registryFactory.html" class="list-group-item">
-            <h4 class="list-group-item-heading">Registry Factory</h4>
-            <p class="list-group-item-text">A registry factory accessible through <code>bu$registryFactory</code>
-                is a factory that will provide named registry singletons helping with saving content in a
-                structured manner.</p>
+            <em>16</em>
+
+            <div>
+                <h4 class="list-group-item-heading">Registry Factory</h4>
+
+                <p class="list-group-item-text">A registry factory accessible through <code>bu$registryFactory</code>
+                    is a factory that will provide named registry singletons helping with saving content in a
+                    structured manner.</p>
+            </div>
         </a>
         <a href="name.html" class="list-group-item">
-            <h4 class="list-group-item-heading">Name Service</h4>
-            <p class="list-group-item-text">The <code>bu$name</code> service provides convenience methods for deriving
-            BootstrapUI- and AngularJS-specific names following the globally observed naming conventions.</p>
+            <em>12</em>
+
+            <div><h4 class="list-group-item-heading">Name Service</h4>
+
+                <p class="list-group-item-text">The <code>bu$name</code> service provides convenience methods for
+                    deriving
+                    BootstrapUI- and AngularJS-specific names following the globally observed naming conventions.</p>
+            </div>
         </a>
         <a href="compile.html" class="list-group-item">
-            <h4 class="list-group-item-heading">Compile Service</h4>
-            <p class="list-group-item-text">The <code>bu$compile</code> service lets you lazily compile and use
-            directives inside the BootstrapUI's namespace.</p>
+            <em>32</em>
+
+            <div><h4 class="list-group-item-heading">Compile Service</h4>
+
+                <p class="list-group-item-text">The <code>bu$compile</code> service lets you lazily compile and use
+                    directives inside the BootstrapUI's namespace.</p>
+            </div>
         </a>
     </div>
 </div>
