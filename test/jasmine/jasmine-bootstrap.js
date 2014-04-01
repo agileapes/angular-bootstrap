@@ -159,7 +159,7 @@
                         placement: "right"
                     });
                 } else if (type == "suite") {
-                    element = $("<div class='test-suite " + this.getClassName() + "' id='" + descriptor.id + "'><h4 class='suite-title'><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + (queryString.getParam("minimal") ? "&amp;minimal=" + queryString.getParam("minimal") : "") + "\">" + sanitize(descriptor.description) + " &hellip;</a></h4><div class='suite-body'></div></div>");
+                    element = $("<div class='test-suite " + this.getClassName() + "' id='" + descriptor.id + "'><h4 class='suite-title'><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + (queryString.getParam("minimal") ? "&amp;minimal=" + queryString.getParam("minimal") : "") + "\">" + sanitize(descriptor.description).replace(/`([^`]+)`/, "<code>$1</code>") + " &hellip;</a></h4><div class='suite-body'></div></div>");
                     target = element.find(".suite-body");
                 } else if (type == "spec") {
                     target = element = $("<div class='test-specification " + this.getClassName() + "' id='" + descriptor.id + "'><span class='icon'></span><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + (queryString.getParam("minimal") ? "&amp;minimal=" + queryString.getParam("minimal") : "") + "\">&hellip; " + sanitize(descriptor.description).replace(/`([^`]+)`/, "<code>$1</code>") + "</a></div>");
