@@ -114,6 +114,20 @@ describe("bu$compile service", function () {
         }));
         expect(directive.calls.count()).toBe(1);
     }));
+    
+    it("adds a directive-specific flag to a nodes `.data(...)` under `bu-compiled`", inject(function (bu$compile, $timeout, bu$configuration) {
+        testRoot.html("<ui:sample></ui:sample>");
+        bu$compile('sample', function () {
+            return {
+                restrict: "E"
+            };
+        })(testRoot);
+        $timeout.flush();
+        var data = angular.element(testRoot.children()[0]).data('bu-compiled');
+        expect(data).not.toBeUndefined();
+        expect(data.uiSample).not.toBeUndefined();
+        expect(data.uiSample).toBe(true);
+    }));
 
     describe("when `restrict` contains `A`", function () {
 
