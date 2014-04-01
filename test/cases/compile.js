@@ -115,7 +115,7 @@ describe("bu$compile service", function () {
         expect(directive.calls.count()).toBe(1);
     }));
     
-    it("adds a directive-specific flag to a nodes `.data(...)` under `bu-compiled`", inject(function (bu$compile, $timeout, bu$configuration) {
+    it("adds a directive-specific flag to a nodes `.data(...)` under `bu-compiled`", inject(function (bu$compile, $timeout) {
         testRoot.html("<ui:sample></ui:sample>");
         bu$compile('sample', function () {
             return {
@@ -396,6 +396,75 @@ describe("bu$compile service", function () {
             })(testRoot);
             $timeout.flush();
             expect(testRoot.text()).toBe(first + "+" + second);
+        }));
+
+    });
+
+    describe("when promising a template", function () {
+
+        it("holds on to the controller to make sure it does not execute before the template is there", inject(function (bu$compile, $timeout, $q) {
+            testRoot.html("<div ui-my-directive value='1234'></div>");
+            var deferred = $q.defer();
+            var controller = jasmine.createSpy("controller");
+            bu$compile("myDirective", function () {
+                return {
+                    template: deferred.promise,
+                    controller: controller,
+                    scope: {
+                        value: "@"
+                    }
+                };
+            })();
+            expect(controller).not.toHaveBeenCalled();
+            deferred.resolve("<span>{{value}}</span>");
+            $timeout.flush();
+            expect(controller).toHaveBeenCalled();
+        }));
+
+        it("has the post-link execute before the controller", inject(function (bu$compile, $timeout, $q) {
+            testRoot.html("<div ui-my-directive value='1234'></div>");
+            var deferred = $q.defer();
+            var controller = jasmine.createSpy("controller");
+            var linker = jasmine.createSpy("linker").and.callFake(function () {
+                expect(controller).not.toHaveBeenCalled();
+            });
+            bu$compile("myDirective", function () {
+                return {
+                    template: deferred.promise,
+                    controller: controller,
+                    link: linker,
+                    scope: {
+                        value: "@"
+                    }
+                };
+            })();
+            expect(controller).not.toHaveBeenCalled();
+            expect(linker).not.toHaveBeenCalled();
+            deferred.resolve("<span>{{value}}</span>");
+            $timeout.flush();
+            expect(controller).toHaveBeenCalled();
+            expect(linker).toHaveBeenCalled();
+        }));
+
+        it("will render the template correctly", inject(function (bu$compile, $timeout, $q) {
+            //here we are testing transclusion as well as dependency injection
+            testRoot.html("<div ui-my-directive value='1234'>5678</div>");
+            var deferred = $q.defer();
+            bu$compile("myDirective", function () {
+                return {
+                    template: deferred.promise,
+                    transclude: true,
+                    scope: {
+                        value: "@"
+                    },
+                    controller: function (bu$configuration, $scope) {
+                        $scope.namespace = bu$configuration.namespace;
+                    }
+                };
+            })();
+            deferred.resolve("<span>{{value}}<span ng-transclude></span>{{namespace}}</span>");
+            $timeout.flush();
+            expect(testRoot.text()).toBe("12345678ui");
         }));
 
     });

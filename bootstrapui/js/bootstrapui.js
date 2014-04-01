@@ -724,10 +724,10 @@ function evaluateExpression(expression, optional) {
         //be done afterwards
         (function () {
             //noinspection JSPotentiallyInvalidUsageOfThis
-            this.$get.$inject = ["$compile", "$rootElement", "$injector", "bu$name", "$rootScope"];
+            this.$get.$inject = ["$compile", "$rootElement", "$injector", "bu$name", "$rootScope", "$q"];
         }).postpone(this);
         var directiveRegistry = bu$registryFactoryProvider.$get()("bu$directiveRegistry");
-        this.$get = function ($compile, $rootElement, $injector, bu$name, $rootScope) {
+        this.$get = function ($compile, $rootElement, $injector, bu$name, $rootScope, $q) {
             return function (directiveName, directiveFactory) {
                 //a directive name is the least requirement for working with directives
                 if (!directiveName) {
@@ -836,6 +836,87 @@ function evaluateExpression(expression, optional) {
                             });
                         };
                         directive.controller.$inject = ["$timeout", "$injector", "$scope", "$element", "$attrs"];
+                        //we only consider the compilation phase to be safe when the directive is being attached to
+                        //the page
+                        if ((!this || angular.isUndefined(this.bu$Preload))
+                            && angular.isDefined(directive.template) && angular.isFunction(directive.template.then)) {
+                            //This is the template loader promise. Then this promise is resolved, it will be safe to
+                            //compile the element
+                            var templateAvailable = directive.template;
+                            //this promise ensures that the element has become available after being rendered
+                            var elementAvailable = $q.defer();
+                            //this promise ensures that the linker has run, and it is now safe to run the controller
+                            var linkerRun = $q.defer();
+                            //we nullify the template so as to avoid a flicker when AngularJS sees the template and
+                            //gets it 'toString'
+                            directive.template = null;
+                            //we preserve the original controller to run it after the linker has run
+                            var originalController = directive.controller;
+                            directive.controller = function ($injector, $compile, $transclude, $scope, $attrs, $element) {
+                                var context = this;
+                                var targetElement = $element;
+                                templateAvailable.then(function (template) {
+                                    //we compile the template and use transclusion if necessary, binding it to the
+                                    //scope of the directive
+                                    var $element = $compile(angular.element(template), $transclude)($scope);
+                                    //based on the 'replace' option, we must take care to place the compiled template
+                                    //in the right spot and specify the proper element as the root of the linking
+                                    //after the element has been jammed into the DOM, it is safe to signal to the linker
+                                    //that the template is now available
+                                    if (directive.replace) {
+                                        targetElement.replaceWith($element);
+                                        elementAvailable.resolve($element);
+                                    } else {
+                                        targetElement.html('');
+                                        targetElement.append($element);
+                                        elementAvailable.resolve(targetElement);
+                                    }
+                                    //if the linker has run its course, we can now run the controller
+                                    linkerRun.promise.then(function () {
+                                        //now its time to invoke the original controller
+                                        $injector.invoke(originalController, context, {
+                                            $compile: $compile,
+                                            $transclude: $transclude,
+                                            $scope: $scope,
+                                            $element: $element,
+                                            $attrs: $attrs
+                                        });
+                                    });
+                                }, function (reason) {
+                                    //if for any reason the template was not available, we also reject the element
+                                    //becoming available
+                                    elementAvailable.reject(reason);
+                                });
+                            };
+                            directive.controller.$inject = ["$injector", "$compile", "$transclude", "$scope", "$attrs", "$element"];
+                            //this is the proxied compile function
+                            var proxiedCompile = directive.compile;
+                            directive.compile = function (tElement, tAttrs) {
+                                //we first call the compile function
+                                var linker = proxiedCompile.apply(this, [tElement, tAttrs]);
+                                var postLink = linker.post;
+                                linker.post = function (scope, iElement, iAttrs, controller) {
+                                    var context = this;
+                                    //once the element is available, we can link it
+                                    elementAvailable.promise.then(function ($element) {
+                                        $injector.invoke(postLink, context, {
+                                            $scope: scope,
+                                            scope: scope,
+                                            $element: $element,
+                                            element: $element,
+                                            attrs: iAttrs,
+                                            $attrs: iAttrs,
+                                            controller: controller
+                                        });
+                                        //we now signal to the controller that it can execute
+                                        linkerRun.resolve();
+                                    }, function (reason) {
+                                        throw new Error("Failed to load the element", reason);
+                                    });
+                                };
+                                return linker;
+                            };
+                        }
                         return  directive;
                     };
                     directiveFactory.$inject = ["$injector"];
