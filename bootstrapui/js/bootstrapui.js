@@ -682,7 +682,11 @@ function evaluateExpression(expression, optional) {
             if (!config.namespace) {
                 return name;
             }
-            return config.namespace + name[0].toUpperCase() + name.substring(1);
+            var namespace = config.namespace.split(/[\-:]/);
+            for (var i = 1; i < namespace.length; i++) {
+                namespace[i] = namespace[i][0].toUpperCase() + namespace[i].substring(1);
+            }
+            return namespace.join("") + name[0].toUpperCase() + name.substring(1);
         };
         this.normalize = function (domName) {
             //turn DOM name into lower case for unification purposes
