@@ -1,3 +1,5 @@
+'use strict';
+
 angular.module("myApplication", ["buMain"]);
 
 describe("Directive helper `bu$name.directive()`", function () {

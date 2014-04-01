@@ -1,3 +1,5 @@
+'use strict';
+
 angular.module('myApplicationModule', ["buMain"]);
 
 describe("BootstrapUI's configuration", function () {

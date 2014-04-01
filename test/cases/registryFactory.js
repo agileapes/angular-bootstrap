@@ -1,3 +1,5 @@
+'use strict';
+
 angular.module('myApplication', ['buMain']);
 
 describe("bu$registryFactory", function () {

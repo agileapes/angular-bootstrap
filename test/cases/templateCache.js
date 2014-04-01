@@ -1,3 +1,5 @@
+'use strict';
+
 describe("TemplateCache", function () {
 
     angular.module('myApplicationModule', ["buMain", "cachingHttp"])
