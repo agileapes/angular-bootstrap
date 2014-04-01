@@ -116,7 +116,7 @@
                     return string.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
                 };
                 var sanitizeHtml = function (string) {
-                    return sanitize(string).replace(/`([^`]+)`/, "<code>$1</code>").replace(/\.\.\./g, "&hellip;");
+                    return sanitize(string).replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\.\.\./g, "&hellip;");
                 };
                 var element, target;
                 if (type == "root") {
