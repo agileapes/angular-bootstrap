@@ -46,10 +46,14 @@ describe("bu$compile service", function () {
         expect(angular.isFunction(compile)).toBeTruthy();
     }));
 
-    it("registers a directive with the 'bu$directiveRegistry' registry", inject(function (bu$registryFactory, bu$compile) {
+    it("registers a directive with the `bu$directiveRegistry` registry", inject(function (bu$registryFactory, bu$compile) {
         var registry = bu$registryFactory.get("bu$directiveRegistry");
         expect(registry).not.toBeUndefined();
         expect(registry.list()).toEqual([]);
+        bu$compile("myDirective", function () {
+            return {};
+        });
+        expect(registry.list()).toEqual(["myDirective"]);
     }));
 
 });

@@ -731,7 +731,7 @@ function evaluateExpression(expression, optional) {
             return function (directiveName, directiveFactory) {
                 //a directive name is the least requirement for working with directives
                 if (!directiveName) {
-                    throw new Error("Directive name cannot be empty " + directiveName);
+                    throw new Error("Directive name cannot be empty: " + directiveName);
                 }
                 var directiveDescriptor = directiveRegistry.get(directiveName);
                 if (!directiveDescriptor) {
