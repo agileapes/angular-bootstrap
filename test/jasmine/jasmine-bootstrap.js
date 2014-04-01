@@ -345,6 +345,8 @@
                     $(".navigation").addClass("dim dim-secondary");
                     $(".report").addClass("dim dim-secondary");
                     ReportHelper.menu("pending");
+                } else {
+                    ReportHelper.menu("running");
                 }
             }
         };
