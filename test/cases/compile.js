@@ -467,6 +467,84 @@ describe("bu$compile service", function () {
             expect(testRoot.text()).toBe("12345678ui");
         }));
 
+        it("can render a promise that is resolved with a promise", inject(function (bu$compile, $timeout, $q) {
+            //here we are testing transclusion as well as dependency injection
+            testRoot.html("<div ui-my-directive value='1234'>5678</div>");
+            var deferred = $q.defer();
+            bu$compile("myDirective", function () {
+                return {
+                    template: deferred.promise,
+                    transclude: true,
+                    scope: {
+                        value: "@"
+                    },
+                    controller: function (bu$configuration, $scope) {
+                        $scope.namespace = bu$configuration.namespace;
+                    }
+                };
+            })();
+            var template = $q.defer();
+            deferred.resolve(template.promise);
+            template.resolve("<span>{{value}}<span ng-transclude></span>{{namespace}}</span>");
+            $timeout.flush();
+            expect(testRoot.text()).toBe("12345678ui");
+        }));
+
+        it("can render a promise that is resolved with a function", inject(function (bu$compile, $timeout, $q) {
+            //here we are testing transclusion as well as dependency injection
+            testRoot.html("<div ui-my-directive value='1234'>5678</div>");
+            var deferred = $q.defer();
+            bu$compile("myDirective", function () {
+                return {
+                    template: deferred.promise,
+                    transclude: true,
+                    scope: {
+                        value: "@"
+                    },
+                    controller: function (bu$configuration, $scope) {
+                        $scope.namespace = bu$configuration.namespace;
+                    }
+                };
+            })();
+            var template = function ($scope) {
+                return "<span>" + (parseInt($scope.value) * 2) + "<span ng-transclude></span>{{namespace}}</span>";
+            };
+            deferred.resolve(template);
+            $timeout.flush();
+            expect(testRoot.text()).toBe("24685678ui");
+        }));
+
+        it("can render a promise that is resolved with a function that returns a promise", inject(function (bu$compile, $timeout, $q) {
+            //here we are testing transclusion as well as dependency injection
+            testRoot.html("<div ui-my-directive value='1234'>5678</div>");
+            var deferred = $q.defer();
+            bu$compile("myDirective", function () {
+                return {
+                    template: deferred.promise,
+                    transclude: true,
+                    scope: {
+                        value: "@"
+                    },
+                    controller: function (bu$configuration, $scope) {
+                        $scope.namespace = bu$configuration.namespace;
+                    }
+                };
+            })();
+            var x;
+            var deferredTemplate = $q.defer();
+            var template = function ($scope) {
+                x = $scope.value;
+                $timeout(function () {
+                    //and some time later
+                    deferredTemplate.resolve("<span>" + x + "{{value}}<span ng-transclude></span>{{namespace}}</span>");
+                });
+                return deferredTemplate.promise;
+            };
+            deferred.resolve(template);
+            $timeout.flush();
+            expect(testRoot.text()).toBe("123412345678ui");
+        }));
+
     });
 
 });
