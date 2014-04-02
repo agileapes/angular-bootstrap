@@ -38,6 +38,7 @@ describe("TemplateCache", function () {
             templateCache = $templateCache;
             spyOn(delegateCache, "get").and.callThrough();
             spyOn(delegateCache, "put").and.callThrough();
+            spyOn(templateCache, "get").and.callThrough();
             spyOn($http, "get").and.callThrough();
         });
     });
@@ -66,7 +67,9 @@ describe("TemplateCache", function () {
         expect(onLoad).not.toHaveBeenCalled();
         $http.flush(1);
         expect(onLoad).toHaveBeenCalled();
-        expect(onLoad).toHaveBeenCalledWith(firstTemplate);
+        expect(onLoad).toHaveBeenCalledWith(jasmine.objectContaining({
+            data: firstTemplate
+        }));
     });
 
     it("will store the loaded template into the delegate cache", function () {
@@ -78,9 +81,13 @@ describe("TemplateCache", function () {
         expect(delegateCache.put).not.toHaveBeenCalled();
         $http.flush(1);
         expect(delegateCache.put).toHaveBeenCalled();
-        expect(delegateCache.put).toHaveBeenCalledWith(firstUrl, firstTemplate);
-        expect(delegateCache.get(firstUrl)).toEqual(firstTemplate);
-        expect(loadedTemplate).toEqual(firstTemplate);
+        expect(delegateCache.put).toHaveBeenCalledWith(firstUrl, [200, firstTemplate, {}]);
+        expect(angular.isArray(delegateCache.get(firstUrl))).toBeTruthy();
+        expect(delegateCache.get(firstUrl).length).toBe(3);
+        expect(delegateCache.get(firstUrl)[1]).toEqual(firstTemplate);
+        expect(loadedTemplate).toEqual(jasmine.objectContaining({
+            data: firstTemplate
+        }));
     });
 
     it("cannot load a template that is not there", function () {
@@ -95,43 +102,28 @@ describe("TemplateCache", function () {
         expect(failure).toHaveBeenCalled();
     });
 
-    it("accepts interceptors and lets template values be modified upon `.put(...)`", function () {
-        var interceptor = jasmine.createSpy("interceptor").and.callFake(function (template) {
-            return template.replace(/x/g, '');
-        });
-        var url = "/some/template.html";
-        var template = "axbxc";
-        templateCacheProvider.intercept({
-            put: interceptor
-        });
-        expect(interceptor).not.toHaveBeenCalled();
-        templateCache.put(url, template);
-        expect(interceptor).toHaveBeenCalled();
-        expect(interceptor).toHaveBeenCalledWith(template, url);
-        templateCache.get(url).then(function (template) {
-            expect(template).not.toBeFalsy();
-            expect(template).toBe("abc");
-        });
-    });
-
     it("accepts interceptors and lets template values be modified upon `.get(...)`", function () {
         var interceptor = jasmine.createSpy("interceptor").and.callFake(function (template) {
             return template.replace(/x/g, '');
         });
         var url = "/some/template.html";
-        var template = "axbxc";
-        templateCacheProvider.intercept({
-            get: interceptor
-        });
+        var originalTemplate = "axbxc";
+        templateCacheProvider.intercept(interceptor);
         expect(interceptor).not.toHaveBeenCalled();
-        templateCache.put(url, template);
+        templateCache.put(url, originalTemplate);
         expect(interceptor).not.toHaveBeenCalled();
-        templateCache.get(url).then(function (template) {
+        var resolved = jasmine.createSpy("for when the url has been resolved").and.callFake(function (template) {
             expect(interceptor).toHaveBeenCalled();
-            expect(interceptor).toHaveBeenCalledWith(template, url);
+            expect(interceptor).toHaveBeenCalledWith(originalTemplate, url);
             expect(template).not.toBeFalsy();
-            expect(template).toBe("abc");
+            expect(template).toEqual(jasmine.objectContaining({
+                data: "abc"
+            }));
         });
+        templateCache.get(url).then(resolved);
+        $http.flush();
+        expect(templateCache.get).toHaveBeenCalled();
+        expect(resolved).toHaveBeenCalled();
     });
 
     describe("when no templates have been loaded yet", function () {

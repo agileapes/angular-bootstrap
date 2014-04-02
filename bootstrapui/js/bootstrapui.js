@@ -153,7 +153,6 @@ function evaluateExpression(expression, optional) {
                     } else {
                         action = "";
                     }
-                    console.debug("Abandoning action" + action + " after " + timeout);
                 }, timeout);
             }
         } else {
@@ -362,15 +361,14 @@ function evaluateExpression(expression, optional) {
             this.info = function () {
                 return templateCache.info();
             };
-            this.put = function (key, template) {
-                for (var i = 0; i < TemplateCache.interceptors.length; i++) {
-                    var interceptor = TemplateCache.interceptors[i].put;
-                    var returned = interceptor.apply(self, [template, key]);
-                    if (returned) {
-                        template = returned;
-                    }
+            templateCache._put = templateCache.put;
+            templateCache.put = this.put = function (key, template) {
+                if (!angular.isArray(template)) {
+                    template = [200, template, {
+                        'x-manual': true
+                    }];
                 }
-                templateCache.put(key, template);
+                templateCache._put(key, template);
             };
             this.remove = function (key) {
                 templateCache.remove(key);
@@ -386,7 +384,7 @@ function evaluateExpression(expression, optional) {
                     cache: templateCache
                 }).then(function (result) {
                     for (var i = 0; i < TemplateCache.interceptors.length; i++) {
-                        var interceptor = TemplateCache.interceptors[i].get;
+                        var interceptor = TemplateCache.interceptors[i];
                         var returned = interceptor.apply(self, [result.data, key]);
                         if (returned) {
                             result.data = returned;
@@ -401,20 +399,8 @@ function evaluateExpression(expression, optional) {
 
         toolkit.provider("$templateCache", function () {
             this.intercept = function (interceptor) {
-                if (angular.isFunction(interceptor)) {
-                    interceptor = {
-                        put: interceptor
-                    };
-                }
-                if (!angular.isFunction(interceptor.get)) {
-                    interceptor.get = function (x) {
-                        return x
-                    };
-                }
-                if (!angular.isFunction(interceptor.put)) {
-                    interceptor.put = function (x) {
-                        return x
-                    };
+                if (!angular.isFunction(interceptor)) {
+                    return;
                 }
                 TemplateCache.interceptors.push(interceptor);
             };
@@ -1253,17 +1239,15 @@ function evaluateExpression(expression, optional) {
     toolkit.config(["bu$configurationProvider", "$templateCacheProvider", "$injector", function (bu$configurationProvider, $templateCacheProvider, $injector) {
         var bu$configuration = $injector.invoke(bu$configurationProvider.$get);
         var prefix = bu$configuration.namespace ? (bu$configuration.namespace + ":") : "";
-        $templateCacheProvider.intercept({
-            put: function (template) {
-                /**
-                 * All things 'bui:' will be replaced with the current namespace + ':' or the empty string
-                 * if none is present.
-                 * To prevent this, prefix 'bui:' with a dollar sign ($). These will be converted so that
-                 * the dollar sign is removed.
-                 * This process happens only once, when the template is being persisted.
-                 */
-                return template.replace(/([^\$])bui:/gi, "$1" + prefix).replace(/\$(bui:)/gi, "$1");
-            }
+        $templateCacheProvider.intercept(function (template) {
+            /**
+             * All things 'bui:' will be replaced with the current namespace + ':' or the empty string
+             * if none is present.
+             * To prevent this, prefix 'bui:' with a dollar sign ($). These will be converted so that
+             * the dollar sign is removed.
+             * This process happens only once, when the template is being persisted.
+             */
+            return template.replace(/([^\$])bui:/gi, "$1" + prefix).replace(/\$(bui:)/gi, "$1");
         });
     }]);
 
