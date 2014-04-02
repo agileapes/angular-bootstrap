@@ -1134,18 +1134,41 @@ function evaluateExpression(expression, optional) {
         this.$get = function ($http, $q, $rootScope, $injector, $timeout) {
             var loader = {
                 load: function (item) {
+                    var deferred = $q.defer();
+                    if (angular.isArray(item)) {
+                        var promises = [];
+                        for (var i = 0; i < item.length; i++) {
+                            var obj = item[i];
+                            promises.push(loader.load(obj));
+                        }
+                        $q.all(promises).then(function (resolved) {
+                            var result = [];
+                            for (var i = 0; i < resolved.length; i++) {
+                                result.push(resolved[i][0]);
+                            }
+                            deferred.resolve(result);
+                        }, function (reason) {
+                            $timeout(function () {
+                                $rootScope.$apply(function () {
+                                    deferred.reject(reason);
+                                });
+                            });
+                        });
+                        return deferred.promise;
+                    }
                     if (angular.isUndefined(item.type)) {
-                        throw new Error("Cannot load item without a type");
+                        deferred.reject("Cannot load item without a type");
+                        return deferred.promise;
                     }
                     if (angular.isUndefined(item.identifier)) {
-                        throw new Error("Cannot load item without an identifier");
+                        deferred.reject("Cannot load item without an identifier");
+                        return deferred.promise;
                     }
                     var qualifiedName = item.type + ":" + item.identifier;
                     var loaded = registry.get(qualifiedName);
                     if (loaded) {
                         return loaded;
                     }
-                    var deferred = $q.defer();
                     loaded = deferred.promise;
                     registry.register(qualifiedName, loaded);
                     var path = item.path;
@@ -1178,11 +1201,11 @@ function evaluateExpression(expression, optional) {
                         }
                         $timeout(function () {
                             $rootScope.$apply(function () {
-                                deferred.resolve({
+                                deferred.resolve([{
                                     identifier: item.identifier,
                                     path: path,
                                     type: item.type
-                                });
+                                }]);
                             });
                         });
                     }, function (reason) {
@@ -1195,12 +1218,32 @@ function evaluateExpression(expression, optional) {
                     return loaded;
                 },
                 directive: function (identifier) {
+                    if (angular.isArray(identifier)) {
+                        var directives = [];
+                        for (var i = 0; i < identifier.length; i++) {
+                            directives.push({
+                                identifier: identifier[i],
+                                type: 'directive'
+                            });
+                        }
+                        return loader.load(directives);
+                    }
                     return loader.load({
                         identifier: identifier,
                         type: 'directive'
                     });
                 },
                 filter: function (identifier) {
+                    if (angular.isArray(identifier)) {
+                        var filters = [];
+                        for (var i = 0; i < identifier.length; i++) {
+                            filters.push({
+                                identifier: identifier[i],
+                                type: 'filter'
+                            });
+                        }
+                        return loader.load(filters);
+                    }
                     return loader.load({
                         identifier: identifier,
                         type: 'filter'
@@ -1212,10 +1255,25 @@ function evaluateExpression(expression, optional) {
         this.$get.$inject = ["$http", "$q", "$rootScope", "$injector", "$timeout"];
     }]);
 
-    toolkit.service("bu$directives", ["bu$registryFactory", "bu$Directive", "bu$compile", function (bu$registryFactory, bu$Directive, bu$compile) {
+    toolkit.service("bu$directives", ["bu$registryFactory", "bu$Directive", "bu$compile", "$q", "bu$loader", function (bu$registryFactory, bu$Directive, bu$compile, $q, bu$loader) {
         var registry = bu$registryFactory("bu$directives");
         registry.on('register', function (directiveName, directiveFactory) {
-            bu$compile(directiveName, directiveFactory.getFactory())();
+            var requirements = directiveFactory.getRequirements();
+            var deferred = $q.defer();
+            if (requirements.length > 0) {
+                bu$loader.load(requirements).then(function () {
+                    deferred.resolve();
+                }, function (reason) {
+                    deferred.reject(reason);
+                });
+            } else {
+                deferred.resolve();
+            }
+            deferred.promise.then(function () {
+                bu$compile(directiveName, directiveFactory.getFactory())();
+            }, function (reason) {
+                throw new Error("Failed to resolve dependencies for " + directiveName, reason);
+            });
             return directiveFactory;
         });
         this.register = function (id, item) {
