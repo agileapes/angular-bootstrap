@@ -2,7 +2,7 @@
     'use strict';
     var module = angular.module("cachingHttp", []);
     module.provider('bu$cachingHttp', function () {
-        this.$get = function ($cacheFactory, $q, $rootScope) {
+        this.$get = function ($cacheFactory, $q, $rootScope, $timeout) {
             var cache = $cacheFactory("buCachingHttpMock");
             var requests = [];
             var expectations = [];
@@ -29,9 +29,17 @@
                     var cachedData = configuration.cache.get(configuration.url);
                     if (cachedData) {
                         actions.push(function () {
-                            $rootScope.$apply(function () {
-                                deferred.resolve(cachedData, 200, [], configuration);
+                            $timeout(function () {
+                                $rootScope.$apply(function () {
+                                    deferred.resolve({
+                                        data: cachedData[1],
+                                        status: cachedData[0],
+                                        headers: cachedData[2],
+                                        config: configuration
+                                    });
+                                });
                             });
+                            $timeout.flush(1);
                         });
                         return deferred.promise;
                     }
@@ -74,27 +82,41 @@
                         var responseCodeGroup = descriptor.response.status % 100;
                         if (responseCodeGroup == 4 || responseCodeGroup == 5) {
                             actions.push(function () {
-                                $rootScope.$apply(function () {
-                                    deferred.reject("Error " + descriptor.response.status, descriptor.response.status, descriptor.response.headers, configuration);
+                                $timeout(function () {
+                                    $rootScope.$apply(function () {
+                                        deferred.reject("Error " + descriptor.response.status, descriptor.response.status, descriptor.response.headers, configuration);
+                                    });
                                 });
+                                $timeout.flush(1);
                             });
                         }
                         actions.push(function () {
-                            $rootScope.$apply(function () {
-                                if (configuration.cache) {
-                                    configuration.cache.put(configuration.url, descriptor.response.data);
-                                }
-                                deferred.resolve(descriptor.response.data, descriptor.response.status, descriptor.response.headers, configuration);
+                            $timeout(function () {
+                                $rootScope.$apply(function () {
+                                    if (configuration.cache) {
+                                        configuration.cache.put(configuration.url, [descriptor.response.status, descriptor.response.data, descriptor.response.headers]);
+                                    }
+                                    deferred.resolve({
+                                        data: descriptor.response.data,
+                                        status: descriptor.response.status,
+                                        headers: descriptor.response.headers,
+                                        config: configuration
+                                    });
+                                });
                             });
+                            $timeout.flush(1);
                         });
                         resolved = true;
                     }
                 });
                 if (!resolved) {
                     actions.push(function () {
-                        $rootScope.$apply(function () {
-                            deferred.reject("Not found", 404, {}, configuration);
+                        $timeout(function () {
+                            $rootScope.$apply(function () {
+                                deferred.reject("Not found", 404, {}, configuration);
+                            });
                         });
+                        $timeout.flush(1);
                     });
                 }
                 return deferred.promise;
@@ -121,10 +143,10 @@
                         if (typeof data == "undefined" && typeof headers == "undefined") {
                             data = status;
                             status = 200;
-                            headers = [];
+                            headers = {};
                         }
                         if (typeof headers == "undefined") {
-                            headers = [];
+                            headers = {};
                         }
                         requests.push({
                             called: false,
@@ -288,6 +310,6 @@
             };
             return $http;
         };
-        this.$get.$inject = ["$cacheFactory", "$q", "$rootScope"];
+        this.$get.$inject = ["$cacheFactory", "$q", "$rootScope", "$timeout"];
     });
 })();
