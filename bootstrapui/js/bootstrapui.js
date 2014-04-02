@@ -886,31 +886,69 @@ function evaluateExpression(expression, optional) {
                                     var context = this;
                                     var targetElement = $element;
                                     templateAvailable.then(function (template) {
-                                        //we compile the template and use transclusion if necessary, binding it to the
-                                        //scope of the directive
-                                        var $element = $compile(angular.element(template), $transclude)($scope);
-                                        //based on the 'replace' option, we must take care to place the compiled template
-                                        //in the right spot and specify the proper element as the root of the linking
-                                        //after the element has been jammed into the DOM, it is safe to signal to the linker
-                                        //that the template is now available
-                                        if (directive.replace) {
-                                            targetElement.replaceWith($element);
-                                            elementAvailable.resolve($element);
-                                        } else {
-                                            targetElement.html('');
-                                            targetElement.append($element);
-                                            elementAvailable.resolve(targetElement);
+                                        var templateDone = $q.defer();
+                                        //if the template is a function, invoke it with dependency injection
+                                        //for convenience we allow it access to the element, attributes, scope,
+                                        //as well as the transclude function.
+                                        //the context of the function will be the controller itself.
+                                        if (angular.isFunction(template)) {
+                                            try {
+                                                template = $injector.invoke(template, context, {
+                                                    scope: $scope,
+                                                    $scope: $scope,
+                                                    element: targetElement,
+                                                    $element: targetElement,
+                                                    $transclude: $transclude,
+                                                    attrs: $attrs,
+                                                    $attrs: $attrs
+                                                });
+                                            } catch (e) {
+                                                templateDone.reject(e);
+                                            }
                                         }
-                                        //if the linker has run its course, we can now run the controller
-                                        linkerRun.promise.then(function () {
-                                            //now its time to invoke the original controller
-                                            $injector.invoke(originalController, context, {
-                                                $compile: $compile,
-                                                $transclude: $transclude,
-                                                $scope: $scope,
-                                                $element: $element,
-                                                $attrs: $attrs
+                                        //if the template resolved (or the one returned from the function above
+                                        //is still a promise, wait for it to be resolved and then signal that we
+                                        //can proceed with the compilation
+                                        if (angular.isDefined(template.then) && angular.isFunction(template.then)) {
+                                            template.then(function (template) {
+                                                templateDone.resolve(template);
+                                            }, function (reason) {
+                                                templateDone.reject(reason);
                                             });
+                                        } else {
+                                            //otherwise, we can assume the template to be a normal element descriptor
+                                            //that can and should be used for element compilation
+                                            templateDone.resolve(template);
+                                        }
+                                        templateDone.promise.then(function (template) {
+                                            //we compile the template and use transclusion if necessary, binding it to the
+                                            //scope of the directive
+                                            var $element = $compile(angular.element(template), $transclude)($scope);
+                                            //based on the 'replace' option, we must take care to place the compiled template
+                                            //in the right spot and specify the proper element as the root of the linking
+                                            //after the element has been jammed into the DOM, it is safe to signal to the linker
+                                            //that the template is now available
+                                            if (directive.replace) {
+                                                targetElement.replaceWith($element);
+                                                elementAvailable.resolve($element);
+                                            } else {
+                                                targetElement.html('');
+                                                targetElement.append($element);
+                                                elementAvailable.resolve(targetElement);
+                                            }
+                                            //if the linker has run its course, we can now run the controller
+                                            linkerRun.promise.then(function () {
+                                                //now its time to invoke the original controller
+                                                $injector.invoke(originalController, context, {
+                                                    $compile: $compile,
+                                                    $transclude: $transclude,
+                                                    $scope: $scope,
+                                                    $element: $element,
+                                                    $attrs: $attrs
+                                                });
+                                            });
+                                        }, function (reason) {
+                                            elementAvailable.reject(reason);
                                         });
                                     }, function (reason) {
                                         //if for any reason the template was not available, we also reject the element
