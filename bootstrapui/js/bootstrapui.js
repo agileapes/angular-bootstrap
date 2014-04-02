@@ -1122,8 +1122,12 @@ function evaluateExpression(expression, optional) {
                 throw new Error("Cannot instantiate a directive without a factory function");
             }
         }
-        this.requirements = requirements;
-        this.factory = factory;
+        this.getRequirements = function () {
+            return requirements;
+        };
+        this.getFactory = function () {
+            return factory;
+        };
     });
 
     toolkit.provider("bu$loader", ["bu$registryFactoryProvider", "bu$configurationProvider", "$injector", function (bu$registryFactoryProvider, bu$configurationProvider, $injector) {
@@ -1224,9 +1228,9 @@ function evaluateExpression(expression, optional) {
 
     toolkit.service("bu$directives", ["bu$registryFactory", "bu$Directive", "bu$compile", function (bu$registryFactory, bu$Directive, bu$compile) {
         var registry = bu$registryFactory("bu$directives");
-        registry.on('register', function (id, item) {
-            bu$compile(id, item.factory)();
-            return item;
+        registry.on('register', function (directiveName, directiveFactory) {
+            bu$compile(directiveName, directiveFactory.getFactory())();
+            return directiveFactory;
         });
         this.register = function (id, item) {
             registry.register(id, item);
@@ -1240,6 +1244,27 @@ function evaluateExpression(expression, optional) {
         this.instantiate = function (requirements, factory) {
             return new bu$Directive(requirements, factory);
         };
+    }]);
+
+    /**
+     * We will have to configure the $templateCache to look for 'bui:' namespace prefix and replace them
+     * with the current namespace
+     */
+    toolkit.config(["bu$configurationProvider", "$templateCacheProvider", "$injector", function (bu$configurationProvider, $templateCacheProvider, $injector) {
+        var bu$configuration = $injector.invoke(bu$configurationProvider.$get);
+        var prefix = bu$configuration.namespace ? (bu$configuration.namespace + ":") : "";
+        $templateCacheProvider.intercept({
+            put: function (template) {
+                /**
+                 * All things 'bui:' will be replaced with the current namespace + ':' or the empty string
+                 * if none is present.
+                 * To prevent this, prefix 'bui:' with a dollar sign ($). These will be converted so that
+                 * the dollar sign is removed.
+                 * This process happens only once, when the template is being persisted.
+                 */
+                return template.replace(/([^\$])bui:/gi, "$1" + prefix).replace(/\$(bui:)/gi, "$1");
+            }
+        });
     }]);
 
 })(evaluateExpression("window.angular"));
