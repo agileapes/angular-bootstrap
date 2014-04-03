@@ -120,14 +120,23 @@ body {
 /** from components **/
 
 .form.error {
-    width: 100%;
     color: #a94442;
     border: 1px solid #a94442;
     background-color: #fff4f4;
+    text-shadow: 0 1px 0 #f2dede;
     font-weight: bold;
     border-radius: 5px;
     padding: 5px;
     text-align: center;
     margin-top: 5px;
     margin-bottom: 5px;
+    cursor: default;
+}
+
+.form.error.inline {
+    display: inline-block;
+}
+
+.form-inline.form-inline-container {
+    display: inline-block;
 }

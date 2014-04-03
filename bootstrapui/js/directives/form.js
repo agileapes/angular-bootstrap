@@ -1,6 +1,6 @@
 (function ($injector) {
     'use strict';
-    $injector.invoke(["bu$directives", "bu$toolRegistry", "bu$loader", "bu$configuration", "$q", "bu$registryFactory", "$http", function (bu$directives, bu$toolRegistry, bu$loader, bu$configuration, $q, bu$registryFactory, $http) {
+    $injector.invoke(["bu$directives", "bu$toolRegistry", "bu$loader", "bu$configuration", "$q", "bu$registryFactory", "$http", "bu$name", function (bu$directives, bu$toolRegistry, bu$loader, bu$configuration, $q, bu$registryFactory, $http, bu$name) {
         var config = {};
         var form = {
             configure: function (configuration) {
@@ -36,6 +36,22 @@
         };
         form.configure();
         bu$toolRegistry.register('form', form);
+        bu$directives.register("formContainer", bu$directives.instantiate(function () {
+            return {
+                restrict: "E",
+                scope: {
+                    orientation: "@",
+                    labelSize: "@"
+                },
+                defaults: {
+                    orientation: "vertical",
+                    labelSize: 3
+                },
+                controller: ["$scope", function ($scope) {
+                    this.$scope = $scope;
+                }]
+            };
+        }));
         bu$directives.register("formInput", bu$directives.instantiate(function () {
             var deferred = $q.defer();
             deferred.resolve(directiveLoader('input'));
@@ -44,6 +60,7 @@
                 restrict: "E",
                 replace: true,
                 transclude: false,
+                require: "?^" + bu$name.directive("formContainer"),
                 scope: {
                     type: "@",
                     label: "@",
@@ -65,10 +82,18 @@
                     feedback: "",
                     orientation: "vertical",
                     labelSize: 3
-                }
+                },
+                link: ["scope", "element", "attrs", "controller", function (scope, element, attrs, controller) {
+                    if (!scope.labelSize && controller && controller.$scope && controller.$scope.labelSize) {
+                        scope.labelSize = controller.$scope.labelSize;
+                    }
+                    if (!scope.orientation && controller && controller.$scope && controller.$scope.orientation) {
+                        scope.orientation = controller.$scope.orientation;
+                    }
+                }]
             }
         }));
-        var notFound = "<div class='form error'>&lt;{{namespace ? ':' + namespace : ''}}form-{{component}} type='{{type}}'/&gt;</div>";
+        var notFound = "<div class='form error {{orientation}}'>&lt;{{namespace ? ':' + namespace : ''}}form-{{component}} type='{{type}}'/&gt;</div>";
         var directiveLoader = function (type) {
             return ["$scope", "$element", "$attrs", function ($scope, $element, $attrs) {
                 var deferred = $q.defer();
