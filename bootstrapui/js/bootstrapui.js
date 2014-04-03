@@ -877,7 +877,11 @@ function evaluateExpression(expression, optional) {
                                 var elementAvailable = $q.defer();
                                 //this promise ensures that the linker has run, and it is now safe to run the controller
                                 var linkerRun = $q.defer();
+                                //this controller function can be replaced with a function 'controller' returned by the
+                                //promised object, so that controllers can be defined via promises as well
                                 var promisedController = function () {};
+                                //this is the post-link function that can be overridden by a promise object to enable
+                                //developers to link events after promises have been fulfilled
                                 var promisedPostLink = function () {};
                                 //we nullify the template so as to avoid a flicker when AngularJS sees the template and
                                 //gets it 'toString'
@@ -888,7 +892,15 @@ function evaluateExpression(expression, optional) {
                                     var context = this;
                                     var targetElement = $element;
                                     templateAvailable.then(function (template) {
+                                        //this is a deferred, which promises that all that is left to be done
+                                        //is to compile the template
+                                        //any actions regarding directive definition manipulation must have taken place
+                                        //prior to resolving this deferred, as it expects to be resolved with a simple
+                                        //string representing the template itself
                                         var templateDone = $q.defer();
+                                        //this is the interim which might directly resolve the templateDone promise.
+                                        //but it is in this phase that we check whether or not there is any need to
+                                        //perform further post-processing of the returned object
                                         var templateInterim = $q.defer();
                                         //if the template is a function, invoke it with dependency injection
                                         //for convenience we allow it access to the element, attributes, scope,
@@ -924,34 +936,42 @@ function evaluateExpression(expression, optional) {
                                             templateInterim.resolve(template);
                                         }
                                         templateInterim.promise.then(function (template) {
-                                            var deferred = $q.defer();
+                                            //if the resolved template is an object, we assume that it wants to
+                                            //modify and manipulate the directive definition to some extent
                                             if (angular.isObject(template)) {
+                                                //we check to see if the template promises any controllers
                                                 if (isFunction(template.controller)) {
                                                     promisedController = template.controller;
                                                 }
+                                                //we check to see if the template promises any post-links
                                                 if (isFunction(template.link)) {
                                                     promisedPostLink = template.link;
                                                 }
+                                                //if the template returns a 'template' property that will be
+                                                //used
                                                 if (angular.isDefined(template.template)) {
                                                     template = template.template;
-                                                    deferred.resolve(template);
+                                                    templateDone.resolve(template);
                                                 } else if (angular.isDefined(template.templateUrl)) {
+                                                    //otherwise, if a template url is defined, we will have to ask
+                                                    //the template cache to get that for us.
                                                     if (!/\.[^\.]+$/.test(template.templateUrl)) {
                                                         template.templateUrl = bu$configuration.base + "/" + bu$configuration.templatesBase + "/" + template.templateUrl + ".html";
                                                         template.templateUrl = template.templateUrl.replace(/\/{2,}/g, "/");
                                                     }
                                                     $templateCache.get(template.templateUrl).then(function (result) {
-                                                        deferred.resolve(result.data);
+                                                        templateDone.resolve(result.data);
+                                                    }, function (reason) {
+                                                        templateDone.reject(reason);
                                                     });
+                                                } else {
+                                                    templateDone.reject("No template has been specified");
                                                 }
                                             } else {
-                                                deferred.resolve(template);
-                                            }
-                                            deferred.promise.then(function (template) {
+                                                //if, on the other hand, the resolved template is a simple primitive,
+                                                //we will assume it to be the template itself
                                                 templateDone.resolve(template);
-                                            }, function (reason) {
-                                                templateDone.reject(reason);
-                                            });
+                                            }
                                         }, function (reason) {
                                             templateDone.reject(reason);
                                         });
@@ -982,6 +1002,9 @@ function evaluateExpression(expression, optional) {
                                                     $attrs: $attrs
                                                 };
                                                 $injector.invoke(originalController, context, locals);
+                                                //after calling the original controller, we now call to the
+                                                //promised controller (if any) so that the controller's
+                                                //functionality can be extended properly
                                                 $injector.invoke(promisedController, context, locals);
                                             });
                                         }, function (reason) {
@@ -1018,6 +1041,10 @@ function evaluateExpression(expression, optional) {
                                                         controller: controller
                                                     };
                                                     $injector.invoke(postLink, context, locals);
+                                                    //after running the original post-link function, we invoke
+                                                    //the promised post-link function (if any) so that DOM manipulation
+                                                    //and event attachment can be performed properly by any extending
+                                                    //code
                                                     $injector.invoke(promisedPostLink, context, locals);
                                                     //we now signal to the controller that it can execute
                                                     linkerRun.resolve();
