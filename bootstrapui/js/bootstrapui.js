@@ -805,6 +805,11 @@ function evaluateExpression(expression, optional) {
                         }
                         if (angular.isUndefined(directive.require)) {
                             directive.require = null;
+                        } else {
+                            directive.require = directive.require.replace(/\(bui\)(\S+)/g, function (namespace, name) {
+                                name = name[0].toLowerCase() + name.substring(1);
+                                return bu$name.directive(name);
+                            });
                         }
                         if (!angular.isFunction(directive.compile)) {
                             directive.compile = function () {

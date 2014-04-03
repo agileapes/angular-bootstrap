@@ -1,6 +1,6 @@
 (function ($injector) {
     'use strict';
-    $injector.invoke(["bu$directives", "bu$toolRegistry", "bu$loader", "bu$configuration", "$q", "bu$registryFactory", "$http", "bu$name", function (bu$directives, bu$toolRegistry, bu$loader, bu$configuration, $q, bu$registryFactory, $http, bu$name) {
+    $injector.invoke(["bu$directives", "bu$toolRegistry", "bu$loader", "bu$configuration", "$q", "bu$registryFactory", "$http", function (bu$directives, bu$toolRegistry, bu$loader, bu$configuration, $q, bu$registryFactory, $http) {
         var config = {};
         var form = {
             configure: function (configuration) {
@@ -60,7 +60,7 @@
                 restrict: "E",
                 replace: true,
                 transclude: false,
-                require: "?^" + bu$name.directive("formContainer"),
+                require: "^(bui)FormContainer",
                 scope: {
                     type: "@",
                     label: "@",
