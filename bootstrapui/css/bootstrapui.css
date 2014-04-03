@@ -116,3 +116,18 @@ body {
     background-color: #f2dede;
     border-color: #ebccd1;
 }
+
+/** from components **/
+
+.form.error {
+    width: 100%;
+    color: #a94442;
+    border: 1px solid #a94442;
+    background-color: #fff4f4;
+    font-weight: bold;
+    border-radius: 5px;
+    padding: 5px;
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
