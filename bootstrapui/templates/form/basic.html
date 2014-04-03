@@ -1,0 +1,10 @@
+<div class="form" ng-class="{'form-horizontal': orientation == 'horizontal', 'form-inline': orientation == 'inline'}">
+    <div class="form-group" ng-class="{'has-feedback': feedback, 'has-success': state == 'valid', 'has-error': state == 'invalid', 'has-warning': state == 'warning', 'has-info': state == 'notice'}">
+        <label for="{{id}}" ng-class="{'sr-only': orientation == 'inline'}" class="control-label {{(orientation == 'horizontal') ? ('col-sm-' + labelSize) : ''}}"><span ng-if="label">{{label}}</span><span ng-if="!label && orientation == 'vertical'">&nbsp;</span></label>
+        <div ng-show="orientation != 'inline'" class="col-sm-{{12 - labelSize}}">
+            <input id="{{id}}" class="form-control" type="{{type}}" placeholder="{{placeholder}}" ng-model="ngModel" />
+            <span ng-if="feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
+        </div>
+        <input ng-show="orientation == 'vertical'" id="{{id}}" class="form-control" type="{{type}}" placeholder="{{placeholder}}" ng-model="ngModel" /><span ng-if="orientation == 'inline' && feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
+    </div>
+</div>
