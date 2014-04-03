@@ -382,13 +382,11 @@ function evaluateExpression(expression, optional) {
                 return $http.get(key, {
                     cache: templateCache
                 }).then(function (result) {
-                    if (typeof result == "string") {
-                        for (var i = 0; i < TemplateCache.interceptors.length; i++) {
-                            var interceptor = TemplateCache.interceptors[i];
-                            var returned = interceptor.apply(self, [result.data, key]);
-                            if (returned) {
-                                result.data = returned;
-                            }
+                    for (var i = 0; i < TemplateCache.interceptors.length; i++) {
+                        var interceptor = TemplateCache.interceptors[i];
+                        var returned = interceptor.apply(self, [result.data, key]);
+                        if (returned) {
+                            result.data = returned;
                         }
                     }
                     return result;

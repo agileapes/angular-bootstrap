@@ -103,7 +103,7 @@ describe("TemplateCache", function () {
     });
 
     it("accepts interceptors and lets template values be modified upon `.get(...)`", function () {
-        var interceptor = jasmine.createSpy("interceptor").and.callFake(function (template) {
+        var interceptor = jasmine.createSpy("for intercepting templates").and.callFake(function (template) {
             return template.replace(/x/g, '');
         });
         var url = "/some/template.html";
