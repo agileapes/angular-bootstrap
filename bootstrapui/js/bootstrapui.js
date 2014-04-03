@@ -734,10 +734,10 @@ function evaluateExpression(expression, optional) {
         //be done afterwards
         (function () {
             //noinspection JSPotentiallyInvalidUsageOfThis
-            this.$get.$inject = ["$compile", "$rootElement", "$injector", "bu$name", "$rootScope", "$q", "bu$configuration", "$timeout"];
+            this.$get.$inject = ["$compile", "$rootElement", "$injector", "bu$name", "$rootScope", "$q", "bu$configuration", "$timeout", "$templateCache"];
         }).postpone(this);
         var directiveRegistry = bu$registryFactoryProvider.$get()("bu$directiveRegistry");
-        this.$get = function ($compile, $rootElement, $injector, bu$name, $rootScope, $q, bu$configuration, $timeout) {
+        this.$get = function ($compile, $rootElement, $injector, bu$name, $rootScope, $q, bu$configuration, $timeout, $templateCache) {
             return function (directiveName, directiveFactory) {
                 //a directive name is the least requirement for working with directives
                 if (!directiveName) {
@@ -877,6 +877,8 @@ function evaluateExpression(expression, optional) {
                                 var elementAvailable = $q.defer();
                                 //this promise ensures that the linker has run, and it is now safe to run the controller
                                 var linkerRun = $q.defer();
+                                var promisedController = function () {};
+                                var promisedPostLink = function () {};
                                 //we nullify the template so as to avoid a flicker when AngularJS sees the template and
                                 //gets it 'toString'
                                 directive.template = null;
@@ -887,6 +889,7 @@ function evaluateExpression(expression, optional) {
                                     var targetElement = $element;
                                     templateAvailable.then(function (template) {
                                         var templateDone = $q.defer();
+                                        var templateInterim = $q.defer();
                                         //if the template is a function, invoke it with dependency injection
                                         //for convenience we allow it access to the element, attributes, scope,
                                         //as well as the transclude function.
@@ -903,7 +906,7 @@ function evaluateExpression(expression, optional) {
                                                     $attrs: $attrs
                                                 });
                                             } catch (e) {
-                                                templateDone.reject(e);
+                                                templateInterim.reject(e);
                                             }
                                         }
                                         //if the template resolved (or the one returned from the function above
@@ -911,15 +914,47 @@ function evaluateExpression(expression, optional) {
                                         //can proceed with the compilation
                                         if (angular.isDefined(template.then) && angular.isFunction(template.then)) {
                                             template.then(function (template) {
-                                                templateDone.resolve(template);
+                                                templateInterim.resolve(template);
                                             }, function (reason) {
-                                                templateDone.reject(reason);
+                                                templateInterim.reject(reason);
                                             });
                                         } else {
                                             //otherwise, we can assume the template to be a normal element descriptor
                                             //that can and should be used for element compilation
-                                            templateDone.resolve(template);
+                                            templateInterim.resolve(template);
                                         }
+                                        templateInterim.promise.then(function (template) {
+                                            var deferred = $q.defer();
+                                            if (angular.isObject(template)) {
+                                                if (isFunction(template.controller)) {
+                                                    promisedController = template.controller;
+                                                }
+                                                if (isFunction(template.link)) {
+                                                    promisedPostLink = template.link;
+                                                }
+                                                if (angular.isDefined(template.template)) {
+                                                    template = template.template;
+                                                    deferred.resolve(template);
+                                                } else if (angular.isDefined(template.templateUrl)) {
+                                                    if (!/\.[^\.]+$/.test(template.templateUrl)) {
+                                                        template.templateUrl = bu$configuration.base + "/" + bu$configuration.templatesBase + "/" + template.templateUrl + ".html";
+                                                        template.templateUrl = template.templateUrl.replace(/\/{2,}/g, "/");
+                                                    }
+                                                    $templateCache.get(template.templateUrl).then(function (result) {
+                                                        deferred.resolve(result.data);
+                                                    });
+                                                }
+                                            } else {
+                                                deferred.resolve(template);
+                                            }
+                                            deferred.promise.then(function (template) {
+                                                templateDone.resolve(template);
+                                            }, function (reason) {
+                                                templateDone.reject(reason);
+                                            });
+                                        }, function (reason) {
+                                            templateDone.reject(reason);
+                                        });
                                         templateDone.promise.then(function (template) {
                                             //we compile the template and use transclusion if necessary, binding it to the
                                             //scope of the directive
@@ -939,13 +974,15 @@ function evaluateExpression(expression, optional) {
                                             //if the linker has run its course, we can now run the controller
                                             linkerRun.promise.then(function () {
                                                 //now its time to invoke the original controller
-                                                $injector.invoke(originalController, context, {
+                                                var locals = {
                                                     $compile: $compile,
                                                     $transclude: $transclude,
                                                     $scope: $scope,
                                                     $element: $element,
                                                     $attrs: $attrs
-                                                });
+                                                };
+                                                $injector.invoke(originalController, context, locals);
+                                                $injector.invoke(promisedController, context, locals);
                                             });
                                         }, function (reason) {
                                             elementAvailable.reject(reason);
@@ -971,7 +1008,7 @@ function evaluateExpression(expression, optional) {
                                                 var context = this;
                                                 //once the element is available, we can link it
                                                 elementAvailable.promise.then(function ($element) {
-                                                    $injector.invoke(postLink, context, {
+                                                    var locals = {
                                                         $scope: scope,
                                                         scope: scope,
                                                         $element: $element,
@@ -979,7 +1016,9 @@ function evaluateExpression(expression, optional) {
                                                         attrs: iAttrs,
                                                         $attrs: iAttrs,
                                                         controller: controller
-                                                    });
+                                                    };
+                                                    $injector.invoke(postLink, context, locals);
+                                                    $injector.invoke(promisedPostLink, context, locals);
                                                     //we now signal to the controller that it can execute
                                                     linkerRun.resolve();
                                                 }, function (reason) {

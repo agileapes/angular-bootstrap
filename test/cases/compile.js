@@ -545,6 +545,48 @@ describe("bu$compile service", function () {
             expect(testRoot.text()).toBe("123412345678ui");
         }));
 
+        it("can render a promise which promises a controller and a post-link", inject(function (bu$compile, $timeout, $q) {
+            //here we are testing transclusion as well as dependency injection
+            testRoot.html("<div ui-my-directive value='1234'>5678</div>");
+            var deferred = $q.defer();
+            bu$compile("myDirective", function () {
+                return {
+                    template: deferred.promise,
+                    transclude: true,
+                    scope: {
+                        value: "@"
+                    },
+                    controller: function (bu$configuration, $scope) {
+                        $scope.namespace = bu$configuration.namespace;
+                    }
+                };
+            })();
+            var x;
+            var deferredTemplate = $q.defer();
+            var click = jasmine.createSpy("for when element has been clicked");
+            var template = function ($scope) {
+                x = $scope.value;
+                $timeout(function () {
+                    //and some time later
+                    deferredTemplate.resolve({
+                        template: "<span>" + x + "{{value}}<span ng-transclude></span>{{namespace}}<em>{{added}}</em></span>",
+                        controller: function ($scope) {
+                            $scope.added = "ADDED";
+                        },
+                        link: function ($element) {
+                            angular.element($element).find("em").on('click', click);
+                        }
+                    });
+                });
+                return deferredTemplate.promise;
+            };
+            deferred.resolve(template);
+            $timeout.flush();
+            expect(testRoot.text()).toBe("123412345678uiADDED");
+            testRoot.find("em").triggerHandler('click');
+            expect(click).toHaveBeenCalled();
+        }));
+
     });
 
 });
