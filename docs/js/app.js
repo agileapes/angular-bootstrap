@@ -1,6 +1,6 @@
 'use strict';
 (function (angular) {
-    var module = angular.module("BootstrapUIDocumentation", ["ngRoute", "ngAnimate"], null);
+    var module = angular.module("BootstrapUIDocumentation", ["ngRoute", "ngAnimate", "buMain"], null);
     module.config(function ($routeProvider) {
         $routeProvider
             .when("/", {

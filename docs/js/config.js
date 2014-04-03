@@ -1,15 +1,14 @@
-window.BootstrapUIConfig = {
-    namespace: "ui",
-    base: "..",
-    debug: true,
-    preloadAll: true,
-    console: {
-        replace: false,
-        output: true,
-        format: "%y-%m-%d %H:%M:%S.%l [%L] %s",
-        preserve: false
-    },
-    form: {
-        preloadAll: true
-    }
-};
+angular.module("BootstrapUIDocumentation").config(["bu$configurationProvider", "$locationProvider", function (configuration, $locationProvider) {
+    configuration.set({
+        namespace: "ui",
+        base: "..",
+        debug: true,
+        preloadAll: true,
+        tools: {
+            form: {
+                preloadAll: true
+            }
+        }
+    });
+    $locationProvider.html5Mode(true).hashPrefix('!');
+}]);

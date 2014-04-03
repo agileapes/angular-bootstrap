@@ -8,6 +8,15 @@
     <link rel="stylesheet" type="text/css" href="css/impress-box.min.css"/>
     <link rel="stylesheet" type="text/css" href="../bootstrapui/css/bootstrapui.css"/>
     <link rel="stylesheet" type="text/css" href="css/theme.css"/>
+    <script type="text/javascript"><!--
+    (function () {
+        var base = location.href.replace(/[^/]+\.html$/, '').replace(/^[^:]+:\/\/[^/]+/, '');
+        var head = document.getElementsByTagName("head")[0];
+        var baseTag = document.createElement("base");
+        baseTag.setAttribute('href', base);
+        head.appendChild(baseTag);
+    })();
+    --></script>
     <script type="text/javascript" src="js/modernizr.js"></script>
     <script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
@@ -15,11 +24,14 @@
     <script type="text/javascript" src="js/angular-route.js"></script>
     <script type="text/javascript" src="js/angular-animate.js"></script>
     <script type="text/javascript" src="js/highlight.pack.js"></script>
-    <script type="text/javascript" src="js/config.js"></script>
     <script type="text/javascript" src="../bootstrapui/js/bootstrapui.js"></script>
     <script type="text/javascript" src="js/app.js"></script>
+    <script type="text/javascript" src="js/config.js"></script>
 </head>
 <body>
 <div class="container reveal-animation" ng-view></div>
+<noscript>
+
+</noscript>
 </body>
 </html>
