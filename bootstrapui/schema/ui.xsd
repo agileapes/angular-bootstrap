@@ -536,6 +536,7 @@
         <xs:attribute name="feedback" type="glyph" use="optional" default=""/>
         <xs:attribute name="label" type="xs:string" use="optional" default=""/>
         <xs:attribute name="value" type="xs:string" use="optional" default=""/>
+        <xs:attribute name="ng-model" type="xs:string" use="optional" default=""/>
         <xs:attributeGroup ref="formContainer"/>
     </xs:attributeGroup>
 
