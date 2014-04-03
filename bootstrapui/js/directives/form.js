@@ -72,7 +72,8 @@
                     value: "@",
                     orientation: "@",
                     labelSize: "@",
-                    ngModel: '=?'
+                    ngModel: '=?',
+                    descriptor: '&?'
                 },
                 defaults: {
                     label: " ",
@@ -90,7 +91,21 @@
                     if (!scope.orientation && controller && controller.$scope && controller.$scope.orientation) {
                         scope.orientation = controller.$scope.orientation;
                     }
-                }]
+                }],
+                controller: function ($scope) {
+                    if (angular.isDefined($scope.descriptor) && angular.isDefined($scope.descriptor())) {
+                        angular.forEach(['orientation', 'labelSize', 'placeholder', 'feedback', 'state', 'label'], function (item) {
+                            $scope.$watch(function () {
+                                return $scope.descriptor()[item];
+                            }, function (value) {
+                                if (angular.isDefined(value) && $scope[item] != value) {
+                                    $scope[item] = value;
+                                    $scope.$apply.postpone($scope);
+                                }
+                            });
+                        });
+                    }
+                }
             }
         }));
         var notFound = "<div class='form-error {{orientation}} {{orientation == \"horizontal\" ? \"col-sm-offset-\" + labelSize + \" col-sm-\" + (12 - labelSize) : \"\"}}'><div class=''>&lt;{{namespace ? namespace + ':' : ''}}form-{{component}} type='{{type}}'/&gt;</div></div>";
