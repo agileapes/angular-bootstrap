@@ -93,7 +93,7 @@
                 }]
             }
         }));
-        var notFound = "<div class='form error {{orientation}}'>&lt;{{namespace ? namespace + ':' : ''}}form-{{component}} type='{{type}}'/&gt;</div>";
+        var notFound = "<div class='form-error {{orientation}} {{orientation == \"horizontal\" ? \"col-sm-offset-\" + labelSize + \" col-sm-\" + (12 - labelSize) : \"\"}}'><div class=''>&lt;{{namespace ? namespace + ':' : ''}}form-{{component}} type='{{type}}'/&gt;</div></div>";
         var directiveLoader = function (type) {
             return ["$scope", "$element", "$attrs", function ($scope, $element, $attrs) {
                 var deferred = $q.defer();

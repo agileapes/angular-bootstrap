@@ -827,7 +827,7 @@ function evaluateExpression(expression, optional) {
                                 $element: tElement,
                                 $attrs: tAttrs
                             });
-                            if (angular.isFunction(linker)) {
+                            if (isFunction(linker)) {
                                 linker = {
                                     post: linker
                                 };
