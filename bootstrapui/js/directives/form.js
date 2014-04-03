@@ -22,9 +22,12 @@
                 if (!angular.isObject(config.aliases)) {
                     config.aliases = {};
                 }
-                config.aliases['basic'] = 'disallowed';
-                config.aliases['text'] = 'basic';
-                config.aliases['password'] = 'basic';
+                if (!angular.isObject(config.aliases.input)) {
+                    config.aliases.input = {};
+                }
+                config.aliases.input['basic'] = 'disallowed'; //redirect so that type 'basic' cannot be used
+                config.aliases.input['text'] = 'basic';
+                config.aliases.input['password'] = 'basic';
                 if (angular.isUndefined(config.visualErrors)) {
                     config.visualErrors = true;
                 }
@@ -106,8 +109,8 @@
                         var element = {
                             templateUrl: $scope.type
                         };
-                        if (config.aliases[element.templateUrl]) {
-                            element.templateUrl = config.aliases[element.templateUrl];
+                        if (config.aliases[type][element.templateUrl]) {
+                            element.templateUrl = config.aliases[type][element.templateUrl];
                         }
                         element.templateUrl = bu$configuration.base + "/" + config.templatesBase + "/" + element.templateUrl + ".html";
                         element.templateUrl = element.templateUrl.replace(/\/{2,}/g, "/");
