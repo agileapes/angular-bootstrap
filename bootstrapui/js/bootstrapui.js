@@ -186,7 +186,6 @@ function evaluateExpression(expression, optional) {
                     } else {
                         action = "";
                     }
-                    console.debug("Abandoning action" + action + " after " + timeout);
                 }, timeout);
             }
         }
@@ -363,7 +362,7 @@ function evaluateExpression(expression, optional) {
             };
             templateCache._put = templateCache.put;
             templateCache.put = this.put = function (key, template) {
-                if (!angular.isArray(template)) {
+                if (angular.isString(template)) {
                     template = [200, template, {
                         'x-manual': true
                     }];
@@ -383,11 +382,13 @@ function evaluateExpression(expression, optional) {
                 return $http.get(key, {
                     cache: templateCache
                 }).then(function (result) {
-                    for (var i = 0; i < TemplateCache.interceptors.length; i++) {
-                        var interceptor = TemplateCache.interceptors[i];
-                        var returned = interceptor.apply(self, [result.data, key]);
-                        if (returned) {
-                            result.data = returned;
+                    if (typeof result == "string") {
+                        for (var i = 0; i < TemplateCache.interceptors.length; i++) {
+                            var interceptor = TemplateCache.interceptors[i];
+                            var returned = interceptor.apply(self, [result.data, key]);
+                            if (returned) {
+                                result.data = returned;
+                            }
                         }
                     }
                     return result;
@@ -906,7 +907,7 @@ function evaluateExpression(expression, optional) {
                                         //for convenience we allow it access to the element, attributes, scope,
                                         //as well as the transclude function.
                                         //the context of the function will be the controller itself.
-                                        if (angular.isFunction(template)) {
+                                        if (isFunction(template)) {
                                             try {
                                                 template = $injector.invoke(template, context, {
                                                     scope: $scope,
@@ -1244,10 +1245,10 @@ function evaluateExpression(expression, optional) {
         var config = $injector.invoke(bu$configurationProvider.$get);
         var pathResolvers = {
             directive: function (item) {
-                return (config.base + "/" + config.directivesBase + "/" + item.identifier + ".js").replace(/\/{2,}/g, "/");
+                return (config.directivesBase + "/" + item.identifier + ".js").replace(/\/{2,}/g, "/");
             },
             filter: function (item) {
-                return (config.base + "/" + config.filtersBase + "/" + item.identifier + ".js").replace(/\/{2,}/g, "/");
+                return (config.filtersBase + "/" + item.identifier + ".js").replace(/\/{2,}/g, "/");
             }
         };
         this.addType = function (type, pathResolver) {
@@ -1307,6 +1308,8 @@ function evaluateExpression(expression, optional) {
                     if (!path) {
                         throw new Error("Failed to resolve a path for item '" + item.identifier + "' of type '" + item.type + "'");
                     }
+                    path = config.base + "/" + path;
+                    path = path.replace(/\/{2,}/g, "/");
                     $http.get(path, {
                         cache: true
                     }).then(function (result) {
