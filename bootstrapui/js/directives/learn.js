@@ -10,4 +10,4 @@
             };
         }));
     }]);
-})($injector);
+})(eval("$injector"));

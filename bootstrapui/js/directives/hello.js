@@ -11,4 +11,4 @@
             };
         }));
     }]);
-})($injector);
+})(eval("$injector"));
