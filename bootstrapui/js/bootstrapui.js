@@ -766,12 +766,13 @@ function evaluateExpression(expression, optional) {
                             throw new Error("Invalid directive definition provided for " + directiveName);
                         }
                         if (isFunction(directive.link)) {
+                            var linker = directive.link;
                             //if specifics have not been mentioned, the link function is assumed to be the post-link
                             //function
                             directive.link = {
                                 pre: function () {
                                 },
-                                post: directive.link
+                                post: linker
                             };
                         }
                         var controller = function () {
@@ -782,11 +783,11 @@ function evaluateExpression(expression, optional) {
                         if (angular.isUndefined(directive.link)) {
                             directive.link = {};
                         }
-                        if (!angular.isFunction(directive.link.pre)) {
+                        if (!isFunction(directive.link.pre)) {
                             directive.link.pre = function () {
                             };
                         }
-                        if (!angular.isFunction(directive.link.post)) {
+                        if (!isFunction(directive.link.post)) {
                             directive.link.post = function () {
                             };
                         }
@@ -1026,10 +1027,10 @@ function evaluateExpression(expression, optional) {
                                     });
                                 };
                                 directive.controller.$inject = ["$injector", "$compile", "$transclude", "$scope", "$attrs", "$element"];
-                                //this is the proxied compile function
-                                var proxiedCompile = directive.compile;
                                 if (!directive.masked.compile) {
                                     directive.masked.compile = true;
+                                    //this is the proxied compile function
+                                    var proxiedCompile = directive.compile;
                                     directive.compile = function (tElement, tAttrs) {
                                         //we first call the compile function
                                         var linker = proxiedCompile.apply(this, [tElement, tAttrs]);
