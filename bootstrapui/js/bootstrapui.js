@@ -977,6 +977,14 @@ function evaluateExpression(expression, optional) {
                                             templateDone.reject(reason);
                                         });
                                         templateDone.promise.then(function (template) {
+                                            /**
+                                             * This means we are here by mistake. We are inside an element and
+                                             * assuming it was compiled but it actually was not.
+                                             * @todo this fixes it for now, but we should find a better way of doing it
+                                             */
+                                            if (!targetElement.data('bu-compiled')) {
+                                                return
+                                            }
                                             //we compile the template and use transclusion if necessary, binding it to the
                                             //scope of the directive
                                             var $element = $compile(angular.element(template), $transclude)($scope);
