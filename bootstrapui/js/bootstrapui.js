@@ -1348,14 +1348,7 @@ function evaluateExpression(expression, optional) {
                         interim.promise.then(function (template) {
                             var definition = bracketToAnnotation(template);
                             if (angular.isFunction(definition)) {
-                                definition = $injector.invoke(definition, self, {
-                                    $scope: $scope,
-                                    scope: $scope,
-                                    $element: $element,
-                                    element: $element,
-                                    $attrs: $attrs,
-                                    attrs: $attrs
-                                });
+                                definition = $injector.invoke(bindAnnotated(definition, self, $scope, $element, $attrs));
                             }
                             if (angular.isString(definition)) {
                                 definition = {
