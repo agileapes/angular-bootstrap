@@ -888,7 +888,7 @@ function evaluateExpression(expression, optional) {
         this.$get.$inject = ["$http", "$q", "$rootScope", "$injector", "$timeout"];
     }]);
 
-    toolkit.service("bu$directives", ["bu$registryFactory", "bu$Directive", "bu$compile", "$q", "bu$loader", function (bu$registryFactory, bu$Directive, bu$compile, $q, bu$loader) {
+    toolkit.service("bu$directives", ["bu$registryFactory", "bu$Directive", "bu$directiveCompiler", "$q", "bu$loader", function (bu$registryFactory, bu$Directive, bu$directiveCompiler, $q, bu$loader) {
         var registry = bu$registryFactory("bu$directives");
         registry.on('register', function (directiveName, directiveFactory) {
             var requirements = directiveFactory.getRequirements();
@@ -903,7 +903,8 @@ function evaluateExpression(expression, optional) {
                 deferred.resolve();
             }
             deferred.promise.then(function () {
-                bu$compile(directiveName, directiveFactory.getFactory())();
+                bu$directiveCompiler.register(directiveName, directiveFactory.getFactory());
+                bu$directiveCompiler.compile();
             }, function (reason) {
                 throw new Error("Failed to resolve dependencies for " + directiveName, reason);
             });
@@ -927,7 +928,7 @@ function evaluateExpression(expression, optional) {
         var bu$registryFactory = $injector.invoke(bu$registryFactoryProvider.$get, bu$registryFactoryProvider);
         var registry = bu$registryFactory("bu$directiveCompiler$registry");
         var newDirectives = [];
-        var bu$name, $rootElement, $compile, $rootScope;
+        var bu$name, $rootElement, $compile, $rootScope, bu$configuration;
         var config = {
             /**
              * flag to determine whether or not the factory function should be masked
@@ -1179,6 +1180,14 @@ function evaluateExpression(expression, optional) {
                         return bu$name.directive(directive[0].toLowerCase() + directive.substring(1));
                     });
                 }
+                //let's have the templateUrl fall into our definitions
+                if (angular.isString(directive.templateUrl) && !/\.[^\.]+$/.test(directive.templateUrl)) {
+                    directive.templateUrl = (bu$configuration.base + "/" + bu$configuration.templatesBase + "/" + directive.templateUrl).replace(/\/{2,}/g, "/");
+                }
+                //if transcludeProperty is not defined, we need to set it to false
+                if (!angular.isDefined(directive.transcludeProperty)) {
+                    directive.transcludeProperty = false;
+                }
                 //if no controller is present, replace it with a dummy
                 if (angular.isUndefined(directive.controller)) {
                     directive.controller = function () {
@@ -1277,12 +1286,7 @@ function evaluateExpression(expression, optional) {
                 var directive = $injector.invoke(productionFactory, this, {
                     $injector: $injector
                 });
-                var promise = undefined;
-                if (angular.isDefined(directive.resolve) && angular.isFunction(directive.resolve.then)) {
-                    //he have a promise ... we will assume that the promise will be fulfilled.
-                    //don't disappoint us. :-)
-                    promise = directive.resolve;
-                } else {
+                if (!angular.isDefined(directive.resolve) || !angular.isFunction(directive.resolve.then)) {
                     return directive;
                 }
                 //we will delete the templates so that rendering is not done by AngularJS
@@ -1300,7 +1304,8 @@ function evaluateExpression(expression, optional) {
                  *  1. a string, which will be interpreted to be the template
                  *  2. a directive definition object which can contain template, templateUrl, controller,
                  *      preLink, and postLink
-                 *  3. a function which returns either of the above
+                 *  3. a promise which could be resolve to either of the above
+                 *  4. a function which returns any of the above
                  *
                  *  This happens right after the original promise through the `resolve` property is resolved
                  */
@@ -1315,68 +1320,96 @@ function evaluateExpression(expression, optional) {
                 var transcluded = $q.defer(); //resolved inside the controller
                 //this promise indicates that the process has finished successfully
                 var postLinked = $q.defer(); //resolved inside the compile (postLink)
-                promise.then(function (template) {
-                    var definition = template;
-                    if (angular.isFunction(definition)) {
-                        definition = $injector.invoke(definition, null);
-                    }
-                    if (angular.isString(definition)) {
-                        definition = {
-                            template: definition
-                        };
-                    }
-                    if (!angular.isObject(definition)) {
-                        throw new Error("Expected promised definition to be either a template, a directive definition object," +
-                            "or a directive definition factory");
-                    }
-                    if (!angular.isDefined(definition.controller)) {
-                        definition.controller = function () {
-                        };
-                    }
-                    definition.controller = bracketToAnnotation(definition.controller);
-                    definition.link = bracketToAnnotation(definition.link);
-                    if (angular.isFunction(definition.link)) {
-                        definition.link = {
-                            post: definition.link
-                        };
-                    }
-                    if (!angular.isObject(definition.link)) {
-                        definition.link = {};
-                    }
-                    definition.link.pre = bracketToAnnotation(definition.link.pre);
-                    definition.link.post = bracketToAnnotation(definition.link.post);
-                    if (angular.isString(definition.templateUrl)) {
-                        //if templateUrl is defined, template must go home
-                        delete definition.template;
-                        //we will cache and retrieve the template over $http and then resolve the templateAvailable
-                        //deferred object
-                        $http.get(definition.templateUrl, {
-                            cache: $templateCache
-                        }).then(function (result) {
-                            definition.template = result.data;
-                            templateAvailable.resolve(definition);
-                        }, function (reason) {
-                            throw new Error("Failed to resolve template for directive `" + id + "` from url `" + definition.templateUrl + "`", reason);
-                        });
-                    } else {
-                        //if the template is a function, we will resolve it
-                        if (angular.isFunction(definition.template)) {
-                            definition.template = definition.template.apply(null, [directive]);
-                        }
-                        if (!angular.isString(definition.template)) {
-                            throw new Error("Template for directive `" + id + "` must be a string");
-                        } else if (definition.template == "" || definition.template[0].replace(/^\s+/, '') != "<") {
-                            throw new Error("Template for directive `" + id + "` must contain exactly one root element");
-                        }
-                        templateAvailable.resolve(definition);
-                    }
-                }, function (reason) {
-                    throw new Error("Failed to resolve definition for directive `" + id + "`", reason);
-                });
-                directive.controller = bracketToAnnotation(["$injector", "$transclude", "$scope", "$element", "$attrs", "$compile",
-                    function ($injector, $transclude, $scope, $element, $attrs, $compile) {
+                directive.controller = bracketToAnnotation(["$scope", "$element", "$attrs", "$transclude", "$injector", "$compile",
+                    function ($scope, $element, $attrs, $transclude, $injector, $compile) {
                         //let's create the original controller and get it over with
                         $injector.invoke(bindAnnotated(originalController, self, $scope, $element, $attrs, $transclude));
+                        //he have a promise ... we will assume that the promise will be fulfilled.
+                        //don't disappoint us. :-)
+                        var promise = directive.resolve;
+                        var interim = $q.defer();
+                        promise.then(function (definition) {
+                            definition = bracketToAnnotation(definition);
+                            if (angular.isFunction(definition)) {
+                                definition = $injector.invoke(bindAnnotated(definition, self, $scope, $element, $attrs));
+                            }
+                            if (angular.isFunction(definition.then)) {
+                                definition.then(function (definition) {
+                                    interim.resolve(definition);
+                                }, function (reason) {
+                                    interim.reject(reason);
+                                });
+                            } else {
+                                interim.resolve(definition);
+                            }
+                        }, function (reason) {
+                            interim.reject(reason);
+                        });
+                        interim.promise.then(function (template) {
+                            var definition = bracketToAnnotation(template);
+                            if (angular.isFunction(definition)) {
+                                definition = $injector.invoke(definition, self, {
+                                    $scope: $scope,
+                                    scope: $scope,
+                                    $element: $element,
+                                    element: $element,
+                                    $attrs: $attrs,
+                                    attrs: $attrs
+                                });
+                            }
+                            if (angular.isString(definition)) {
+                                definition = {
+                                    template: definition
+                                };
+                            }
+                            if (!angular.isObject(definition)) {
+                                throw new Error("Expected promised definition to be either a template, a directive definition object," +
+                                    "or a directive definition factory");
+                            }
+                            if (!angular.isDefined(definition.controller)) {
+                                definition.controller = function () {
+                                };
+                            }
+                            definition.controller = bracketToAnnotation(definition.controller);
+                            definition.link = bracketToAnnotation(definition.link);
+                            if (angular.isFunction(definition.link)) {
+                                definition.link = {
+                                    post: definition.link
+                                };
+                            }
+                            if (!angular.isObject(definition.link)) {
+                                definition.link = {};
+                            }
+                            definition.link.pre = bracketToAnnotation(definition.link.pre);
+                            definition.link.post = bracketToAnnotation(definition.link.post);
+                            if (angular.isString(definition.templateUrl)) {
+                                //if templateUrl is defined, template must go home
+                                delete definition.template;
+                                //we will cache and retrieve the template over $http and then resolve the templateAvailable
+                                //deferred object
+                                $http.get(definition.templateUrl, {
+                                    cache: $templateCache
+                                }).then(function (result) {
+                                    definition.template = result.data;
+                                    templateAvailable.resolve(definition);
+                                }, function (reason) {
+                                    throw new Error("Failed to resolve template for directive `" + id + "` from url `" + definition.templateUrl + "`", reason);
+                                });
+                            } else {
+                                //if the template is a function, we will resolve it
+                                if (angular.isFunction(definition.template)) {
+                                    definition.template = definition.template.apply(null, [directive]);
+                                }
+                                if (!angular.isString(definition.template)) {
+                                    throw new Error("Template for directive `" + id + "` must be a string");
+                                } else if (definition.template == "" || definition.template[0].replace(/^\s+/, '') != "<") {
+                                    throw new Error("Template for directive `" + id + "` must contain exactly one root element");
+                                }
+                                templateAvailable.resolve(definition);
+                            }
+                        }, function (reason) {
+                            throw new Error("Failed to resolve definition for directive `" + id + "`", reason);
+                        });
                         templateAvailable.promise.then(function (definition) {
                                 var templateElement = $(definition.template);
                                 if (angular.isDefined($transclude)) {
@@ -1410,14 +1443,21 @@ function evaluateExpression(expression, optional) {
                                             //attribute instead of 'ng-transclude'
                                             var $clone = $(clone);
                                             var transclusionTarget = angular.isDefined($clone.attr('bu-transclude')) ? $clone : $clone.find('[bu-transclude]');
+                                            var src = "";
                                             $transclude(descriptor.$scope, function (transcludedElements) {
-                                                if (transclusionTarget.length == 0) {
+                                                if (transclusionTarget.length == 0 && !directive.transcludeProperty) {
                                                     throw new Error("Transclusion target could not be found");
                                                 }
                                                 angular.forEach(transcludedElements, function (transcludedElement) {
-                                                    transclusionTarget.append(transcludedElement);
+                                                    if (directive.transcludeProperty) {
+                                                        src += transcludedElement.nodeValue ? transcludedElement.nodeValue : transcludedElement.outerHTML;
+                                                    } else {
+                                                        transclusionTarget.append(transcludedElement);
+                                                    }
                                                 });
                                             });
+                                            //we also make available the transcluded bit so that it can be used later
+                                            $scope['$transcluded'] = src;
                                         }
                                         transcluded.resolve(definition);
                                     }, function (reason) {
@@ -1584,14 +1624,15 @@ function evaluateExpression(expression, optional) {
                 }
             }
         };
-        this.$get = function (_bu$name, _$rootElement, _$compile, _$rootScope) {
+        this.$get = function (_bu$name, _$rootElement, _$compile, _$rootScope, _bu$configuration) {
             bu$name = _bu$name;
             $rootElement = _$rootElement;
             $compile = _$compile;
             $rootScope = _$rootScope;
+            bu$configuration = _bu$configuration;
             return bu$directiveCompiler;
         };
-        this.$get.$inject = ["bu$name", "$rootElement", "$compile", "$rootScope"];
+        this.$get.$inject = ["bu$name", "$rootElement", "$compile", "$rootScope", "bu$configuration"];
     }]);
 
     /**
