@@ -43,7 +43,8 @@ function evaluateExpression(expression, optional) {
  * Starts the BootstrapUI framework with the dependencies injected via evaluation.
  */
 (function (//A reference to the AngularJS framework's main instance
-           angular) {
+           angular, //A reference to the jQuery instance loaded prior to this
+           $) {
     'use strict';
 
     //Stub for when the bind method has not been provided via the browser
@@ -884,10 +885,12 @@ function evaluateExpression(expression, optional) {
                                 var linkerRun = $q.defer();
                                 //this controller function can be replaced with a function 'controller' returned by the
                                 //promised object, so that controllers can be defined via promises as well
-                                var promisedController = function () {};
+                                var promisedController = function () {
+                                };
                                 //this is the post-link function that can be overridden by a promise object to enable
                                 //developers to link events after promises have been fulfilled
-                                var promisedPostLink = function () {};
+                                var promisedPostLink = function () {
+                                };
                                 //we nullify the template so as to avoid a flicker when AngularJS sees the template and
                                 //gets it 'toString'
                                 directive.template = null;
@@ -1338,11 +1341,13 @@ function evaluateExpression(expression, optional) {
                         }
                         $timeout(function () {
                             $rootScope.$apply(function () {
-                                deferred.resolve([{
-                                    identifier: item.identifier,
-                                    path: path,
-                                    type: item.type
-                                }]);
+                                deferred.resolve([
+                                    {
+                                        identifier: item.identifier,
+                                        path: path,
+                                        type: item.type
+                                    }
+                                ]);
                             });
                         });
                     }, function (reason) {
@@ -1427,6 +1432,589 @@ function evaluateExpression(expression, optional) {
         };
     }]);
 
+    toolkit.provider("bu$directiveCompiler", ["$injector", "bu$registryFactoryProvider", "$compileProvider", function ($injector, bu$registryFactoryProvider, $compileProvider) {
+        var bu$registryFactory = $injector.invoke(bu$registryFactoryProvider.$get, bu$registryFactoryProvider);
+        var registry = bu$registryFactory("bu$directiveCompiler$registry");
+        var newDirectives = [];
+        var bu$name, $rootElement, $compile, $rootScope;
+        var config = {
+            /**
+             * flag to determine whether or not the factory function should be masked
+             */
+            maskFactory: true,
+            /**
+             * flag specifying whether or not the directive should be registered with AngularJS automatically
+             */
+            autoRegisterDirective: true,
+            /**
+             * flag to determine whether or not the masked factory should be used with AngularJS or if it should only
+             * be kept in the registry
+             */
+            useMaskedFactory: true
+        };
+        angular.forEach(config, function (value, key) {
+            this[key] = function (value) {
+                config[key] = value;
+            };
+        }, this);
+        /**
+         * Changes a function from the bracket dependency definition notation to the $inject annotation notation.
+         * This is necessary both to unify the object model and to expect AngularJS to behave as expected, as it
+         * does not seem to like the bracket notation in some places (in the publicLinkFn, for instance)
+         * @param {Array|Function} fn
+         * @returns {Function}
+         */
+        var bracketToAnnotation = function (fn) {
+            if (angular.isArray(fn) && fn.length > 0 && angular.isFunction(fn[fn.length - 1])) {
+                fn[fn.length - 1].$inject = fn.splice(0, fn.length - 1);
+                fn = fn[0];
+            }
+            return fn;
+        };
+        var bindAnnotated = function (fn) {
+            fn = bracketToAnnotation(fn);
+            if (!angular.isFunction(fn)) {
+                throw new Error("Cannot bind a non-function object");
+            }
+            if (!angular.isArray(fn.$inject)) {
+                fn.$inject = [];
+            }
+            var $inject = fn.$inject.splice(arguments.length - 2, fn.$inject.length);
+            var context = arguments[1];
+            var args = [];
+            for (var i = 2; i < arguments.length; i++) {
+                args.push(arguments[i]);
+            }
+            $inject.push(function () {
+                var currentArgs = args.concat();
+                for (var i = 0; i < arguments.length; i++) {
+                    currentArgs.push(arguments[i]);
+                }
+                return fn.apply(context, currentArgs);
+            });
+            return bracketToAnnotation($inject);
+        };
+        registry.on('register', function (id) {
+            newDirectives.push(id);
+        });
+        registry.on('register', function (id, factory) {
+            //this is to convert the bracket notation into $inject annotation
+            factory = bracketToAnnotation(factory);
+            if (!angular.isFunction(factory)) {
+                throw new Error("Directive factory should be a function");
+            }
+            //this is so that we remember how the directive returned by the factory upon initial registration
+            //looked like prior to tampering with it and masking its properties
+            var directiveDefinition = $injector.invoke(factory, {
+                //we set the bu$Preload to true on the context so that the factory can be aware that this instantiation
+                //is actually not for compilation
+                bu$Preload: true
+            }, {
+                $injector: $injector,
+                bu$directiveCompiler: bu$directiveCompiler,
+                bu$registryFactory: bu$registryFactory
+            });
+            var currentName = bu$name.directive(id);
+            var domNames = bu$name.domNames(currentName);
+            var filters = [];
+            //here, we set up filters that can select nodes to be processed by the compiler
+            //registering element type filter
+            if (directiveDefinition.restrict && directiveDefinition.restrict.indexOf("E") != -1) {
+                filters.push(function (node) {
+                    if (node.nodeType != 1) { //only select element nodes
+                        return null;
+                    }
+                    if (bu$name.normalize(node.nodeName) == currentName) {
+                        return node;
+                    }
+                    return null;
+                });
+            }
+            //registering attribute type filter
+            if (!directiveDefinition.restrict || directiveDefinition.restrict.indexOf("A") != -1) {
+                filters.push(function (node) {
+                    if (node.nodeType != 1) { //only select element nodes
+                        return null;
+                    }
+                    for (var i = 0; i < node.attributes.length; i++) {
+                        var attributeName = node.attributes.item(i).name.toLowerCase();
+                        if (bu$name.normalize(attributeName) == currentName) {
+                            return node;
+                        }
+                    }
+                    return null;
+                });
+            }
+            //registering class type filter
+            if (directiveDefinition.restrict && directiveDefinition.restrict.indexOf("C") != -1) {
+                filters.push(function (node) {
+                    if (node.nodeType != 1 || !node.className) { //select an element node with a class attribute
+                        return null;
+                    }
+                    for (var i = 0; i < domNames.length; i++) {
+                        var domName = domNames[i];
+                        if (node.className.indexOf(domName) != -1) {
+                            return node;
+                        }
+                    }
+                    return null;
+                });
+            }
+            //registering comment type filter
+            if (directiveDefinition.restrict && directiveDefinition.restrict.indexOf("I") != -1) {
+                filters.push(function (node) {
+                    if (node.nodeType != 8) { //only select from comment nodes
+                        return null;
+                    }
+                    //to be safe, we recompile all comments again
+                    return node.parentNode;
+                });
+            }
+            //we return a newly fashioned directive descriptor object to be stored instead of the raw factory
+            return {
+                identifier: id,
+                factory: factory,
+                productionFactory: factory,
+                directive: directiveDefinition,
+                filter: function (node) {
+                    for (var i = 0; i < filters.length; i++) {
+                        var chosen = filters[i].call(null, node);
+                        if (chosen) {
+                            return chosen;
+                        }
+                    }
+                    return null;
+                }
+            };
+        });
+        //Here, we are performing factory masking. To make things more transparent, we do not erase the
+        //actual factory function and keep a reference to it. We rather create a different factory that
+        //relying on the original, will return a definition object that matches our expectations more
+        //closely
+        registry.on('register', function (id, descriptor) {
+            if (!config.maskFactory) {
+                return descriptor;
+            }
+            descriptor.productionFactory = function ($injector) {
+                var directive = $injector.invoke(descriptor.factory);
+                directive = bracketToAnnotation(directive);
+                if (angular.isFunction(directive)) {
+                    directive = {
+                        link: directive
+                    };
+                }
+                directive.link = bracketToAnnotation(directive.link);
+                if (angular.isFunction(directive.link)) {
+                    directive.link = {
+                        post: directive.link
+                    };
+                }
+                var linker = {
+                    pre: directive.link && directive.link.pre ? directive.link.pre : function () {
+                    },
+                    post: directive.link && directive.link.post ? directive.link.post : function () {
+                    }
+                };
+                delete directive.link;
+                if (!angular.isObject(directive)) {
+                    throw new Error("Invalid descriptor definition for " + id);
+                }
+                if (!angular.isString(directive.restrict)) {
+                    directive.restrict = "A";
+                }
+                if (angular.isUndefined(directive.replace)) {
+                    directive.replace = false;
+                }
+                if (angular.isUndefined(directive.transclude)) {
+                    directive.transclude = false;
+                }
+                if (angular.isUndefined(directive.priority)) {
+                    directive.priority = 0;
+                }
+                if (angular.isUndefined(directive.scope)) {
+                    directive.scope = false;
+                }
+                if (angular.isUndefined(directive.require)) {
+                    directive.require = null;
+                } else if (angular.isString(directive.require)) {
+                    directive.require = directive.require.replace(/bu\$([A-Z]\S*)/g, function (match, directive) {
+                        if (directive[0].toLowerCase() == directive[0]) {
+                            return match;
+                        }
+                        return bu$name.directive(directive[0].toLowerCase() + directive.substring(1));
+                    });
+                }
+                if (angular.isUndefined(directive.controller)) {
+                    directive.controller = function () {
+                    };
+                }
+                if (!angular.isFunction(directive.compile)) {
+                    directive.compile = function () {
+                        return linker;
+                    };
+                }
+                linker.pre = bracketToAnnotation(linker.pre);
+                linker.post = bracketToAnnotation(linker.post);
+                directive.compile = bracketToAnnotation(directive.compile);
+                directive.controller = bracketToAnnotation(directive.controller);
+                return directive;
+            };
+            descriptor.productionFactory.$inject = ["$injector"];
+            return descriptor;
+        });
+        //Here we will mask the production factory one more layer to enable the `defaults` magic on the
+        //directive definition object
+        //This will only work if masking is enabled
+        registry.on('register', function (id, descriptor) {
+            if (!config.maskFactory) {
+                return descriptor;
+            }
+            var productionFactory = descriptor.productionFactory;
+            descriptor.productionFactory = bracketToAnnotation(["$injector", "$timeout", function ($injector, $timeout) {
+                var directive = $injector.invoke(productionFactory, this, {
+                    $inject: $injector
+                });
+                //if no defaults are specified the production factory's controller is not masked at all
+                if (angular.isUndefined(directive.defaults) || !angular.isObject(directive.defaults)) {
+                    return directive;
+                }
+                var controller = bracketToAnnotation(directive.controller);
+                directive.controller = bracketToAnnotation(["$scope", "$element", "$attrs", "$transclude", function ($scope, $element, $attrs, $transclude) {
+                    $timeout(function () {
+                        angular.forEach(directive.defaults, function (value, key) {
+                            if (angular.isUndefined(directive.scope[key])) {
+                                throw new Error("Variable `" + key + "` is not defined in the scope of directive `" + id + "`");
+                            }
+                            if (directive.scope[key][0] != "@") {
+                                throw new Error("Variable `" + key + "` is not bound uni-directionally on directive `" + id + "`");
+                            }
+                            if (angular.isUndefined($attrs[key])) {
+                                $scope[key] = value;
+                            }
+                        });
+                    });
+                    if (angular.isFunction(controller)) {
+                        $injector.invoke(bindAnnotated(controller, this, $scope, $element, $attrs, $transclude), this, {
+                            $injector: $injector,
+                            $timeout: $timeout
+                        });
+                    }
+                }]);
+                return directive;
+            }]);
+        });
+        //Let's mask the production factory further to include support for promises
+        registry.on('register', function (id, descriptor) {
+            if (!config.maskFactory) {
+                return descriptor;
+            }
+            var productionFactory = descriptor.productionFactory;
+            descriptor.productionFactory = bracketToAnnotation(["$injector", "$q", "$http", "$templateCache", function ($injector, $q, $http, $templateCache) {
+                var directive = $injector.invoke(productionFactory, this, {
+                    $injector: $injector
+                });
+                var promise = undefined;
+                if (angular.isDefined(directive.resolve) && angular.isFunction(directive.resolve.then)) {
+                    //he have a promise ... we will assume that the promise will be fulfilled.
+                    //don't disappoint us. :-)
+                    promise = directive.resolve;
+                } else {
+                    return directive;
+                }
+                //we will delete the templates so that rendering is not done by AngularJS
+                delete directive.template;
+                delete directive.templateUrl;
+                var originalCompile = directive.compile;
+                var originalController = directive.controller;
+                var templateAvailable = $q.defer();
+                var templatePreprocessed = $q.defer();
+                var transcluded = $q.defer();
+                var preLinked = $q.defer();
+                var postLinked = $q.defer();
+                promise.then(function (template) {
+                    var definition = template;
+                    if (angular.isFunction(definition)) {
+                        definition = $injector.invoke(definition, null);
+                    }
+                    if (angular.isString(definition)) {
+                        definition = {
+                            template: definition
+                        };
+                    }
+                    if (!angular.isObject(definition)) {
+                        throw new Error("Expected promised definition to be either a template, a directive definition object," +
+                            "or a directive definition factory");
+                    }
+                    if (!angular.isDefined(definition.controller)) {
+                        definition.controller = function () {
+                        };
+                    }
+                    definition.controller = bracketToAnnotation(definition.controller);
+                    definition.link = bracketToAnnotation(definition.link);
+                    if (angular.isFunction(definition.link)) {
+                        definition.link = {
+                            post: definition.link
+                        };
+                    }
+                    if (!angular.isObject(definition.link)) {
+                        definition.link = {};
+                    }
+                    definition.link.pre = bracketToAnnotation(definition.link.pre);
+                    definition.link.post = bracketToAnnotation(definition.link.post);
+                    if (angular.isString(definition.templateUrl)) {
+                        delete definition.template;
+                        $http.get(definition.templateUrl, {
+                            cache: $templateCache
+                        }).then(function (result) {
+                            definition.template = result.data;
+                            templateAvailable.resolve(definition);
+                        }, function (reason) {
+                            throw new Error("Failed to resolve template for directive `" + id + "` from url `" + definition.templateUrl + "`", reason);
+                        });
+                    } else {
+                        if (angular.isFunction(definition.template)) {
+                            definition.template = definition.template.apply(null, [directive]);
+                        }
+                        if (!angular.isString(definition.template)) {
+                            throw new Error("Template for directive `" + id + "` must be a string");
+                        }
+                        templateAvailable.resolve(definition);
+                    }
+                }, function (reason) {
+                    throw new Error("Failed to resolve definition for directive `" + id + "`", reason);
+                });
+                directive.controller = bracketToAnnotation(["$injector", "$transclude", "$scope", "$element", "$attrs", "$compile",
+                    function ($injector, $transclude, $scope, $element, $attrs, $compile) {
+                        //let's create the original controller and get it over with
+                        $injector.invoke(bindAnnotated(originalController, self, $scope, $element, $attrs, $transclude));
+                        templateAvailable.promise.then(function (definition) {
+                                var templateElement = $(definition.template);
+                                if (angular.isDefined($transclude)) {
+                                    if (angular.isDefined(templateElement.attr('ng-transclude'))) {
+                                        templateElement.attr('ng-transclude', null);
+                                        templateElement.attr('bu-transclude', '');
+                                    }
+                                    templateElement.find('[ng-transclude]').each(function () {
+                                        var $this = $(this);
+                                        $this.attr('ng-transclude', null);
+                                        $this.attr('bu-transclude', '');
+                                    });
+                                }
+                                if (angular.isFunction(definition.controller)) {
+                                    $injector.invoke(bindAnnotated(definition.controller, self, $scope, $element, $attrs, $transclude));
+                                }
+                                $compile(templateElement)($scope.$new(), function (clone) {
+                                    if (directive.replace === true) {
+                                        $element.replaceWith(clone);
+                                    } else {
+                                        $element.append(clone);
+                                    }
+                                    //By storing a reference to the directive's controller in the DOM element's
+                                    //data store we are guaranteeing that AngularJS's `require` syntax will work
+                                    //on other elements.
+                                    clone.data('$' + bu$name.directive(id) + 'Controller', directive.controller);
+                                    templatePreprocessed.resolve(definition);
+                                    preLinked.promise.then(function () {
+                                        if (angular.isDefined($transclude)) {
+                                            //here we look up the transclusion target which now bears the 'bu-transclude'
+                                            //attribute instead of 'ng-transclude'
+                                            var $clone = $(clone);
+                                            var transclusionTarget = angular.isDefined($clone.attr('bu-transclude')) ? $clone : $clone.find('[bu-transclude]');
+                                            $transclude(descriptor.$scope, function (transcludedElements) {
+                                                if (transclusionTarget.length == 0) {
+                                                    throw new Error("Transclusion target could not be found");
+                                                }
+                                                angular.forEach(transcludedElements, function (transcludedElement) {
+                                                    transclusionTarget.append(transcludedElement);
+                                                });
+                                            });
+                                        }
+                                        transcluded.resolve(definition);
+                                    }, function (reason) {
+                                        throw new Error("Pre-linking directive `" + id + "` failed", reason);
+                                    });
+                                    postLinked.promise.then(function () {
+                                    }, function (reason) {
+                                        throw new Error("Post-linking directive `" + id + "` failed: ", reason);
+                                    });
+                                });
+                            },
+                            function (reason) {
+                                throw new Error("Failed to fetch template for directive `" + id + "`", reason);
+                            });
+                    }]);
+                directive.compile = bracketToAnnotation(['tElement', 'tAttrs', function (tElement, tAttrs) {
+                    var link = $injector.invoke(originalCompile, this, {
+                        tElement: tElement,
+                        element: tElement,
+                        templateElement: tElement,
+                        $templateElement: tElement,
+                        $element: tElement,
+                        tAttrs: tAttrs,
+                        attrs: tAttrs,
+                        templateAttrs: tAttrs,
+                        $templateAttrs: tAttrs,
+                        $attrs: tAttrs
+                    });
+                    var originalPreLink = link.pre;
+                    var originalPostLink = link.post;
+                    link.pre = bracketToAnnotation(['$scope', '$element', '$attrs', 'controller', '$transclude', function ($scope, $element, $attrs, controller, $transclude) {
+                        var self = this;
+                        templatePreprocessed.promise.then(function (definition) {
+                            //let's run the original pre-link function.
+                            (originalPreLink || angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
+                            //and its time to hand over the control to the promised preLink function (if any)
+                            (angular.isFunction(definition.link.pre) ? definition.link.pre : angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
+                            //now, let's signal that pre-linking is finished
+                            preLinked.resolve();
+                        });
+                    }]);
+                    link.post = bracketToAnnotation(['$scope', '$element', '$attrs', 'controller', '$transclude', function ($scope, $element, $attrs, controller, $transclude) {
+                        var self = this;
+                        transcluded.promise.then(function (definition) {
+                            //let's run the original post-link function.
+                            (originalPostLink || angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
+                            //and its time to hand over the control to the promised preLink function (if any)
+                            (angular.isFunction(definition.link.post) ? definition.link.post : angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
+                        });
+                    }]);
+                    return link;
+                }]);
+                return directive;
+            }]);
+        });
+        /**
+         * We are registering the factory with the AngularJS $compileProvider. This should happen last, when all
+         * other modifications on the factory have been performed.
+         */
+        registry.on('register', function (id, descriptor) {
+            var factory = descriptor.productionFactory;
+            if (!config.autoRegisterDirective) {
+                return descriptor;
+            }
+            if (!config.useMaskedFactory) {
+                factory = descriptor.factory;
+            }
+            $compileProvider.directive(bu$name.directive(id), factory);
+            return descriptor;
+        });
+        var bu$directiveCompiler = {
+            /**
+             * registers a new directive
+             * @param {String} id the name of the directive
+             * @param {Function} directive the directive factory
+             */
+            register: function (id, directive) {
+                registry.register(id, directive);
+            },
+            /**
+             * @returns {Array} all registered directives
+             */
+            list: function () {
+                return registry.list();
+            },
+            /**
+             * @returns {Object} identification and size information
+             */
+            info: function () {
+                return registry.info();
+            },
+            /**
+             * This is to keep track of any newly added directives that have not been compiled yet
+             * @returns {Array} the identifiers of all directives that have not been compiled yet
+             */
+            uncompiled: function () {
+                return newDirectives;
+            },
+            /**
+             * Forgets any new and uncompiled directives.
+             * @returns {Array} the list of directives being forgotten
+             */
+            flush: function () {
+                return newDirectives.splice(0, newDirectives.length);
+            },
+            /**
+             * Returns a list of nodes that if compiled, will contain all the newly added directives
+             * @param {HTMLElement|jQuery} [root] the root element for the DOM subtree. If not specified, the
+             * root of the AngularJS application will be used
+             * @returns {Array}
+             */
+            findUncompiled: function (root) {
+                if (angular.isUndefined(root)) {
+                    root = $rootElement;
+                } else {
+                    root = angular.element(root);
+                }
+                var newDirectives = bu$directiveCompiler.uncompiled();
+                var directives = [];
+                for (var i = 0; i < newDirectives.length; i++) {
+                    directives.push(registry.get(newDirectives[i]));
+                }
+                var nodes = [];
+                var collect = function (node) {
+                    while (node) {
+                        var chosen;
+                        for (var i = 0; i < directives.length; i++) {
+                            var directive = directives[i];
+                            chosen = directive.filter.call(bu$directiveCompiler, node);
+                            if (chosen) {
+                                break;
+                            }
+                        }
+                        if (chosen) {
+                            nodes.push(chosen);
+                        } else {
+                            collect(node.firstChild);
+                        }
+                        node = node.nextSibling;
+                    }
+                };
+                collect(root[0]);
+                return nodes;
+            },
+            /**
+             * Compiles the DOM tree at the specified root element using the given copmile function
+             * @param {HTMLElement|jQuery} [root] the root of the compilation DOM subtree. Will fall back to the
+             * AngularJS's ng-app root element via $rootElement.
+             * @param {Function} [compileFunction] the compile function which will be expected to carry on the
+             * actual compiling of a given node. Will fall back to AngularJS's $compile if not provided.
+             */
+            compile: function (root, compileFunction) {
+                compileFunction = bracketToAnnotation(compileFunction);
+                if (!angular.isFunction(compileFunction)) {
+                    compileFunction = function (node, scope, offer) {
+                        offer($compile(node)(scope));
+                    };
+                    compileFunction.$inject = ["node", "scope", "offer"];
+                }
+                var uncompiled = bu$directiveCompiler.findUncompiled(root);
+                bu$directiveCompiler.flush();
+                for (var i = 0; i < uncompiled.length; i++) {
+                    var node = uncompiled[i];
+                    var scope = angular.element(node).scope();
+                    if (angular.isUndefined(scope)) {
+                        scope = $rootScope;
+                    }
+                    $injector.invoke(compileFunction, bu$directiveCompiler, {
+                        node: node,
+                        scope: scope,
+                        offer: function (result) {
+                            node = angular.element(result);
+                        }
+                    });
+                }
+            }
+        };
+        this.$get = function (_bu$name, _$rootElement, _$compile, _$rootScope) {
+            bu$name = _bu$name;
+            $rootElement = _$rootElement;
+            $compile = _$compile;
+            $rootScope = _$rootScope;
+            return bu$directiveCompiler;
+        };
+        this.$get.$inject = ["bu$name", "$rootElement", "$compile", "$rootScope"];
+    }]);
+
     /**
      * We will have to configure the $templateCache to look for 'bui:' namespace prefix and replace them
      * with the current namespace
@@ -1446,4 +2034,4 @@ function evaluateExpression(expression, optional) {
         });
     }]);
 
-})(evaluateExpression("window.angular"));
+})(evaluateExpression("window.angular"), evaluateExpression("window.jQuery"));
