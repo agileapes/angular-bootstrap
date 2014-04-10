@@ -962,7 +962,20 @@ function evaluateExpression(expression, optional) {
             }
             return fn;
         };
-        var bindAnnotated = function (fn) {
+        /**
+         * This function works much like the Function.prototype.bind(...) function, with the difference that it
+         * also adds a $inject dependency annotation, even if the input is not a function strictly speaking.
+         * You can't use the bind function with $injector, neither the native one nor the one implemented here,
+         * since both return functions that can't be used for type inference and both will abandon the $inject
+         * property.
+         * @param {Function|Array} fn the function to be bound or a function with dependencies defined in the
+         * bracket notation
+         * @param {*} [thisArg] the context of the function call
+         * @param {*} [p0] the first parameter to the call
+         * @param {*} [_]* the rest of the arguments
+         * @returns {Function}
+         */
+        var bindAnnotated = function (fn, thisArg, p0, _) {
             fn = bracketToAnnotation(fn);
             if (!angular.isFunction(fn)) {
                 throw new Error("Cannot bind a non-function object");
@@ -985,9 +998,12 @@ function evaluateExpression(expression, optional) {
             });
             return bracketToAnnotation($inject);
         };
+        //we push the directive being registered to the stack of new directives since we will not be compiling
+        //them again
         registry.on('register', function (id) {
             newDirectives.push(id);
         });
+        //we will compose a directive factory descriptor that we will use later on to perform more magic
         registry.on('register', function (id, factory) {
             //this is to convert the bracket notation into $inject annotation
             factory = bracketToAnnotation(factory);
@@ -1063,10 +1079,23 @@ function evaluateExpression(expression, optional) {
             }
             //we return a newly fashioned directive descriptor object to be stored instead of the raw factory
             return {
+                //the identifier of the directive without any namespace prefixing
                 identifier: id,
+                //the factory originally passed over to the system, except this one is always in annotated notation
+                //even if it was originally in bracket format
                 factory: factory,
+                //the production factory that is actually registered with AngularJS and is not necessarily
+                //the one passed through originally
                 productionFactory: factory,
+                //this is the directive at the time the factory was registered with the system
                 directive: directiveDefinition,
+                /**
+                 * This is a filter function that when called upon can tell whether or not the directive will
+                 * target the given node. The filter will pick either this node or a node somewhere higher in
+                 * the hierarchy.
+                 * @param {HTMLElement} node
+                 * @returns {HTMLElement} or null if the filter does not want to pick out this node
+                 */
                 filter: function (node) {
                     for (var i = 0; i < filters.length; i++) {
                         var chosen = filters[i].call(null, node);
@@ -1086,8 +1115,11 @@ function evaluateExpression(expression, optional) {
             if (!config.maskFactory) {
                 return descriptor;
             }
+            //let's now mask the factory
             descriptor.productionFactory = function ($injector) {
                 var directive = $injector.invoke(descriptor.factory);
+                //if the directive is a function, it is the post-link, and we need to change it from
+                //bracket notation to annotation
                 directive = bracketToAnnotation(directive);
                 if (angular.isFunction(directive)) {
                     directive = {
@@ -1095,39 +1127,51 @@ function evaluateExpression(expression, optional) {
                     };
                 }
                 directive.link = bracketToAnnotation(directive.link);
+                //if the link is a function it is actually the post-link
                 if (angular.isFunction(directive.link)) {
                     directive.link = {
                         post: directive.link
                     };
                 }
+                //we now define the linker in its complete form and whole glory
                 var linker = {
                     pre: directive.link && directive.link.pre ? directive.link.pre : function () {
                     },
                     post: directive.link && directive.link.post ? directive.link.post : function () {
                     }
                 };
+                //let's delete the link so that only the compile function remains
                 delete directive.link;
+                //if by this point the directive is not a complete object something is seriously
+                //wrong with the user's inhibitions or they are using IE4 or less.
                 if (!angular.isObject(directive)) {
                     throw new Error("Invalid descriptor definition for " + id);
                 }
+                //if restrict is not defined, set it to attribute selector
                 if (!angular.isString(directive.restrict)) {
                     directive.restrict = "A";
                 }
+                //if replace is not defined strictly set it to negative
                 if (angular.isUndefined(directive.replace)) {
                     directive.replace = false;
                 }
+                //if transclude is not defined set it explicitly to false
                 if (angular.isUndefined(directive.transclude)) {
                     directive.transclude = false;
                 }
+                //let us enforce the default priority of 0 if it is not defined
                 if (angular.isUndefined(directive.priority)) {
                     directive.priority = 0;
                 }
+                //if scope is not set, let's have it inherit the parent scope
                 if (angular.isUndefined(directive.scope)) {
                     directive.scope = false;
                 }
+                //if nothing is said about requirements, we will set it to null to make it more verbose
                 if (angular.isUndefined(directive.require)) {
                     directive.require = null;
                 } else if (angular.isString(directive.require)) {
+                    //if require is available, we will scan it and change `bu$` to namespace prefix
                     directive.require = directive.require.replace(/bu\$([A-Z]\S*)/g, function (match, directive) {
                         if (directive[0].toLowerCase() == directive[0]) {
                             return match;
@@ -1135,21 +1179,29 @@ function evaluateExpression(expression, optional) {
                         return bu$name.directive(directive[0].toLowerCase() + directive.substring(1));
                     });
                 }
+                //if no controller is present, replace it with a dummy
                 if (angular.isUndefined(directive.controller)) {
                     directive.controller = function () {
                     };
                 }
+                //if compile function is not present, we return the linker cached earlier.
+                //if there is one present, the natural order of things takes form and the defined compiler
+                //takes precedence over the linker even if it _was_ originally defined by the developer providing
+                //the directive definition object
                 if (!angular.isFunction(directive.compile)) {
                     directive.compile = function () {
                         return linker;
                     };
                 }
+                //let's convert everything to the annotational format, just to be on the safe side
+                //also, I would like to sleep free of the AngularJS guru haunting my dreams
                 linker.pre = bracketToAnnotation(linker.pre);
                 linker.post = bracketToAnnotation(linker.post);
                 directive.compile = bracketToAnnotation(directive.compile);
                 directive.controller = bracketToAnnotation(directive.controller);
                 return directive;
             };
+            //last but not least ... dependencies
             descriptor.productionFactory.$inject = ["$injector"];
             return descriptor;
         });
@@ -1160,18 +1212,22 @@ function evaluateExpression(expression, optional) {
             if (!config.maskFactory) {
                 return descriptor;
             }
+            //don't forget the original factory. we will be calling it first thing.
             var productionFactory = descriptor.productionFactory;
             descriptor.productionFactory = bracketToAnnotation(["$injector", "$timeout", function ($injector, $timeout) {
+                //let's find out what the factory gives us initially.
                 var directive = $injector.invoke(productionFactory, this, {
                     $inject: $injector
                 });
-                //if no defaults are specified the production factory's controller is not masked at all
+                //if no defaults are specified the production factory's controller won't be masked at all
                 if (angular.isUndefined(directive.defaults) || !angular.isObject(directive.defaults)) {
                     return directive;
                 }
+                //this is the original controller (which might or might not be undefined or a no-op)
                 var controller = bracketToAnnotation(directive.controller);
                 directive.controller = bracketToAnnotation(["$scope", "$element", "$attrs", "$transclude", function ($scope, $element, $attrs, $transclude) {
                     $timeout(function () {
+                        //let's scan the defaults and apply them if necessary
                         angular.forEach(directive.defaults, function (value, key) {
                             if (angular.isUndefined(directive.scope[key])) {
                                 throw new Error("Variable `" + key + "` is not defined in the scope of directive `" + id + "`");
@@ -1180,10 +1236,27 @@ function evaluateExpression(expression, optional) {
                                 throw new Error("Variable `" + key + "` is not bound uni-directionally on directive `" + id + "`");
                             }
                             if (angular.isUndefined($attrs[key])) {
+                                value = bracketToAnnotation(value);
+                                //let's see if value requires further evaluation
+                                if (angular.isFunction(value)) {
+                                    value = $injector.invoke(value, controller, {
+                                        $scope: $scope,
+                                        $element: $element,
+                                        $attrs: $attrs,
+                                        key: key,
+                                        $attr: key
+                                    });
+                                }
                                 $scope[key] = value;
                             }
                         });
                     });
+                    //now let's call the original controller. It doesn't really matter if this call is placed
+                    //before the previous statement, as it will always take precedence since $timeout will postpone
+                    //the call to the wrapped function (the same as setTimeout). This is important, since it means
+                    //the defaults won't be available to the controller (they will be available if the controller places
+                    //its execution inside $timeout. this is why I've placed this statement second to the previous, as
+                    //in some cases it might be necessary to take advantage of defaults inside the controller)
                     if (angular.isFunction(controller)) {
                         $injector.invoke(bindAnnotated(controller, this, $scope, $element, $attrs, $transclude), this, {
                             $injector: $injector,
@@ -1213,15 +1286,35 @@ function evaluateExpression(expression, optional) {
                     return directive;
                 }
                 //we will delete the templates so that rendering is not done by AngularJS
-                delete directive.template;
+                //we leave off the `template` to let directives place a sort of `loader` into the element
+                //before resolving the promise
                 delete directive.templateUrl;
+                //let's keep references to the compile and controller functions, as they are what we will mask
                 var originalCompile = directive.compile;
                 var originalController = directive.controller;
+                //we will create a set of deferred objects to manage our workflow.
+                /*
+                 * first, the template will be made available to us
+                 * accepted formats by resolving the promise are:
+                 *
+                 *  1. a string, which will be interpreted to be the template
+                 *  2. a directive definition object which can contain template, templateUrl, controller,
+                 *      preLink, and postLink
+                 *  3. a function which returns either of the above
+                 *
+                 *  This happens right after the original promise through the `resolve` property is resolved
+                 */
                 var templateAvailable = $q.defer();
-                var templatePreprocessed = $q.defer();
-                var transcluded = $q.defer();
-                var preLinked = $q.defer();
-                var postLinked = $q.defer();
+                //after the template is available, we need to pre-process it, which involves the actual compiling
+                //this triggers the preLink
+                var templatePreprocessed = $q.defer(); //resolved inside the controller
+                //after preLinked is fulfilled, we need to head to transclusion
+                var preLinked = $q.defer(); //resolved inside the compile (preLink)
+                //transcluded is resolved when the children are linked
+                //this signals that post-linking can be done
+                var transcluded = $q.defer(); //resolved inside the controller
+                //this promise indicates that the process has finished successfully
+                var postLinked = $q.defer(); //resolved inside the compile (postLink)
                 promise.then(function (template) {
                     var definition = template;
                     if (angular.isFunction(definition)) {
@@ -1253,7 +1346,10 @@ function evaluateExpression(expression, optional) {
                     definition.link.pre = bracketToAnnotation(definition.link.pre);
                     definition.link.post = bracketToAnnotation(definition.link.post);
                     if (angular.isString(definition.templateUrl)) {
+                        //if templateUrl is defined, template must go home
                         delete definition.template;
+                        //we will cache and retrieve the template over $http and then resolve the templateAvailable
+                        //deferred object
                         $http.get(definition.templateUrl, {
                             cache: $templateCache
                         }).then(function (result) {
@@ -1263,11 +1359,14 @@ function evaluateExpression(expression, optional) {
                             throw new Error("Failed to resolve template for directive `" + id + "` from url `" + definition.templateUrl + "`", reason);
                         });
                     } else {
+                        //if the template is a function, we will resolve it
                         if (angular.isFunction(definition.template)) {
                             definition.template = definition.template.apply(null, [directive]);
                         }
                         if (!angular.isString(definition.template)) {
                             throw new Error("Template for directive `" + id + "` must be a string");
+                        } else if (definition.template == "" || definition.template[0].replace(/^\s+/, '') != "<") {
+                            throw new Error("Template for directive `" + id + "` must contain exactly one root element");
                         }
                         templateAvailable.resolve(definition);
                     }
@@ -1335,18 +1434,7 @@ function evaluateExpression(expression, optional) {
                             });
                     }]);
                 directive.compile = bracketToAnnotation(['tElement', 'tAttrs', function (tElement, tAttrs) {
-                    var link = $injector.invoke(originalCompile, this, {
-                        tElement: tElement,
-                        element: tElement,
-                        templateElement: tElement,
-                        $templateElement: tElement,
-                        $element: tElement,
-                        tAttrs: tAttrs,
-                        attrs: tAttrs,
-                        templateAttrs: tAttrs,
-                        $templateAttrs: tAttrs,
-                        $attrs: tAttrs
-                    });
+                    var link = $injector.invoke(bindAnnotated(originalCompile, this, tElement, tAttrs, undefined));
                     var originalPreLink = link.pre;
                     var originalPostLink = link.post;
                     link.pre = bracketToAnnotation(['$scope', '$element', '$attrs', 'controller', '$transclude', function ($scope, $element, $attrs, controller, $transclude) {

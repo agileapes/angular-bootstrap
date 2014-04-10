@@ -730,6 +730,7 @@ describe("Directive Compiler Service `bu$directiveCompiler`", function () {
             var deferred = $q.defer();
             bu$directiveCompiler.register('myDirective', function () {
                 return {
+                    template: "<span>loading</span>",
                     restrict: "E",
                     replace: true,
                     transclude: true,
@@ -741,6 +742,8 @@ describe("Directive Compiler Service `bu$directiveCompiler`", function () {
             });
             testRoot.html("<ui-my-directive v='testing'>the awesome</ui-my-directive>");
             bu$directiveCompiler.compile();
+            //we expect the element to display a loader before the promise is resolved
+            expect(testRoot.text()).toBe('loading');
             //after compiling, we resolve the promise some time later ...
             $timeout(function () {
                 deferred.resolve("<span>{{v}} <span ng-transclude></span></span>");
