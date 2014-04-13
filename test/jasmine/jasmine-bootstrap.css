@@ -85,7 +85,7 @@ body {
 
 .test-specification > span {
     display: inline-block;
-    font-family: "Glyphicons Halflings",serif;
+    font-family: "Glyphicons Halflings", serif;
     font-size: 12px;
     width: 16px;
     position: relative;
@@ -134,7 +134,7 @@ body {
 
 .test-specification.failed .expectations div span {
     display: inline-block;
-    font-family: "Glyphicons Halflings",serif;
+    font-family: "Glyphicons Halflings", serif;
     font-size: 10px;
     width: 16px;
     position: relative;
@@ -248,7 +248,7 @@ li.pending.nonempty a {
     opacity: 1;
 }
 
-.report.dim .test-suite.passed:hover{
+.report.dim .test-suite.passed:hover {
     background: #f7fffc;
 }
 
@@ -264,4 +264,53 @@ li.pending.nonempty a {
 .report.dim .test-suite.failed {
     background: #faf1f0;
     opacity: 1;
+}
+
+.test-suite > h4 > em {
+    border: 1px solid #000000;
+    color: #000000;
+    border-radius: 2px;
+    width: 15px;
+    height: 15px;
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    margin: 3px 6px 3px 3px;
+    cursor: pointer;
+    background: #f5f5f5;
+    -webkit-transition: none 0s;
+    -moz-transition: none 0s;
+    -ms-transition: none 0s;
+    -o-transition: none 0s;
+    transition: none 0s;
+}
+
+.test-suite > h4 > em:hover {
+    border-color: #b7ccd9;
+    color: #b7ccd9;
+}
+
+.test-suite > h4 > em > span {
+    position: relative;
+    top: -2px;
+}
+
+.test-suite > h4 > em > span:before {
+    content: "\2212";
+}
+
+.test-suite.collapsed > h4 > em > span:before {
+    content: "\2b";
+}
+
+.test-suite.collapsed.collapsed > .suite-body {
+    display: none;
+}
+
+.report > .test-suite > h4 > em {
+    display: none;
+}
+
+.report.collapsed .test-suite > h4 > em {
+    display: none;
 }

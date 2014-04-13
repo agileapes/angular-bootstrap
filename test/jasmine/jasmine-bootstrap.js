@@ -162,8 +162,11 @@
                         placement: "right"
                     });
                 } else if (type == "suite") {
-                    element = $("<div class='test-suite " + this.getClassName() + "' id='" + descriptor.id + "'><h4 class='suite-title'><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + (queryString.getParam("minimal") ? "&amp;minimal=" + queryString.getParam("minimal") : "") + "\">" + sanitizeHtml(descriptor.description) + " &hellip;</a></h4><div class='suite-body'></div></div>");
+                    element = $("<div class='test-suite " + this.getClassName() + "' id='" + descriptor.id + "'><h4 class='suite-title'><em><span></span></em><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + (queryString.getParam("minimal") ? "&amp;minimal=" + queryString.getParam("minimal") : "") + "\">" + sanitizeHtml(descriptor.description) + " &hellip;</a></h4><div class='suite-body'></div></div>");
                     target = element.find(".suite-body");
+                    $(element).find("em").click(function () {
+                        $(this).parent().parent().toggleClass('collapsed');
+                    });
                 } else if (type == "spec") {
                     target = element = $("<div class='test-specification " + this.getClassName() + "' id='" + descriptor.id + "'><span class='icon'></span><a href=\"?spec=" + encodeURIComponent(descriptor.fullName) + (queryString.getParam("minimal") ? "&amp;minimal=" + queryString.getParam("minimal") : "") + "\">&hellip; " + sanitizeHtml(descriptor.description) + "</a></div>");
                 } else {
