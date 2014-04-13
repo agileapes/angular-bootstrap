@@ -1789,8 +1789,27 @@ function evaluateExpression(expression, optional) {
         this.$get.$inject = ["bu$name", "$rootElement", "$compile", "$rootScope", "bu$configuration", "bu$interval"];
     }]);
 
+    /**
+     * This factory will release a function that wraps around setInterval using $timeout to provide valid
+     * repeated processes that are also easily testable in the same manner as $timeout.
+     *
+     * To flush the interval, you will need to call $timeout.flush() in test mode.
+     *
+     * This is to increase simplicity and compatibility for tests. It is good to note that a clean, testable
+     * code should stop its own interval, which would make it transparent to tests, unless it is our intention
+     * to actually test the repeatable code.
+     */
     toolkit.factory("bu$interval", ["$timeout", "$q", function ($timeout, $q) {
         var rand = Math.random();
+        /**
+         * The wrapper for setInterval which relies on $timeout for handling deferred event scheduling
+         * @param {Function} fn the function to be wrapped
+         * @param {int} [delay] the delay in milliseconds. This is optional, though for an interval to repeat
+         * without delay is somewhat irregular.
+         * @param {boolean} [invokeApply] If set to false skips model dirty checking, otherwise will invoke fn within the $apply block.
+         * @returns {promise} a promise that will be *notified* whenever a cycle has completed, and *rejected* when the interval
+         * is finally cancelled.
+         */
         var bu$interval = function (fn, delay, invokeApply) {
             var cancelled = false;
             var deferred = $q.defer();
@@ -1824,6 +1843,12 @@ function evaluateExpression(expression, optional) {
             };
             return promise;
         };
+        /**
+         * Cancels the interval promise which means that the currently scheduled cycle and every other future
+         * cycle will be cancelled and not run. This also rejects the promise.
+         * @param {promise} promise the promise to be observed.
+         * @returns {boolean} Returns true if the task was successfully canceled.
+         */
         bu$interval.cancel = function (promise) {
             if (angular.isFunction(promise.stop) && angular.isFunction(promise.bu$intervalId) && promise.bu$intervalId() == rand) {
                 return promise.stop();
