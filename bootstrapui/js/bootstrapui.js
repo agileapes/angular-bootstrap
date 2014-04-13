@@ -1599,7 +1599,7 @@ function evaluateExpression(expression, optional) {
                                 }
                                 if (!angular.isString(definition.template)) {
                                     throw new Error("Template for directive `" + id + "` must be a string");
-                                } else if (definition.template == "" || definition.template[0].replace(/^\s+/, '') != "<") {
+                                } else if (definition.template == "" || !/^\s*<.*>\s*$/m.test(definition.template)) {
                                     throw new Error("Template for directive `" + id + "` must contain exactly one root element");
                                 }
                                 templateAvailable.nudge.to.resolve(definition);
