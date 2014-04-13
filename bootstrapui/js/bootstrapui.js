@@ -928,7 +928,7 @@ function evaluateExpression(expression, optional) {
         var bu$registryFactory = $injector.invoke(bu$registryFactoryProvider.$get, bu$registryFactoryProvider);
         var registry = bu$registryFactory("bu$directiveCompiler$registry");
         var newDirectives = [];
-        var bu$name, $rootElement, $compile, $rootScope, bu$configuration;
+        var bu$name, $rootElement, $compile, $rootScope, bu$configuration, bu$interval;
         var config = {
             /**
              * flag to determine whether or not the factory function should be masked
@@ -1282,7 +1282,7 @@ function evaluateExpression(expression, optional) {
                 return descriptor;
             }
             var productionFactory = descriptor.productionFactory;
-            descriptor.productionFactory = bracketToAnnotation(["$injector", "$q", "$http", "$templateCache", function ($injector, $q, $http, $templateCache) {
+            descriptor.productionFactory = bracketToAnnotation(["$injector", "$q", "$http", "$templateCache", "$compile", function ($injector, $q, $http, $templateCache, $compile) {
                 var directive = $injector.invoke(productionFactory, this, {
                     $injector: $injector
                 });
@@ -1320,8 +1320,199 @@ function evaluateExpression(expression, optional) {
                 var transcluded = $q.defer(); //resolved inside the controller
                 //this promise indicates that the process has finished successfully
                 var postLinked = $q.defer(); //resolved inside the compile (postLink)
-                directive.controller = bracketToAnnotation(["$scope", "$element", "$attrs", "$transclude", "$injector", "$compile",
-                    function ($scope, $element, $attrs, $transclude, $injector, $compile) {
+                var sharedPromises = {
+                    waitQueue: {},
+                    given: function (id) {
+                        if (!angular.isArray(sharedPromises.waitQueue[id])) {
+                            sharedPromises.waitQueue[id] = [];
+                        }
+                        return {
+                            perform: function (callback) {
+                                var index = sharedPromises.waitQueue[id].length;
+                                sharedPromises.waitQueue[id][index] = bu$interval(function () {
+                                    if (angular.isObject(sharedPromises[id])) {
+                                        bu$interval.cancel(sharedPromises.waitQueue[id][index]);
+                                        delete sharedPromises.waitQueue[id][index];
+                                        callback.apply(sharedPromises[id], [id]);
+                                    }
+                                }, 10);
+                            }
+                        };
+                    },
+                    clean: function (id) {
+                        if (!angular.isArray(sharedPromises.waitQueue[id])) {
+                            return false;
+                        }
+                        for (var i = 0; i < sharedPromises.waitQueue[id].length; i ++) {
+                            if (angular.isDefined(sharedPromises.waitQueue[id][i])) {
+                                bu$interval.cancel(sharedPromises.waitQueue[id][i]);
+                                delete sharedPromises.waitQueue[id][i];
+                            }
+                        }
+                        delete sharedPromises.waitQueue[id];
+                    }
+                };
+                angular.forEach([templateAvailable, templatePreprocessed, preLinked, transcluded, postLinked], function (deferred) {
+                    //now let's augment the promises created above to include the `progress` method usually
+                    //available in a Q promise, only it is capable of understanding our notifications
+                    /**
+                     * Watches the progress of the deferred object as it is nudged.
+                     * @param {Function} success
+                     * @param {Function} [failure]
+                     * @param {Function} [progress]
+                     * @returns {{then:then}}
+                     */
+                    deferred.promise.progress = function (success, failure, progress) {
+                        var callbacks = {
+                            success: angular.isFunction(success) ? success : angular.noop,
+                            failure: angular.isFunction(failure) ? failure : angular.noop,
+                            progress: angular.isFunction(progress) ? progress : angular.noop
+                        };
+                        return deferred.promise.then(function () {
+                        }, function () {
+                        }, function (value) {
+                            var passedValue = angular.extend({}, value);
+                            delete passedValue.notification;
+                            if (value.notification == "resolve") {
+                                return callbacks.success.apply(null, [passedValue]);
+                            } else if (value.notification == "reject") {
+                                return callbacks.failure.apply(null, [passedValue]);
+                            } else if (value.notification == "notify") {
+                                return callbacks.progress.apply(null, [passedValue]);
+                            } else {
+                                throw new Error("Unsupported action on deferred object: " + value.notification);
+                            }
+                        });
+                    };
+                    deferred.nudge = {
+                        /**
+                         * Notifies the given deferred object by annotating the value object passed to it
+                         * using a `notification` type tag
+                         * @param {String} type the type of the notification (resolve, reject)
+                         * @param {Object} value the value being passed
+                         * @returns {Deferred}
+                         */
+                        on: function (type, value) {
+                            return deferred.notify(angular.extend({
+                                notification: type
+                            }, value))
+                        },
+                        /**
+                         * @type {{resolve: resolve, reject: reject, notify: notify}}
+                         */
+                        to: {}
+                    };
+                    angular.forEach(['resolve', 'reject', 'notify'], function (action) {
+                        deferred.nudge.to[action] = deferred.nudge.on.bind(deferred, action);
+                    });
+                });
+                templateAvailable.promise.progress(function (definition) {
+                        var $transclude = definition.$$controller.$transclude;
+                        var $scope = definition.$$controller.$scope;
+                        var $element = definition.$$controller.$element;
+                        var $attrs = definition.$$controller.$attrs;
+                        var templateElement = $(definition.template);
+                        if (angular.isDefined($transclude)) {
+                            if (angular.isDefined(templateElement.attr('ng-transclude'))) {
+                                templateElement.attr('ng-transclude', null);
+                                templateElement.attr('bu-transclude', '');
+                            }
+                            templateElement.find('[ng-transclude]').each(function () {
+                                var $this = $(this);
+                                $this.attr('ng-transclude', null);
+                                $this.attr('bu-transclude', '');
+                            });
+                        }
+                        if (angular.isFunction(definition.controller)) {
+                            $injector.invoke(bindAnnotated(definition.controller, self, $scope, $element, $attrs, $transclude));
+                        }
+                        $compile(templateElement)($scope.$new(), function (clone) {
+                            if (directive.replace === true) {
+                                clone.data('bu$compiled', true);
+                                $element.replaceWith(clone);
+                            } else {
+                                $element.append(clone);
+                            }
+                            //By storing a reference to the directive's controller in the DOM element's
+                            //data store we are guaranteeing that AngularJS's `require` syntax will work
+                            //on other elements.
+                            clone.data('$' + bu$name.directive(id) + 'Controller', definition.$$controller.$self);
+                            definition.clone = clone;
+                            sharedPromises[definition.id].templatePreprocessed.resolve(definition);
+                        });
+                    }, function (reason) {
+                        throw new Error("Failed to fetch template for directive `" + id + "`", reason);
+                    }
+                );
+                preLinked.promise.progress(function (definition) {
+                    var clone = definition.clone;
+                    if (angular.isDefined(definition.$$preLink.$transclude)) {
+                        //here we look up the transclusion target which now bears the 'bu-transclude'
+                        //attribute instead of 'ng-transclude'
+                        var $clone = $(clone);
+                        var transclusionTarget = angular.isDefined($clone.attr('bu-transclude')) ? $clone : $clone.find('[bu-transclude]');
+                        var src = "";
+                        definition.$$preLink.$transclude(definition.$$preLink.$scope, function (transcludedElements) {
+                            if (transclusionTarget.length == 0 && !directive.transcludeProperty) {
+                                throw new Error("Transclusion target could not be found");
+                            }
+                            angular.forEach(transcludedElements, function (transcludedElement) {
+                                if (directive.transcludeProperty) {
+                                    src += transcludedElement.nodeValue ? transcludedElement.nodeValue : transcludedElement.outerHTML;
+                                }
+                                transclusionTarget.append(transcludedElement);
+                            });
+                        });
+                        //we also make available the transcluded bit so that it can be used later
+                        definition.$$preLink.$scope['$transcluded'] = src;
+                    }
+                    sharedPromises[definition.id].transcluded.resolve(definition);
+                }, function (reason) {
+                    throw new Error("Pre-linking directive `" + id + "` failed", reason);
+                });
+                postLinked.promise.progress(function (definition) {
+                    if (!sharedPromises[definition.id]) {
+                        return;
+                    }
+                    delete sharedPromises[definition.id];
+                    sharedPromises.clean(definition.id);
+                }, function (reason) {
+                    throw new Error("Post-linking directive `" + id + "` failed: ", reason);
+                });
+                templatePreprocessed.promise.progress(function (definition) {
+                    var originalPreLink = definition.$$preLink.linker;
+                    var $scope = definition.$$preLink.$scope;
+                    var $element = definition.$$preLink.$element;
+                    var $attrs = definition.$$preLink.$attrs;
+                    var controller = definition.$$preLink.controller;
+                    var $transclude = definition.$$preLink.$transclude;
+                    //let's run the original pre-link function.
+                    (originalPreLink || angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
+                    //and its time to hand over the control to the promised preLink function (if any)
+                    (angular.isFunction(definition.link.pre) ? definition.link.pre : angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
+                    //now, let's signal that pre-linking is finished
+                    preLinked.nudge.to.resolve(definition);
+                });
+                transcluded.promise.progress(function (definition) {
+                    var originalPostLink = definition.$$postLink.linker;
+                    var $scope = definition.$$postLink.$scope;
+                    var $element = definition.$$postLink.$element;
+                    var $attrs = definition.$$postLink.$attrs;
+                    var controller = definition.$$postLink.controller;
+                    var $transclude = definition.$$postLink.$transclude;
+                    //let's run the original post-link function.
+                    (originalPostLink || angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
+                    //and its time to hand over the control to the promised postLink function (if any)
+                    (angular.isFunction(definition.link.post) ? definition.link.post : angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
+                    postLinked.nudge.to.resolve(definition);
+                });
+                directive.controller = bracketToAnnotation(["$scope", "$element", "$attrs", "$transclude", "$injector",
+                    function ($scope, $element, $attrs, $transclude, $injector) {
+                        if ($element.data('bu$compiled')) {
+                            return;
+                        }
+                        var self = this;
+                        $element.data('bu$compiled', true);
                         //let's create the original controller and get it over with
                         $injector.invoke(bindAnnotated(originalController, self, $scope, $element, $attrs, $transclude));
                         //he have a promise ... we will assume that the promise will be fulfilled.
@@ -1375,6 +1566,19 @@ function evaluateExpression(expression, optional) {
                             }
                             definition.link.pre = bracketToAnnotation(definition.link.pre);
                             definition.link.post = bracketToAnnotation(definition.link.post);
+                            definition.$injector = $injector;
+                            definition.$$controller = {
+                                $scope: $scope,
+                                $element: $element,
+                                $attrs: $attrs,
+                                $transclude: $transclude,
+                                $self: self
+                            };
+                            definition.id = $scope.$id;
+                            sharedPromises[definition.id] = {
+                                templatePreprocessed: $q.defer(),
+                                transcluded: $q.defer()
+                            };
                             if (angular.isString(definition.templateUrl)) {
                                 //if templateUrl is defined, template must go home
                                 delete definition.template;
@@ -1384,7 +1588,7 @@ function evaluateExpression(expression, optional) {
                                     cache: $templateCache
                                 }).then(function (result) {
                                     definition.template = result.data;
-                                    templateAvailable.resolve(definition);
+                                    templateAvailable.nudge.to.resolve(definition);
                                 }, function (reason) {
                                     throw new Error("Failed to resolve template for directive `" + id + "` from url `" + definition.templateUrl + "`", reason);
                                 });
@@ -1398,73 +1602,11 @@ function evaluateExpression(expression, optional) {
                                 } else if (definition.template == "" || definition.template[0].replace(/^\s+/, '') != "<") {
                                     throw new Error("Template for directive `" + id + "` must contain exactly one root element");
                                 }
-                                templateAvailable.resolve(definition);
+                                templateAvailable.nudge.to.resolve(definition);
                             }
                         }, function (reason) {
                             throw new Error("Failed to resolve definition for directive `" + id + "`", reason);
                         });
-                        templateAvailable.promise.then(function (definition) {
-                                var templateElement = $(definition.template);
-                                if (angular.isDefined($transclude)) {
-                                    if (angular.isDefined(templateElement.attr('ng-transclude'))) {
-                                        templateElement.attr('ng-transclude', null);
-                                        templateElement.attr('bu-transclude', '');
-                                    }
-                                    templateElement.find('[ng-transclude]').each(function () {
-                                        var $this = $(this);
-                                        $this.attr('ng-transclude', null);
-                                        $this.attr('bu-transclude', '');
-                                    });
-                                }
-                                if (angular.isFunction(definition.controller)) {
-                                    $injector.invoke(bindAnnotated(definition.controller, self, $scope, $element, $attrs, $transclude));
-                                }
-                                $compile(templateElement)($scope.$new(), function (clone) {
-                                    if (directive.replace === true) {
-                                        $element.replaceWith(clone);
-                                    } else {
-                                        $element.append(clone);
-                                    }
-                                    //By storing a reference to the directive's controller in the DOM element's
-                                    //data store we are guaranteeing that AngularJS's `require` syntax will work
-                                    //on other elements.
-                                    clone.data('$' + bu$name.directive(id) + 'Controller', directive.controller);
-                                    templatePreprocessed.resolve(definition);
-                                    preLinked.promise.then(function () {
-                                        if (angular.isDefined($transclude)) {
-                                            //here we look up the transclusion target which now bears the 'bu-transclude'
-                                            //attribute instead of 'ng-transclude'
-                                            var $clone = $(clone);
-                                            var transclusionTarget = angular.isDefined($clone.attr('bu-transclude')) ? $clone : $clone.find('[bu-transclude]');
-                                            var src = "";
-                                            $transclude(descriptor.$scope, function (transcludedElements) {
-                                                if (transclusionTarget.length == 0 && !directive.transcludeProperty) {
-                                                    throw new Error("Transclusion target could not be found");
-                                                }
-                                                angular.forEach(transcludedElements, function (transcludedElement) {
-                                                    if (directive.transcludeProperty) {
-                                                        src += transcludedElement.nodeValue ? transcludedElement.nodeValue : transcludedElement.outerHTML;
-                                                    } else {
-                                                        transclusionTarget.append(transcludedElement);
-                                                    }
-                                                });
-                                            });
-                                            //we also make available the transcluded bit so that it can be used later
-                                            $scope['$transcluded'] = src;
-                                        }
-                                        transcluded.resolve(definition);
-                                    }, function (reason) {
-                                        throw new Error("Pre-linking directive `" + id + "` failed", reason);
-                                    });
-                                    postLinked.promise.then(function () {
-                                    }, function (reason) {
-                                        throw new Error("Post-linking directive `" + id + "` failed: ", reason);
-                                    });
-                                });
-                            },
-                            function (reason) {
-                                throw new Error("Failed to fetch template for directive `" + id + "`", reason);
-                            });
                     }]);
                 directive.compile = bracketToAnnotation(['tElement', 'tAttrs', function (tElement, tAttrs) {
                     var link = $injector.invoke(bindAnnotated(originalCompile, this, tElement, tAttrs, undefined));
@@ -1472,22 +1614,40 @@ function evaluateExpression(expression, optional) {
                     var originalPostLink = link.post;
                     link.pre = bracketToAnnotation(['$scope', '$element', '$attrs', 'controller', '$transclude', function ($scope, $element, $attrs, controller, $transclude) {
                         var self = this;
-                        templatePreprocessed.promise.then(function (definition) {
-                            //let's run the original pre-link function.
-                            (originalPreLink || angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
-                            //and its time to hand over the control to the promised preLink function (if any)
-                            (angular.isFunction(definition.link.pre) ? definition.link.pre : angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
-                            //now, let's signal that pre-linking is finished
-                            preLinked.resolve();
+                        sharedPromises.given($scope.$id).perform(function () {
+                            this.templatePreprocessed.promise.then(function (definition) {
+                                definition = angular.extend({
+                                    $$preLink: {
+                                        linker: originalPreLink,
+                                        self: self,
+                                        $scope: $scope,
+                                        $element: $element,
+                                        $attrs: $attrs,
+                                        controller: controller,
+                                        $transclude: $transclude
+                                    }
+                                }, definition);
+                                templatePreprocessed.nudge.to.resolve(definition);
+                            });
                         });
                     }]);
                     link.post = bracketToAnnotation(['$scope', '$element', '$attrs', 'controller', '$transclude', function ($scope, $element, $attrs, controller, $transclude) {
                         var self = this;
-                        transcluded.promise.then(function (definition) {
-                            //let's run the original post-link function.
-                            (originalPostLink || angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
-                            //and its time to hand over the control to the promised preLink function (if any)
-                            (angular.isFunction(definition.link.post) ? definition.link.post : angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
+                        sharedPromises.given($scope.$id).perform(function () {
+                            this.transcluded.promise.then(function (definition) {
+                                definition = angular.extend({
+                                    $$postLink: {
+                                        linker: originalPostLink,
+                                        self: self,
+                                        $scope: $scope,
+                                        $element: $element,
+                                        $attrs: $attrs,
+                                        controller: controller,
+                                        $transclude: $transclude
+                                    }
+                                }, definition);
+                                transcluded.nudge.to.resolve(definition);
+                            });
                         });
                     }]);
                     return link;
@@ -1573,7 +1733,7 @@ function evaluateExpression(expression, optional) {
                                 break;
                             }
                         }
-                        if (chosen) {
+                        if (chosen && !angular.element(chosen).data('bu$compiled')) {
                             nodes.push(chosen);
                         } else {
                             collect(node.firstChild);
@@ -1617,15 +1777,59 @@ function evaluateExpression(expression, optional) {
                 }
             }
         };
-        this.$get = function (_bu$name, _$rootElement, _$compile, _$rootScope, _bu$configuration) {
+        this.$get = function (_bu$name, _$rootElement, _$compile, _$rootScope, _bu$configuration, _bu$interval) {
             bu$name = _bu$name;
             $rootElement = _$rootElement;
             $compile = _$compile;
             $rootScope = _$rootScope;
             bu$configuration = _bu$configuration;
+            bu$interval = _bu$interval;
             return bu$directiveCompiler;
         };
-        this.$get.$inject = ["bu$name", "$rootElement", "$compile", "$rootScope", "bu$configuration"];
+        this.$get.$inject = ["bu$name", "$rootElement", "$compile", "$rootScope", "bu$configuration", "bu$interval"];
+    }]);
+
+    toolkit.factory("bu$interval", ["$timeout", "$q", function ($timeout, $q) {
+        var rand = Math.random();
+        var bu$interval = function (fn, delay, invokeApply) {
+            var cancelled = false;
+            var deferred = $q.defer();
+            var promise = deferred.promise;
+            var reference = $timeout(function caller() {
+                if (cancelled) {
+                    return;
+                }
+                deferred.notify(fn.call());
+                if (cancelled) {
+                    return;
+                }
+                reference = $timeout(caller, delay, invokeApply);
+                if ($timeout.flush) {
+                    $timeout.flush.postpone();
+                }
+            }, delay, invokeApply);
+            promise.bu$intervalId = function () {
+                return rand;
+            };
+            promise.stop = function () {
+                deferred.reject();
+                cancelled = true;
+                var cancellation = $timeout.cancel(reference);
+                if ($timeout.flush) {
+                    try {
+                        $timeout.flush();
+                    } catch (e) {}
+                }
+                return cancellation;
+            };
+            return promise;
+        };
+        bu$interval.cancel = function (promise) {
+            if (angular.isFunction(promise.stop) && angular.isFunction(promise.bu$intervalId) && promise.bu$intervalId() == rand) {
+                return promise.stop();
+            }
+        };
+        return bu$interval;
     }]);
 
     /**

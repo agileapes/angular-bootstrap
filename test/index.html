@@ -5,18 +5,19 @@
     <title>BootstrapUI Tests</title>
     <link rel="stylesheet" type="text/css" href="../docs/css/bootstrap.min.css"/>
     <link rel="stylesheet" type="text/css" href="style.css"/>
+    <script type="text/javascript" src="../docs/js/jquery-2.0.3.min.js"></script>
 </head>
 <body>
 <div class="container">
     <h1 class="page-header">BootstrapUI Test Suites
-        <small>the whole lot</small>
+        <small>the whole lot <span></span></small>
     </h1>
     <p>Here, a comprehensive overview of the testing and specifications provided for BootstrapUI is presented.</p>
 
     <p>Each collection consists of a set of specifications written using <a href="http://jasmine.github.io">Jasmine</a>
         and are run inside the browser.</p>
 
-    <h2>Basics</h2>
+    <h2>Basics <small></small></h2>
 
     <div class="list-group">
         <a href="utilities.html" class="list-group-item">
@@ -45,7 +46,7 @@
         </a>
     </div>
 
-    <h2>Services</h2>
+    <h2>Services <small></small></h2>
 
     <div class="list-group">
         <a href="templateCache.html" class="list-group-item">
@@ -82,7 +83,7 @@
             </div>
         </a>
         <a href="directiveCompiler.html" class="list-group-item">
-            <em>62</em>
+            <em>66</em>
 
             <div><h4 class="list-group-item-heading">Directive Compiler Service</h4>
 
@@ -93,5 +94,23 @@
         </a>
     </div>
 </div>
+<script><!--
+(function () {
+    var total = 0;
+    $("h2 small").each(function () {
+        var count = 0;
+        var div = $(this).parent()[0];
+        while (div && div.nodeName.toLowerCase() != "div") {
+            div = div.nextSibling;
+        }
+        $(div).find("em").each(function () {
+            count += parseInt($(this).html());
+        });
+        total += count;
+        $(this).html("(" + count + ")");
+    });
+    $(".page-header small span").html("(" + total + ")");
+})();
+//--></script>
 </body>
 </html>

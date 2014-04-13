@@ -999,4 +999,107 @@ describe("Directive Compiler Service `bu$directiveCompiler`", function () {
 
     });
 
+    describe("when calling `.compile()` a second time", function () {
+
+        it("will work properly if the directive does not use `resolve`", inject(function (bu$directiveCompiler, $timeout) {
+            bu$directiveCompiler.register('x', function () {
+                return {
+                    restrict: "E",
+                    transclude: true,
+                    replace: true,
+                    template: "<div ng-transclude></div>"
+                };
+            });
+            testRoot.html("<ui:x>Hello</ui:x>");
+            $timeout(function () {
+                bu$directiveCompiler.compile();
+            });
+            $timeout.flush();
+            $timeout(function () {
+                bu$directiveCompiler.compile();
+            });
+            $timeout.flush();
+            expect(testRoot.text()).toBe('Hello');
+        }));
+
+        it("will work properly if the directive uses `resolve` and it is resolved before the first `.compile()`", inject(function (bu$directiveCompiler, $timeout, $q) {
+            var deferred = $q.defer();
+            bu$directiveCompiler.register('x', function () {
+                return {
+                    restrict: "E",
+                    transclude: true,
+                    replace: true,
+                    resolve: deferred.promise
+                };
+            });
+            testRoot.html("<ui:x>Hello</ui:x>");
+            $timeout(function () {
+                deferred.resolve("<div ng-transclude></div>");
+            });
+            $timeout.flush();
+            $timeout(function () {
+                bu$directiveCompiler.compile();
+            });
+            $timeout.flush();
+            $timeout(function () {
+                bu$directiveCompiler.compile();
+            });
+            $timeout.flush();
+            expect(testRoot.text()).toBe('Hello');
+        }));
+
+        it("will work properly if the directive uses `resolve` and it is resolved before the second `.compile()`", inject(function (bu$directiveCompiler, $timeout, $q) {
+            var deferred = $q.defer();
+            bu$directiveCompiler.register('x', function () {
+                return {
+                    restrict: "E",
+                    transclude: true,
+                    replace: true,
+                    resolve: deferred.promise
+                };
+            });
+            testRoot.html("<ui:x>Hello</ui:x>");
+            $timeout(function () {
+                bu$directiveCompiler.compile();
+            });
+            $timeout.flush();
+            $timeout(function () {
+                deferred.resolve("<div ng-transclude></div>");
+            });
+            $timeout.flush();
+            $timeout(function () {
+                bu$directiveCompiler.compile();
+            });
+            $timeout.flush();
+            expect(testRoot.text()).toBe('Hello');
+        }));
+
+        it("will work properly if the directive uses `resolve` and it is resolved after the second `.compile()`", inject(function (bu$directiveCompiler, $timeout, $q) {
+            var deferred = $q.defer();
+            bu$directiveCompiler.register('x', function () {
+                return {
+                    restrict: "E",
+                    transclude: true,
+                    replace: true,
+                    resolve: deferred.promise
+                };
+            });
+            testRoot.html("<ui:x>Hello</ui:x>");
+            $timeout(function () {
+                bu$directiveCompiler.compile();
+            });
+            $timeout.flush();
+            $timeout(function () {
+                bu$directiveCompiler.compile();
+            });
+            $timeout.flush();
+            $timeout(function () {
+                deferred.resolve("<div ng-transclude></div>");
+            });
+            $timeout.flush();
+            expect(testRoot.text()).toBe('Hello');
+        }));
+
+    });
+
 });
