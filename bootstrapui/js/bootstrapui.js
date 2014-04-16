@@ -728,23 +728,6 @@ function evaluateExpression(expression, optional) {
         };
     }]);
 
-    toolkit.value("bu$Directive", function (requirements, factory) {
-        if (angular.isUndefined(factory)) {
-            if (angular.isFunction(requirements) || (angular.isArray(requirements) && angular.isFunction(requirements[requirements.length - 1]))) {
-                factory = requirements;
-                requirements = [];
-            } else {
-                throw new Error("Cannot instantiate a directive without a factory function");
-            }
-        }
-        this.getRequirements = function () {
-            return requirements;
-        };
-        this.getFactory = function () {
-            return factory;
-        };
-    });
-
     toolkit.provider("bu$loader", ["bu$registryFactoryProvider", "bu$configurationProvider", "$injector", function (bu$registryFactoryProvider, bu$configurationProvider, $injector) {
         var provider = this;
         var registry = $injector.invoke(bu$registryFactoryProvider.$get)("bu$loader");
@@ -886,42 +869,6 @@ function evaluateExpression(expression, optional) {
             return loader;
         };
         this.$get.$inject = ["$http", "$q", "$rootScope", "$injector", "$timeout"];
-    }]);
-
-    toolkit.service("bu$directives", ["bu$registryFactory", "bu$Directive", "bu$directiveCompiler", "$q", "bu$loader", function (bu$registryFactory, bu$Directive, bu$directiveCompiler, $q, bu$loader) {
-        var registry = bu$registryFactory("bu$directives");
-        registry.on('register', function (directiveName, directiveFactory) {
-            var requirements = directiveFactory.getRequirements();
-            var deferred = $q.defer();
-            if (requirements.length > 0) {
-                bu$loader.load(requirements).then(function () {
-                    deferred.resolve();
-                }, function (reason) {
-                    deferred.reject(reason);
-                });
-            } else {
-                deferred.resolve();
-            }
-            deferred.promise.then(function () {
-                bu$directiveCompiler.register(directiveName, directiveFactory.getFactory());
-                bu$directiveCompiler.compile();
-            }, function (reason) {
-                throw new Error("Failed to resolve dependencies for " + directiveName, reason);
-            });
-            return directiveFactory;
-        });
-        this.register = function (id, item) {
-            registry.register(id, item);
-        };
-        this.get = function (id) {
-            return registry.get(id);
-        };
-        this.list = function () {
-            return registry.list();
-        };
-        this.instantiate = function (requirements, factory) {
-            return new bu$Directive(requirements, factory);
-        };
     }]);
 
     toolkit.provider("bu$directiveCompiler", ["$injector", "bu$registryFactoryProvider", "$compileProvider", function ($injector, bu$registryFactoryProvider, $compileProvider) {
