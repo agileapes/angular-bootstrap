@@ -1736,6 +1736,39 @@ function evaluateExpression(expression, optional) {
         this.$get.$inject = ["bu$name", "$rootElement", "$compile", "$rootScope", "bu$configuration", "bu$interval"];
     }]);
 
+    toolkit.service('bu$directives', ["bu$directiveCompiler", "bu$loader", "$q", function (bu$directiveCompiler, bu$loader, $q) {
+        /**
+         * Registers a new directive definition factory or object, given its dependencies
+         * @param {String} id
+         * @param {Array} [requirements]
+         * @param {Function} factory
+         */
+        this.register = function (id, requirements, factory) {
+            console.log('getting to know ' + id);
+            if (angular.isUndefined(factory)) {
+                factory = requirements;
+                requirements = [];
+            }
+            if (!angular.isArray(requirements)) {
+                requirements = [];
+            }
+            var prerequisites = [];
+            for (var i = 0; i < requirements.length; i++) {
+                prerequisites.push(bu$loader.load(requirements[i]));
+            }
+            if (prerequisites.length == 0) {
+                var deferred = $q.defer();
+                deferred.resolve();
+                prerequisites.push(deferred.promise);
+            }
+            $q.all(prerequisites).then(function () {
+                console.log('registering ' + id);
+                bu$directiveCompiler.register(id, factory);
+                bu$directiveCompiler.compile();
+            });
+        };
+    }]);
+
     /**
      * This factory will release a function that wraps around setInterval using $timeout to provide valid
      * repeated processes that are also easily testable in the same manner as $timeout.
