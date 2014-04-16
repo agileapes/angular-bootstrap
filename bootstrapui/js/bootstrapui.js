@@ -1161,6 +1161,43 @@ function evaluateExpression(expression, optional) {
             descriptor.productionFactory.$inject = ["$injector"];
             return descriptor;
         });
+        //let us now mask the production factory one more layer to enable support for injecting values into
+        //pre- and post-link functions
+        registry.on('register', function (id, descriptor) {
+            if (!config.maskFactory) {
+                return;
+            }
+            //don't forget the original factory. we will be calling it first thing.
+            var productionFactory = descriptor.productionFactory;
+            descriptor.productionFactory = bracketToAnnotation(["$injector", function ($injector) {
+                var directive = $injector.invoke(bracketToAnnotation(productionFactory), this, {
+                    $injector: $injector
+                });
+                var compile = directive.compile;
+                directive.compile = function (tElement, tAttrs) {
+                    var linker = $injector.invoke(bracketToAnnotation(compile), this, {
+                        tElement: tElement,
+                        tAttrs: tAttrs
+                    });
+                    if (angular.isFunction(linker)) {
+                        linker = {
+                            post: linker
+                        };
+                    }
+                    linker.pre = bracketToAnnotation(linker.pre);
+                    linker.post = bracketToAnnotation(linker.post);
+                    return {
+                        pre: function (scope, element, attributes, controller) {
+                            return $injector.invoke(bindAnnotated(linker.pre, this, scope, element, attributes, controller));
+                        },
+                        post: function (scope, element, attributes, controller) {
+                            return $injector.invoke(bindAnnotated(linker.post, this, scope, element, attributes, controller));
+                        }
+                    };
+                };
+                return directive;
+            }]);
+        });
         //Here we will mask the production factory one more layer to enable the `defaults` magic on the
         //directive definition object
         //This will only work if masking is enabled
