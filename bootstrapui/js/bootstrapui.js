@@ -929,7 +929,7 @@ function evaluateExpression(expression, optional) {
                 throw new Error("Cannot bind a non-function object");
             }
             if (!angular.isArray(fn.$inject)) {
-                fn.$inject = [];
+                fn.$inject = $injector.annotate(fn);
             }
             var $inject = fn.$inject.splice(arguments.length - 2, fn.$inject.length);
             var context = arguments[1];
@@ -1471,9 +1471,9 @@ function evaluateExpression(expression, optional) {
                     var controller = definition.$$preLink.controller;
                     var $transclude = definition.$$preLink.$transclude;
                     //let's run the original pre-link function.
-                    (originalPreLink || angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
+                    $injector.invoke(bindAnnotated(originalPreLink || angular.noop, self, $scope, $element, $attrs, controller, $transclude));
                     //and its time to hand over the control to the promised preLink function (if any)
-                    (angular.isFunction(definition.link.pre) ? definition.link.pre : angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
+                    $injector.invoke(bindAnnotated(angular.isFunction(definition.link.pre) ? definition.link.pre : angular.noop, self, $scope, $element, $attrs, controller, $transclude));
                     //now, let's signal that pre-linking is finished
                     preLinked.nudge.to.resolve(definition);
                 });
@@ -1485,9 +1485,9 @@ function evaluateExpression(expression, optional) {
                     var controller = definition.$$postLink.controller;
                     var $transclude = definition.$$postLink.$transclude;
                     //let's run the original post-link function.
-                    (originalPostLink || angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
+                    $injector.invoke(bindAnnotated(originalPostLink || angular.noop, self, $scope, $element, $attrs, controller, $transclude));
                     //and its time to hand over the control to the promised postLink function (if any)
-                    (angular.isFunction(definition.link.post) ? definition.link.post : angular.noop).apply(self, [$scope, $element, $attrs, controller, $transclude]);
+                    $injector.invoke(bindAnnotated(angular.isFunction(definition.link.post) ? definition.link.post : angular.noop, self, $scope, $element, $attrs, controller, $transclude));
                     postLinked.nudge.to.resolve(definition);
                 });
                 directive.controller = bracketToAnnotation(["$scope", "$element", "$attrs", "$transclude", "$injector",
