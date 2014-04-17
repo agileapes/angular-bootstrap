@@ -875,7 +875,7 @@ function evaluateExpression(expression, optional) {
         var bu$registryFactory = $injector.invoke(bu$registryFactoryProvider.$get, bu$registryFactoryProvider);
         var registry = bu$registryFactory("bu$directiveCompiler$registry");
         var newDirectives = [];
-        var bu$name, $rootElement, $compile, $rootScope, bu$configuration, bu$interval, $q;
+        var bu$name, $rootElement, $compile, $rootScope, bu$configuration, bu$interval, $q, bu$storage;
         var config = {
             /**
              * flag to determine whether or not the factory function should be masked
@@ -909,116 +909,6 @@ function evaluateExpression(expression, optional) {
                 fn = fn[0];
             }
             return fn;
-        };
-        var requireController = function (source, element, controller) {
-            var search = function (node) {
-                var $node = $(node);
-                if ($node.data('$' + controller + 'Controller')) {
-                    return $node.data('$' + controller + 'Controller');
-                }
-                while (node) {
-                    var found = search(node.firstChild);
-                    if (found) {
-                        return found;
-                    }
-                    node = node.nextSibling;
-                }
-                return undefined;
-            };
-            var $element = $(element);
-            var directions = "";
-            var persist = false;
-            var optional = false;
-            var node;
-            //Directions are (applied in order of appearance):
-            //. = here
-            //^ = up (first)
-            //> = right (first)
-            //< = left (first)
-            //| = down (first)
-            var deferred = $q.defer();
-            while (controller.length > 0 && "@?^><.|".indexOf(controller[0]) != -1) {
-                if (controller[0] == "?") {
-                    optional = true;
-                } else if (controller[0] == "@") {
-                    persist = true;
-                } else {
-                    directions += controller[0];
-                }
-                controller = controller.substring(1);
-            }
-            if (directions == "") {
-                directions = ".";
-            }
-            if (/^bu$/.test(controller)) {
-                controller = bu$name.directive(controller[0].toLowerCase() + controller.substring(1));
-            }
-            var lookUp = function (directions) {
-                while (directions != "") {
-                    var direction = directions[0];
-                    if (direction == ".") {
-                        if (angular.isDefined($element.data('$' + controller + "Controller"))) {
-                            return $element.data('$' + controller + "Controller");
-                        }
-                    }
-                    if (direction == "&") {
-                        node = $element[0];
-                        while (node) {
-                            if (angular.isDefined($(node).data('$' + controller + "Controller"))) {
-                                return $(node).data('$' + controller + "Controller");
-                            }
-                            node = node.parentNode;
-                        }
-                    }
-                    if (direction == ">") {
-                        node = $element[0];
-                        while (node) {
-                            if (angular.isDefined($(node).data('$' + controller + "Controller"))) {
-                                return $(node).data('$' + controller + "Controller");
-                            }
-                            node = node.nextSibling;
-                        }
-                    }
-                    if (direction == "<") {
-                        node = $element[0];
-                        while (node) {
-                            if (angular.isDefined($(node).data('$' + controller + "Controller"))) {
-                                return $(node).data('$' + controller + "Controller");
-                            }
-                            node = node.previousSibling;
-                        }
-                    }
-                    if (direction == "|") {
-                        var found = search($element[0]);
-                        if (found) {
-                            return found;
-                        }
-                    }
-                }
-                return undefined;
-            };
-            var found = lookUp(directions);
-            if (!persist) {
-                if (!found) {
-                    deferred.reject(controller);
-                }
-            } else {
-                var callback = function () {
-                    found = lookUp(directions);
-                    if (found) {
-                        $(document).off('bu$compiled', callback);
-                    }
-                };
-                $(document).on('bu$compiled', callback);
-            }
-            return deferred.promise.then(function (result) {
-                return result;
-            }, function (controller) {
-                if (!optional) {
-                    throw new Error("[$compile:ctreq] Controller '" + controller + "', required by directive '" + bu$name.directive(source) + "', can't be found!");
-                }
-                return controller;
-            });
         };
         /**
          * This function works much like the Function.prototype.bind(...) function, with the difference that it
@@ -1522,7 +1412,7 @@ function evaluateExpression(expression, optional) {
                         }
                         $compile(templateElement)($scope.$new(), function (clone) {
                             if (directive.replace === true) {
-                                clone.data('bu$compiled', true);
+                                bu$storage(clone).set('bu$compiled', true);
                                 $element.replaceWith(clone);
                             } else {
                                 $element.append(clone);
@@ -1602,11 +1492,11 @@ function evaluateExpression(expression, optional) {
                 });
                 directive.controller = bracketToAnnotation(["$scope", "$element", "$attrs", "$transclude", "$injector",
                     function ($scope, $element, $attrs, $transclude, $injector) {
-                        if ($element.data('bu$compiled')) {
+                        if (bu$storage($element).get('bu$compiled')) {
                             return;
                         }
                         var self = this;
-                        $element.data('bu$compiled', true);
+                        bu$storage($element).set('bu$compiled', true);
                         //let's create the original controller and get it over with
                         $injector.invoke(bindAnnotated(originalController, self, $scope, $element, $attrs, $transclude));
                         //he have a promise ... we will assume that the promise will be fulfilled.
@@ -1827,7 +1717,10 @@ function evaluateExpression(expression, optional) {
                                 break;
                             }
                         }
-                        if (chosen && !angular.element(chosen).data('bu$compiled')) {
+                        if (chosen && bu$storage(chosen).get('bu$compiled')) {
+                            console.log('already done');
+                        }
+                        if (chosen && !bu$storage(chosen).get('bu$compiled')) {
                             nodes.push(chosen);
                         } else {
                             collect(node.firstChild);
@@ -1869,10 +1762,9 @@ function evaluateExpression(expression, optional) {
                         }
                     });
                 }
-                $(document).trigger('bu$compiled', uncompiled);
             }
         };
-        this.$get = function (_bu$name, _$rootElement, _$compile, _$rootScope, _bu$configuration, _bu$interval, _$q) {
+        this.$get = function (_bu$name, _$rootElement, _$compile, _$rootScope, _bu$configuration, _bu$interval, _$q, _bu$storage) {
             bu$name = _bu$name;
             $rootElement = _$rootElement;
             $compile = _$compile;
@@ -1880,9 +1772,10 @@ function evaluateExpression(expression, optional) {
             bu$configuration = _bu$configuration;
             bu$interval = _bu$interval;
             $q = _$q;
+            bu$storage = _bu$storage;
             return bu$directiveCompiler;
         };
-        this.$get.$inject = ["bu$name", "$rootElement", "$compile", "$rootScope", "bu$configuration", "bu$interval"];
+        this.$get.$inject = ["bu$name", "$rootElement", "$compile", "$rootScope", "bu$configuration", "bu$interval", "$q", "bu$storage"];
     }]);
 
     toolkit.service('bu$directives', ["bu$directiveCompiler", "bu$loader", "$q", function (bu$directiveCompiler, bu$loader, $q) {
@@ -1893,7 +1786,6 @@ function evaluateExpression(expression, optional) {
          * @param {Function} factory
          */
         this.register = function (id, requirements, factory) {
-            console.log('getting to know ' + id);
             if (angular.isUndefined(factory)) {
                 factory = requirements;
                 requirements = [];
@@ -1911,7 +1803,6 @@ function evaluateExpression(expression, optional) {
                 prerequisites.push(deferred.promise);
             }
             $q.all(prerequisites).then(function () {
-                console.log('registering ' + id);
                 bu$directiveCompiler.register(id, factory);
                 bu$directiveCompiler.compile();
             });
@@ -1985,6 +1876,51 @@ function evaluateExpression(expression, optional) {
         };
         return bu$interval;
     }]);
+
+    toolkit.factory('bu$storage', function () {
+        var memory = {};
+        var count = 0;
+        var storage = function (element) {
+            var hash;
+            if (angular.isString(element)) {
+                hash = element;
+            } else {
+                if (angular.isDefined(element.length)) {
+                    element = element[0];
+                }
+                if (!angular.isString(element.bu$hash)) {
+                    count++;
+                    element.bu$hash = count + "-" + Math.random();
+                }
+                hash = element.bu$hash;
+            }
+            if (angular.isUndefined(memory[hash])) {
+                memory[hash] = {};
+            }
+            return {
+                all: function () {
+                    return angular.extend({}, memory[hash]);
+                },
+                set: function (key, value) {
+                    memory[hash][key] = value;
+                },
+                get: function (key, defaultValue) {
+                    if (angular.isDefined(memory[hash][key])) {
+                        return memory[hash][key];
+                    }
+                    return defaultValue;
+                }
+            };
+        };
+        storage.keys = function () {
+            var keys = [];
+            angular.forEach(memory, function (value, key) {
+                keys.push(key);
+            });
+            return keys;
+        };
+        return storage;
+    });
 
     /**
      * We will have to configure the $templateCache to look for 'bui:' namespace prefix and replace them
