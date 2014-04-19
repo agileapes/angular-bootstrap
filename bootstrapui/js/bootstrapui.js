@@ -1171,7 +1171,7 @@ function evaluateExpression(expression, optional) {
             descriptor = angular.extend({}, descriptor);
             //don't forget the original factory. we will be calling it first thing.
             var productionFactory = descriptor.productionFactory;
-            descriptor.productionFactory = bracketToAnnotation(["$injector", function ($injector) {
+            descriptor.productionFactory = bracketToAnnotation(["$injector", "$timeout", function ($injector, $timeout) {
                 var directive = $injector.invoke(bracketToAnnotation(productionFactory), this, {
                     $injector: $injector
                 });
@@ -1190,12 +1190,16 @@ function evaluateExpression(expression, optional) {
                     linker.post = bracketToAnnotation(linker.post);
                     return {
                         pre: function (scope, element, attributes, controller, $transclude) {
-                            linker.pre.$inject = undefined;
-                            return $injector.invoke(bindAnnotated(linker.pre, this, scope, element, attributes, controller, $transclude));
+                            $timeout(function () {
+                                linker.pre.$inject = undefined;
+                                $injector.invoke(bindAnnotated(linker.pre, this, scope, element, attributes, controller, $transclude));
+                            });
                         },
                         post: function (scope, element, attributes, controller, $transclude) {
-                            linker.post.$inject = undefined;
-                            return $injector.invoke(bindAnnotated(linker.post, this, scope, element, attributes, controller, $transclude));
+                            $timeout(function () {
+                                linker.post.$inject = undefined;
+                                $injector.invoke(bindAnnotated(linker.post, this, scope, element, attributes, controller, $transclude));
+                            });
                         }
                     };
                 };
