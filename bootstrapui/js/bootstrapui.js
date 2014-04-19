@@ -2136,6 +2136,20 @@ function evaluateExpression(expression, optional) {
         }
     }]);
 
+    toolkit.service('BootstrapUI', ["bu$configuration", "bu$toolRegistry", "bu$extensionRegistry", "bu$loader", "bu$directives", "bu$storage", "bu$require",
+        function (bu$configuration, bu$toolRegistry, bu$extensionRegistry, bu$loader, bu$directives, bu$storage, bu$require) {
+            this.configuration = bu$configuration;
+            this.tools = bu$toolRegistry;
+            this.extensions = bu$extensionRegistry;
+            this.loader = bu$loader;
+            this.directives = bu$directives;
+            this.storage = bu$storage;
+            this.require = bu$require;
+            this.directive = function (id, factory) {
+                bu$directives.register(id, factory);
+            };
+        }]);
+
     /**
      * We will have to configure the $templateCache to look for 'bui:' namespace prefix and replace them
      * with the current namespace
