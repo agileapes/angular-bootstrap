@@ -1275,6 +1275,7 @@ function evaluateExpression(expression, optional) {
                 }]);
                 return directive;
             }]);
+            return descriptor;
         });
         //Let's mask the production factory further to include support for promises
         registry.on('register', function (id, descriptor) {
