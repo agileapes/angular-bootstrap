@@ -751,7 +751,9 @@ function evaluateExpression(expression, optional) {
         this.$get = function ($http, $q, $rootScope, $injector, $timeout) {
             var loader = {
                 load: function (item) {
-                    var BootstrapUI = $injector.get('BootstrapUI');
+                    var dependency = function (dependecy) {
+                        return $injector.get(dependecy);
+                    };
                     var deferred = $q.defer();
                     if (angular.isArray(item)) {
                         var promises = [];
@@ -1287,7 +1289,11 @@ function evaluateExpression(expression, optional) {
                 var directive = $injector.invoke(productionFactory, this, {
                     $injector: $injector
                 });
-                if (!angular.isDefined(directive.resolve) || !angular.isFunction(directive.resolve.then)) {
+                if (!angular.isDefined(directive.resolve)) {
+                    return directive;
+                }
+                directive.resolve = bracketToAnnotation(directive.resolve);
+                if (!angular.isFunction(directive.resolve) && !angular.isFunction(directive.resolve.then)) {
                     return directive;
                 }
                 //we will delete the templates so that rendering is not done by AngularJS
@@ -1519,6 +1525,12 @@ function evaluateExpression(expression, optional) {
                         //he have a promise ... we will assume that the promise will be fulfilled.
                         //don't disappoint us. :-)
                         var promise = directive.resolve;
+                        if (angular.isFunction(promise)) {
+                            promise = $injector.invoke(bindAnnotated(promise, self, $scope, $element, $attrs, $transclude));
+                        }
+                        if (!angular.isObject(promise) || !angular.isFunction(promise.then)) {
+                            throw new Error("Expected a promise but got '" + promise + "' in directive " + id);
+                        }
                         var interim = $q.defer();
                         promise.then(function (definition) {
                             definition = bracketToAnnotation(definition);
@@ -2145,7 +2157,7 @@ function evaluateExpression(expression, optional) {
     }]);
 
     toolkit.provider('BootstrapUI', function () {
-        this.$get = function (bu$configuration, bu$toolRegistry, bu$extensionRegistry, $injector, bu$directives, bu$storage, bu$require, bu$directiveCompiler) {
+        this.$get = function (bu$configuration, bu$toolRegistry, bu$extensionRegistry, $injector, bu$directives, bu$storage, bu$require, bu$directiveCompiler, bu$registryFactory) {
             return {
                 configuration: bu$configuration,
                 tools: bu$toolRegistry,
@@ -2181,10 +2193,11 @@ function evaluateExpression(expression, optional) {
                 },
                 compile: function (root, compileFunction) {
                     bu$directiveCompiler.compile(root, compileFunction);
-                }
+                },
+                registry: bu$registryFactory
             };
         };
-        this.$get.$inject = ["bu$configuration", "bu$toolRegistry", "bu$extensionRegistry", "$injector", "bu$directives", "bu$storage", "bu$require", "bu$directiveCompiler"];
+        this.$get.$inject = ["bu$configuration", "bu$toolRegistry", "bu$extensionRegistry", "$injector", "bu$directives", "bu$storage", "bu$require", "bu$directiveCompiler", "bu$registryFactory"];
     });
 
     /**
