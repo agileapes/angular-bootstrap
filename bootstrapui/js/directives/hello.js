@@ -14,4 +14,4 @@
             }
         }
     });
-})(eval('BootstrapUI'));
+})(dependency('BootstrapUI'));

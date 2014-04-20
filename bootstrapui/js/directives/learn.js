@@ -8,4 +8,4 @@
             }
         };
     });
-})(eval("BootstrapUI"));
+})(dependency("BootstrapUI"));
