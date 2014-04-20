@@ -1602,6 +1602,9 @@ function evaluateExpression(expression, optional) {
                                 cache: $templateCache
                             }).then(function (result) {
                                 definition.template = result.data;
+                                if (definition.template == "" || !/^\s*<.*>\s*$/m.test(definition.template)) {
+                                    throw new Error("Template for directive `" + id + "` must contain exactly one root element");
+                                }
                                 templateAvailable.nudge.to.resolve(definition);
                             }, function (reason) {
                                 throw new Error("Failed to resolve template for directive `" + id + "` from url `" + definition.templateUrl + "`", reason);
