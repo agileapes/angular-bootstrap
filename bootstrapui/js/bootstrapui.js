@@ -1432,7 +1432,7 @@ function evaluateExpression(expression, optional) {
                         if (angular.isFunction(definition.controller)) {
                             $injector.invoke(bindAnnotated(definition.controller, self, $scope, $element, $attrs, $transclude));
                         }
-                        $compile(templateElement)($scope.$new(), function (clone) {
+                        $compile(templateElement)($scope, function (clone) {
                             if (directive.replace === true) {
                                 bu$storage(clone).set('bu$compiled', true);
                                 $element.replaceWith(clone);
