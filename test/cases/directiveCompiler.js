@@ -380,7 +380,7 @@ describe("Directive Compiler Service `bu$directiveCompiler`", function () {
             })
         });
 
-        it("given a factory that returns a function, creates a definition object and populates its post-link with that function", inject(function ($injector) {
+        it("given a factory that returns a function, creates a definition object and populates its post-link with that function", inject(function ($injector, $timeout) {
             var factory = registry.get('functionDirective').productionFactory;
             var directive = $injector.invoke(factory, {
                 bu$Preload: true
@@ -394,7 +394,8 @@ describe("Directive Compiler Service `bu$directiveCompiler`", function () {
             });
             expect(angular.isFunction(linker.post)).toBeTruthy();
             expect(postLink).not.toHaveBeenCalled();
-            $injector.invoke(linker.post);
+            $injector.invoke(linker.post.bind({}, null, null, null, null));
+            $timeout.flush();
             expect(postLink).toHaveBeenCalled();
         }));
 
@@ -584,11 +585,11 @@ describe("Directive Compiler Service `bu$directiveCompiler`", function () {
             $timeout.flush();
             expect(order.length).toBe(9);
             expect(order[0]).toBe('x.controller');
-            expect(order[1]).toBe('x.preLink');
+            expect(order[1]).toBe('y.controller');
             expect(order[2]).toBe('y.controller');
-            expect(order[3]).toBe('y.preLink');
-            expect(order[4]).toBe('y.postLink');
-            expect(order[5]).toBe('y.controller');
+            expect(order[3]).toBe('x.preLink');
+            expect(order[4]).toBe('y.preLink');
+            expect(order[5]).toBe('y.postLink');
             expect(order[6]).toBe('y.preLink');
             expect(order[7]).toBe('y.postLink');
             expect(order[8]).toBe('x.postLink');
@@ -711,6 +712,7 @@ describe("Directive Compiler Service `bu$directiveCompiler`", function () {
                 $timeout.flush();
             });
             expect(compile).toThrowError("Variable `b` is not defined in the scope of directive `y`");
+            $timeout.flush();
         }));
 
         it("will result in an error if specifying defaults with a variable that has not been bound with `@`", inject(function (bu$directiveCompiler, $timeout) {
@@ -720,6 +722,7 @@ describe("Directive Compiler Service `bu$directiveCompiler`", function () {
                 $timeout.flush();
             });
             expect(compile).toThrowError("Variable `a` is not bound uni-directionally on directive `z`");
+            $timeout.flush();
         }));
 
     });
@@ -985,16 +988,16 @@ describe("Directive Compiler Service `bu$directiveCompiler`", function () {
             expect(order.length).toBe(12);
             expect(order[0]).toBe('x.controller');
             expect(order[1]).toBe('x.promise.controller');
-            expect(order[2]).toBe('x.preLink');
-            expect(order[3]).toBe('x.promise.preLink');
-            expect(order[4]).toBe('y.controller');
-            expect(order[5]).toBe('x.postLink');
-            expect(order[6]).toBe('x.promise.postLink');
+            expect(order[2]).toBe('x.promise.preLink');
+            expect(order[3]).toBe('y.controller');
+            expect(order[4]).toBe('x.promise.postLink');
+            expect(order[5]).toBe('x.preLink');
+            expect(order[6]).toBe('x.postLink');
             expect(order[7]).toBe('y.promise.controller');
-            expect(order[8]).toBe('y.preLink');
-            expect(order[9]).toBe('y.promise.preLink');
-            expect(order[10]).toBe('y.postLink');
-            expect(order[11]).toBe('y.promise.postLink');
+            expect(order[8]).toBe('y.promise.preLink');
+            expect(order[9]).toBe('y.promise.postLink');
+            expect(order[10]).toBe('y.preLink');
+            expect(order[11]).toBe('y.postLink');
         }));
 
     });
