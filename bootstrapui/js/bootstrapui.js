@@ -879,11 +879,11 @@ function evaluateExpression(expression, optional) {
         this.$get.$inject = ["$http", "$q", "$rootScope", "$injector", "$timeout"];
     }]);
 
-    toolkit.provider("bu$directiveCompiler", ["$injector", "bu$registryFactoryProvider", "$compileProvider", function ($injector, bu$registryFactoryProvider, $compileProvider) {
-        var bu$registryFactory = $injector.invoke(bu$registryFactoryProvider.$get, bu$registryFactoryProvider);
+    toolkit.provider("bu$directiveCompiler", ["$injector", "bu$registryFactoryProvider", "$compileProvider", function ($providersInjector, bu$registryFactoryProvider, $compileProvider) {
+        var bu$registryFactory = $providersInjector.invoke(bu$registryFactoryProvider.$get, bu$registryFactoryProvider);
         var registry = bu$registryFactory("bu$directiveCompiler$registry");
         var newDirectives = [];
-        var bu$name, $rootElement, $compile, $rootScope, bu$configuration, bu$interval, $q, bu$storage;
+        var bu$name, $rootElement, $compile, $rootScope, bu$configuration, bu$interval, $q, bu$storage, $injector;
         var config = {
             /**
              * flag to determine whether or not the factory function should be masked
@@ -1811,7 +1811,7 @@ function evaluateExpression(expression, optional) {
                 }
             }
         };
-        this.$get = function (_bu$name, _$rootElement, _$compile, _$rootScope, _bu$configuration, _bu$interval, _$q, _bu$storage) {
+        this.$get = function (_bu$name, _$rootElement, _$compile, _$rootScope, _bu$configuration, _bu$interval, _$q, _bu$storage, _$injector) {
             bu$name = _bu$name;
             $rootElement = _$rootElement;
             $compile = _$compile;
@@ -1820,9 +1820,10 @@ function evaluateExpression(expression, optional) {
             bu$interval = _bu$interval;
             $q = _$q;
             bu$storage = _bu$storage;
+            $injector = _$injector;
             return bu$directiveCompiler;
         };
-        this.$get.$inject = ["bu$name", "$rootElement", "$compile", "$rootScope", "bu$configuration", "bu$interval", "$q", "bu$storage"];
+        this.$get.$inject = ["bu$name", "$rootElement", "$compile", "$rootScope", "bu$configuration", "bu$interval", "$q", "bu$storage", "$injector"];
     }]);
 
     toolkit.service('bu$directives', ["bu$directiveCompiler", "bu$loader", "$q", function (bu$directiveCompiler, bu$loader, $q) {
