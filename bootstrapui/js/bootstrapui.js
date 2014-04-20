@@ -2146,7 +2146,25 @@ function evaluateExpression(expression, optional) {
             this.storage = bu$storage;
             this.require = bu$require;
             this.directive = function (id, factory) {
-                bu$directives.register(id, factory);
+                if (angular.isUndefined(factory) && angular.isObject(id)) {
+                    angular.forEach(id, function (definition, name) {
+                        if (angular.isFunction(definition)) {
+                            definition = {
+                                requirements: [],
+                                factory: definition
+                            };
+                        }
+                        if (!angular.isObject(definition)) {
+                            throw new Error("Invalid definition for directive " + name);
+                        }
+                        if (!angular.isArray(definition.requirements)) {
+                            definition.requirements = [];
+                        }
+                        bu$directives.register(name, definition.requirements, definition.factory);
+                    });
+                } else {
+                    bu$directives.register(id, factory);
+                }
             };
         }]);
 
