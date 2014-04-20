@@ -90,8 +90,7 @@
                 }, function (reason) {
                     if (reason.status == 404) {
                         define($scope.type, {});
-                        var definition = form.input.get($scope.type);
-                        defined.resolve(definition);
+                        defined.resolve(form.input.get($scope.type));
                     } else {
                         throw new Error("There was a problem accessing directive definition for type `" + $scope.type + "`", reason);
                     }
@@ -111,7 +110,7 @@
             });
         }
         return {
-            template: '<div><code>&lt;{{namespace ? namespace + \':\' : \'\'}}form-input type="{{type}}"/&gt;</code><span></span></div>',
+            template: '<div class="form-group placeholder">&lt;{{namespace ? namespace + \':\' : \'\'}}form-input type="{{type}}"/&gt;<span></span></div>',
             restrict: "E",
             replace: true,
             transclude: false,
@@ -139,8 +138,6 @@
                 feedback: ""
             },
             link: {
-                pre: function () {
-                },
                 post: ["scope", "element", "attrs", "controller", function (scope, element, attrs, controller) {
                     if (!scope.labelSize && controller && controller.$scope && controller.$scope.labelSize) {
                         scope.labelSize = controller.$scope.labelSize;
@@ -155,7 +152,8 @@
                         scope.orientation = "vertical";
                     }
                     scope.namespace = BootstrapUI.configuration.namespace;
-                }]            },
+                }]
+            },
             controller: function ($scope) {
                 if (angular.isDefined($scope.descriptor) && angular.isDefined($scope.descriptor())) {
                     angular.forEach(['orientation', 'labelSize', 'placeholder', 'feedback', 'state', 'label'], function (item) {
@@ -169,7 +167,16 @@
                         });
                     });
                 }
+            },
+            on: {
+                failure: function (error, reason, $scope, $element) {
+                    if (config.visualErrors) {
+                        $element.addClass('failed');
+                    }
+                    throw new Error(error, reason);
+                }
             }
+
         }
     }]);
 })(dependency("BootstrapUI"));
