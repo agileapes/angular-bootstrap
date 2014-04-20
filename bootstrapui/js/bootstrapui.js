@@ -1295,6 +1295,15 @@ function evaluateExpression(expression, optional) {
                 if (!angular.isFunction(directive.resolve) && !angular.isFunction(directive.resolve.then)) {
                     return directive;
                 }
+                if (!angular.isObject(directive.on)) {
+                    directive.on = {};
+                }
+                directive.on.failure = bracketToAnnotation(directive.on.failure);
+                if (!angular.isFunction(directive.on.failure)) {
+                    directive.on.failure = function (error, reason) {
+                        throw new Error(error, reason);
+                    };
+                }
                 //we will delete the templates so that rendering is not done by AngularJS
                 //we leave off the `template` to let directives place a sort of `loader` into the element
                 //before resolving the promise
@@ -1603,11 +1612,11 @@ function evaluateExpression(expression, optional) {
                             }).then(function (result) {
                                 definition.template = result.data;
                                 if (definition.template == "" || !/^\s*<.*>\s*$/m.test(definition.template)) {
-                                    throw new Error("Template for directive `" + id + "` must contain exactly one root element");
+                                    $injector.invoke(bindAnnotated(directive.on.failure, self, "Template for directive `" + id + "` must contain exactly one root element", null, $scope, $element, $attrs, $transclude));
                                 }
                                 templateAvailable.nudge.to.resolve(definition);
                             }, function (reason) {
-                                throw new Error("Failed to resolve template for directive `" + id + "` from url `" + definition.templateUrl + "`", reason);
+                                $injector.invoke(bindAnnotated(directive.on.failure, self, "Failed to resolve template for directive `" + id + "` from url `" + definition.templateUrl + "`", reason, $scope, $element, $attrs, $transclude));
                             });
                         } else {
                             //if the template is a function, we will resolve it
@@ -1615,9 +1624,9 @@ function evaluateExpression(expression, optional) {
                                 definition.template = definition.template.apply(null, [directive]);
                             }
                             if (!angular.isString(definition.template)) {
-                                throw new Error("Template for directive `" + id + "` must be a string");
+                                $injector.invoke(bindAnnotated(directive.on.failure, self, "Template for directive `" + id + "` must be a string", null, $scope, $element, $attrs, $transclude));
                             } else if (definition.template == "" || !/^\s*<.*>\s*$/m.test(definition.template)) {
-                                throw new Error("Template for directive `" + id + "` must contain exactly one root element");
+                                $injector.invoke(bindAnnotated(directive.on.failure, self, "Template for directive `" + id + "` must contain exactly one root element", null, $scope, $element, $attrs, $transclude));
                             }
                             templateAvailable.nudge.to.resolve(definition);
                         }
