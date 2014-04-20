@@ -2200,6 +2200,63 @@ function evaluateExpression(expression, optional) {
         this.$get.$inject = ["bu$configuration", "bu$toolRegistry", "bu$extensionRegistry", "$injector", "bu$directives", "bu$storage", "bu$require", "bu$directiveCompiler", "bu$registryFactory"];
     });
 
+    toolkit.service('bu$injector', ['$injector', function ($injector) {
+        var injector = this;
+        this.convert = function (fn) {
+            if (angular.isArray(fn) && fn.length > 0 && angular.isFunction(fn[fn.length - 1])) {
+                var fun = function () {
+                    return fn.apply(this, arguments);
+                };
+                fun.$inject = fn.splice(0, fn.length - 1);
+                return fun;
+            }
+            return fn;
+        };
+        this.bind = function (fn, context, p0, _) {
+            fn = injector.annotated(fn);
+            var args = [];
+            var i;
+            for (i = 2; i < arguments.length; i++) {
+                args.push(arguments[i]);
+            }
+            var fun = function () {
+                var currentArgs = [];
+                var i;
+                for (i = 0; i < args.length; i++) {
+                    currentArgs.push(args[i]);
+                }
+                for (i = 0; i < arguments.length; i++) {
+                    currentArgs.push(arguments[i]);
+                }
+                var context = this || context;
+                return fn.apply(context, currentArgs);
+            };
+            fun.$inject = [];
+            for (i = 0; i < args.length; i ++) {
+                fun.$inject.push(null);
+            }
+            for (i = 0; i < fn.$inject.length; i ++) {
+                fun.$inject.push(fn.$inject[i]);
+            }
+            return fun;
+        };
+        this.invoke = function (fn, context, locals) {
+            return $injector.invoke(fn, context, locals);
+        };
+        this.get = function (dependency) {
+            return $injector.get(dependency);
+        };
+        this.has = function (dependency) {
+            return $injector.has(dependency);
+        };
+        this.instantiate = function (type, locals) {
+            return $injector.instantiate(type, locals);
+        };
+        this.annotate = function (fn) {
+            return $injector.annotate(fn);
+        };
+    }]);
+
     /**
      * We will have to configure the $templateCache to look for 'bui:' namespace prefix and replace them
      * with the current namespace
