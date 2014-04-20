@@ -1,14 +1,17 @@
-(function ($injector) {
-    $injector.invoke(["bu$directives", function (directives) {
-        directives.register("helloJumbo", directives.instantiate([{
-            identifier: "learn",
-            type: "directive"
-        }], function () {
-            return {
-                templateUrl: "hello",
-                restrict: "E",
-                scope: {}
-            };
-        }));
-    }]);
-})(eval("$injector"));
+(function (BootstrapUI) {
+    BootstrapUI.directive({
+        helloJumbo: {
+            requirements: [{
+                type: 'directive',
+                identifier: 'learn'
+            }],
+            factory: function () {
+                return {
+                    templateUrl: "hello",
+                    restrict: "E",
+                    scope: {}
+                };
+            }
+        }
+    });
+})(eval('BootstrapUI'));

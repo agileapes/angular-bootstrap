@@ -1,13 +1,11 @@
-(function ($injector) {
-    $injector.invoke(["bu$directives", function (directives) {
-        directives.register("learnMore", directives.instantiate(function () {
-            return {
-                templateUrl: "learn",
-                restrict: "E",
-                scope: {
-                    address: "@"
-                }
-            };
-        }));
-    }]);
-})(eval("$injector"));
+(function (BootstrapUI) {
+    BootstrapUI.directive('learnMore', function () {
+        return {
+            templateUrl: "learn",
+            restrict: "E",
+            scope: {
+                address: "@"
+            }
+        };
+    });
+})(eval("BootstrapUI"));

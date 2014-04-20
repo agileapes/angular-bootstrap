@@ -751,6 +751,7 @@ function evaluateExpression(expression, optional) {
         this.$get = function ($http, $q, $rootScope, $injector, $timeout) {
             var loader = {
                 load: function (item) {
+                    var BootstrapUI = $injector.get('BootstrapUI');
                     var deferred = $q.defer();
                     if (angular.isArray(item)) {
                         var promises = [];
@@ -1782,6 +1783,7 @@ function evaluateExpression(expression, optional) {
                         node: angular.element(node)[0],
                         directive: directive
                     });
+                    bu$storage(node).set('bu$directive', directive);
                     $injector.invoke(compileFunction, bu$directiveCompiler, {
                         node: node,
                         scope: scope,
@@ -1789,7 +1791,6 @@ function evaluateExpression(expression, optional) {
                             node = angular.element(result);
                         }
                     });
-                    bu$storage(node).set('bu$directive', directive);
                     $(document).trigger('bu$compiled', {
                         node: angular.element(node)[0],
                         directive: directive,
@@ -1839,6 +1840,8 @@ function evaluateExpression(expression, optional) {
             $q.all(prerequisites).then(function () {
                 bu$directiveCompiler.register(id, factory);
                 bu$directiveCompiler.compile();
+            }, function (reason) {
+                throw new Error('Failed to load directive ' + id, reason);
             });
         };
     }]);
@@ -2141,37 +2144,48 @@ function evaluateExpression(expression, optional) {
         }
     }]);
 
-    toolkit.service('BootstrapUI', ["bu$configuration", "bu$toolRegistry", "bu$extensionRegistry", "bu$loader", "bu$directives", "bu$storage", "bu$require",
-        function (bu$configuration, bu$toolRegistry, bu$extensionRegistry, bu$loader, bu$directives, bu$storage, bu$require) {
-            this.configuration = bu$configuration;
-            this.tools = bu$toolRegistry;
-            this.extensions = bu$extensionRegistry;
-            this.loader = bu$loader;
-            this.directives = bu$directives;
-            this.storage = bu$storage;
-            this.require = bu$require;
-            this.directive = function (id, factory) {
-                if (angular.isUndefined(factory) && angular.isObject(id)) {
-                    angular.forEach(id, function (definition, name) {
-                        if (angular.isFunction(definition)) {
-                            definition = {
-                                requirements: [],
-                                factory: definition
-                            };
-                        }
-                        if (!angular.isObject(definition)) {
-                            throw new Error("Invalid definition for directive " + name);
-                        }
-                        if (!angular.isArray(definition.requirements)) {
-                            definition.requirements = [];
-                        }
-                        bu$directives.register(name, definition.requirements, definition.factory);
-                    });
-                } else {
-                    bu$directives.register(id, factory);
+    toolkit.provider('BootstrapUI', function () {
+        this.$get = function (bu$configuration, bu$toolRegistry, bu$extensionRegistry, $injector, bu$directives, bu$storage, bu$require, bu$directiveCompiler) {
+            return {
+                configuration: bu$configuration,
+                tools: bu$toolRegistry,
+                extensions: bu$extensionRegistry,
+                loader: $injector.get('bu$loader'),
+                directives: bu$directives,
+                storage: bu$storage,
+                require: bu$require,
+                directive: function (id, requirements, factory) {
+                    if (angular.isUndefined(factory) && angular.isDefined(requirements)) {
+                        factory = requirements;
+                        requirements = [];
+                    }
+                    if (angular.isUndefined(factory) && angular.isObject(id)) {
+                        angular.forEach(id, function (definition, name) {
+                            if (angular.isFunction(definition)) {
+                                definition = {
+                                    requirements: [],
+                                    factory: definition
+                                };
+                            }
+                            if (!angular.isObject(definition)) {
+                                throw new Error("Invalid definition for directive " + name);
+                            }
+                            if (!angular.isArray(definition.requirements)) {
+                                definition.requirements = [];
+                            }
+                            bu$directives.register(name, definition.requirements, definition.factory);
+                        });
+                    } else {
+                        bu$directives.register(id, requirements, factory);
+                    }
+                },
+                compile: function (root, compileFunction) {
+                    bu$directiveCompiler.compile(root, compileFunction);
                 }
             };
-        }]);
+        };
+        this.$get.$inject = ["bu$configuration", "bu$toolRegistry", "bu$extensionRegistry", "$injector", "bu$directives", "bu$storage", "bu$require", "bu$directiveCompiler"];
+    });
 
     /**
      * We will have to configure the $templateCache to look for 'bui:' namespace prefix and replace them
