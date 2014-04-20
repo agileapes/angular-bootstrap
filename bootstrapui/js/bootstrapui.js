@@ -1535,6 +1535,9 @@ function evaluateExpression(expression, optional) {
                         if (angular.isFunction(definition)) {
                             definition = $injector.invoke(bindAnnotated(definition, self, $scope, $element, $attrs));
                         }
+                        if (!angular.isObject(definition) && !angular.isString(definition)) {
+                            throw new Error("Expected to receive a promise, a definition object, or a template string, but got `" + definition + "` for directive `" + id + "`");
+                        }
                         if (angular.isFunction(definition.then)) {
                             definition.then(function (definition) {
                                 interim.resolve(definition);
