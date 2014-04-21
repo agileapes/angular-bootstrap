@@ -90,7 +90,8 @@
                     orientation: "@",
                     labelSize: "@",
                     ngModel: '=?',
-                    descriptor: '&?'
+                    descriptor: '&?',
+                    disabled: "@"
                 },
                 defaults: {
                     label: " ",
