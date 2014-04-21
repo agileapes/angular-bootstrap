@@ -496,6 +496,9 @@ function evaluateExpression(expression, optional) {
             if (!config.directivesBase) {
                 config.directivesBase = "js/directives";
             }
+            if (!config.toolsBase) {
+                config.toolsBase = "js/tools";
+            }
             if (!config.filtersBase) {
                 config.filtersBase = "js/filters";
             }
@@ -751,6 +754,7 @@ function evaluateExpression(expression, optional) {
         this.$get = function ($http, $q, $rootScope, $injector, $timeout) {
             var loader = {
                 load: function (item) {
+                    //noinspection JSUnusedLocalSymbols
                     var dependency = function (dependecy) {
                         return $injector.get(dependecy);
                     };
@@ -1468,9 +1472,6 @@ function evaluateExpression(expression, optional) {
                         var transclusionTarget = angular.isDefined($clone.attr('bu-transclude')) ? $clone : $clone.find('[bu-transclude]');
                         var src = "";
                         definition.$$preLink.$transclude(definition.$$preLink.$scope, function (transcludedElements) {
-                            if (transclusionTarget.length == 0 && !directive.transcludeProperty) {
-                                throw new Error("Transclusion target could not be found");
-                            }
                             angular.forEach(transcludedElements, function (transcludedElement) {
                                 if (directive.transcludeProperty) {
                                     src += transcludedElement.nodeValue ? transcludedElement.nodeValue : transcludedElement.outerHTML;
@@ -1479,7 +1480,9 @@ function evaluateExpression(expression, optional) {
                             });
                         });
                         //we also make available the transcluded bit so that it can be used later
-                        definition.$$preLink.$scope['$transcluded'] = src;
+                        if (angular.isString(directive.transcludeProperty)) {
+                            definition.$$preLink.$scope[directive.transcludeProperty] = src;
+                        }
                     }
                     sharedPromises[definition.id].transcluded.resolve(definition);
                 }, function (reason) {
