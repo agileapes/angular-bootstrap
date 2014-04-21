@@ -2,10 +2,10 @@
     <div class="form-group" ng-class="{'has-feedback': feedback, 'has-success': state == 'valid', 'has-error': state == 'invalid', 'has-warning': state == 'warning', 'has-info': state == 'notice'}">
         <div ng-show="orientation != 'inline'" class="checkbox {{(orientation == 'horizontal') ? ('col-sm-' + (12 - labelSize) + ' col-sm-offset-' + labelSize) : ''}}">
             <label>
-                <input id="{{id}}" type="{{type}}" ng-model="ngModel" /> {{label}}
+                <input ng-disabled="disabled" id="{{id}}" type="{{type}}" ng-model="ngModel" /> {{label}}
             </label>
             <span ng-if="feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
         </div>
-        <label ng-if="orientation == 'inline'" class="checkbox-inline"><input id="{{id}}" type="checkbox" ng-model="ngModel" /> {{label}} <span ng-if="feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span></label>
+        <label ng-if="orientation == 'inline'" class="checkbox-inline"><input ng-disabled="disabled" id="{{id}}" type="checkbox" ng-model="ngModel" /> {{label}} <span ng-if="feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span></label>
     </div>
 </div>
