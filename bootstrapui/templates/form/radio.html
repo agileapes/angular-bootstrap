@@ -1,0 +1,11 @@
+<div ng-class="{'form': orientation != 'inline','form-horizontal': orientation == 'horizontal', 'form-inline form-inline-container': orientation == 'inline'}">
+    <div class="form-group" ng-class="{'has-feedback': feedback, 'has-success': state == 'valid', 'has-error': state == 'invalid', 'has-warning': state == 'warning', 'has-info': state == 'notice'}">
+        <div ng-show="orientation != 'inline'" class="radio {{(orientation == 'horizontal') ? ('col-sm-' + (12 - labelSize) + ' col-sm-offset-' + labelSize) : ''}}">
+            <label>
+                <input id="{{id}}" name="bu-radio-{{group}}" type="radio" ng-model="ngModel" value="{{value}}" /> {{label}}
+            </label>
+            <span ng-if="feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
+        </div>
+        <label ng-if="orientation == 'inline'" class="radio-inline"><input id="{{id}}" type="radio" ng-model="ngModel" name="bu-radio-{{group}}" value="{{value}}" /> {{label}} <span ng-if="feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span></label>
+    </div>
+</div>
