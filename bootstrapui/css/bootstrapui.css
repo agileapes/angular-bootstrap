@@ -148,3 +148,11 @@ body {
 .form-inline.form-inline-container {
     display: inline-block;
 }
+
+.checkbox-inline {
+    padding-right: 30px;
+}
+
+.form-inline .has-feedback .checkbox-inline .form-control-feedback {
+    top: -5px;
+}
