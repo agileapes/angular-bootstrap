@@ -95,7 +95,8 @@
                     labelSize: "@",
                     ngModel: '=?',
                     descriptor: '&?',
-                    selection: "@"
+                    selection: "@",
+                    disabled: "@"
                 },
                 defaults: {
                     label: " ",

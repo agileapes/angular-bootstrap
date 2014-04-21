@@ -3,12 +3,12 @@
     <div class="form-group" ng-class="{'has-feedback': feedback, 'has-success': state == 'valid', 'has-error': state == 'invalid', 'has-warning': state == 'warning', 'has-info': state == 'notice'}">
         <label for="{{id}}" ng-class="{'sr-only': orientation == 'inline'}" class="control-label {{(orientation == 'horizontal') ? ('col-sm-' + labelSize) : ''}}"><span ng-if="label">{{label}}</span><span ng-if="!label && orientation == 'vertical'">&nbsp;</span></label>
         <div ng-show="orientation != 'inline'" class="{{(orientation == 'horizontal') ? ('col-sm-' + (12 - labelSize)) : ''}}">
-            <div ng-if="selection != 'single'" class="checkbox" ng-repeat="item in items track by item.value"><label><input type="checkbox" ng-model="item.selected" ng-change="changed()" />{{item.caption}}</label></div>
-            <div ng-if="selection == 'single'" class="radio" ng-repeat="item in items track by item.value"><label><input type="radio" name="bu-radio-{{id}}" value="{{item.value}}" ng-checked="item.selected" ng-click="changed(item);" />{{item.caption}}</label></div>
+            <div ng-if="selection != 'single'" class="checkbox" ng-repeat="item in items track by item.value"><label><input ng-disabled="disabled" type="checkbox" ng-model="item.selected" ng-change="changed()" />{{item.caption}}</label></div>
+            <div ng-if="selection == 'single'" class="radio" ng-repeat="item in items track by item.value"><label><input ng-disabled="disabled" type="radio" name="bu-radio-{{id}}" value="{{item.value}}" ng-checked="item.selected" ng-click="changed(item);" />{{item.caption}}</label></div>
             <span ng-if="feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
         </div>
-        <div ng-if="orientation == 'inline' && selection != 'single'" class="checkbox-inline" ng-repeat="item in items track by item.value"><label><input type="checkbox" ng-model="item.selected" ng-change="changed()" />{{item.caption}}</label></div>
-        <div ng-if="orientation == 'inline' && selection == 'single'" class="radio-inline" ng-repeat="item in items track by item.value"><label><input type="radio" name="bu-radio-{{id}}" value="{{item.value}}" ng-checked="item.selected" ng-click="changed(item);" />{{item.caption}}</label></div>
+        <div ng-if="orientation == 'inline' && selection != 'single'" class="checkbox-inline" ng-repeat="item in items track by item.value"><label><input ng-disabled="disabled" type="checkbox" ng-model="item.selected" ng-change="changed()" />{{item.caption}}</label></div>
+        <div ng-if="orientation == 'inline' && selection == 'single'" class="radio-inline" ng-repeat="item in items track by item.value"><label><input ng-disabled="disabled" type="radio" name="bu-radio-{{id}}" value="{{item.value}}" ng-checked="item.selected" ng-click="changed(item);" />{{item.caption}}</label></div>
         <span ng-if="orientation == 'inline' && feedback" class="glyphicon glyphicon-{{feedback}} form-control-feedback"></span>
     </div>
 </div>
