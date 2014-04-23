@@ -511,6 +511,13 @@ function evaluateExpression(expression, optional) {
             if (!config.filters) {
                 config.filters = [];
             }
+            config.directives.push('button');
+            config.directives.push('formAction');
+            config.directives.push('formContainer');
+            config.directives.push('formInput');
+            config.directives.push('formSelect');
+            config.directives.push('formSelectItem');
+            config.directives.push('icon');
             if (!config.debug) {
                 config.debug = false;
             }
@@ -1802,7 +1809,6 @@ function evaluateExpression(expression, optional) {
                     compileFunction.$inject = ["node", "scope", "offer"];
                 }
                 var uncompiled = bu$directiveCompiler.findUncompiled(root);
-                console.log(uncompiled);
                 bu$directiveCompiler.flush();
                 for (var i = 0; i < uncompiled.length; i++) {
                     var node = uncompiled[i];
@@ -1850,7 +1856,6 @@ function evaluateExpression(expression, optional) {
         var outstanding = {};
         var bu$directives = this;
         this.await = function (id) {
-            console.log('awaiting ' + id);
             outstanding[id] = $q.defer();
         };
         this.outstanding = function () {
@@ -1870,7 +1875,6 @@ function evaluateExpression(expression, optional) {
          * @param {Function} factory
          */
         this.register = function (id, requirements, factory) {
-            console.log('registering ' + id);
             if (angular.isUndefined(factory)) {
                 factory = requirements;
                 requirements = [];
@@ -1888,7 +1892,6 @@ function evaluateExpression(expression, optional) {
                 prerequisites.push(deferred.promise);
             }
             $q.all(prerequisites).then(function () {
-                console.log('resolving ' + id);
                 bu$directiveCompiler.register(id, factory);
                 if (bu$configuration('autoCompile') !== false) {
                     bu$directiveCompiler.compile();
@@ -2287,10 +2290,10 @@ function evaluateExpression(expression, optional) {
                 return fn.apply(context, currentArgs);
             };
             fun.$inject = [];
-            for (i = 0; i < args.length; i ++) {
+            for (i = 0; i < args.length; i++) {
                 fun.$inject.push(null);
             }
-            for (i = 0; i < fn.$inject.length; i ++) {
+            for (i = 0; i < fn.$inject.length; i++) {
                 fun.$inject.push(fn.$inject[i]);
             }
             return fun;
@@ -2329,6 +2332,20 @@ function evaluateExpression(expression, optional) {
              */
             return template.replace(/([^\$])bui:/gi, "$1" + prefix).replace(/\$(bui:)/gi, "$1");
         });
+    }]);
+
+    /**
+     * We start the application off by allowing BootstrapUI to preload all built-in directives
+     * and compiling the DOM tree as they are all done.
+     *
+     * A good place to add custom directives to the bunch is by specifying them through 'bu$configurationProvider'
+     * by adding them to the 'directives' array.
+     */
+    toolkit.run(['BootstrapUI', function (BootstrapUI) {
+        if (BootstrapUI.configuration('preloadAll')) {
+            BootstrapUI.loader.directive(BootstrapUI.configuration('directives'));
+            BootstrapUI.compileWhenReady();
+        }
     }]);
 
 })(evaluateExpression("window.angular"), evaluateExpression("window.jQuery"));
