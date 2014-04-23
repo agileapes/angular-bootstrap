@@ -9,7 +9,7 @@
             require: "^bu$FormContainer",
             restrict: "E",
             templateUrl: "formAction",
-            transclude: true,
+            transclude: true
         };
     });
 })(dependency('BootstrapUI'));
