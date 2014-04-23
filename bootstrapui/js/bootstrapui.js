@@ -866,6 +866,9 @@ function evaluateExpression(expression, optional) {
                         return loader.load(directives);
                     }
                     bu$directives.await(identifier);
+                    if (angular.isObject(identifier)) {
+                        return loader.load(identifier);
+                    }
                     return loader.load({
                         identifier: identifier,
                         type: 'directive'
