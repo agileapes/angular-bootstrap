@@ -857,6 +857,11 @@ function evaluateExpression(expression, optional) {
                     if (angular.isArray(identifier)) {
                         var directives = [];
                         for (var i = 0; i < identifier.length; i++) {
+                            if (angular.isObject(identifier[i])) {
+                                directives.push(identifier[i]);
+                                bu$directives.await(identifier[i].identifier);
+                                continue;
+                            }
                             bu$directives.await(identifier[i]);
                             directives.push({
                                 identifier: identifier[i],
@@ -865,10 +870,11 @@ function evaluateExpression(expression, optional) {
                         }
                         return loader.load(directives);
                     }
-                    bu$directives.await(identifier);
                     if (angular.isObject(identifier)) {
+                        bu$directives.await(identifier.identifier);
                         return loader.load(identifier);
                     }
+                    bu$directives.await(identifier);
                     return loader.load({
                         identifier: identifier,
                         type: 'directive'
