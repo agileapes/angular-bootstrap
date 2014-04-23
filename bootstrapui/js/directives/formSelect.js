@@ -158,6 +158,15 @@
                             };
                         } else {
                             scope.changed = function (item) {
+                                if (angular.isUndefined(item)) {
+                                    item = {
+                                        value: scope.current
+                                    };
+                                } else if (!angular.isObject(item)) {
+                                    item = {
+                                        value: item
+                                    };
+                                }
                                 scope.ngModel = [item.value];
                             };
                         }
