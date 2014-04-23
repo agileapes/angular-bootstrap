@@ -778,7 +778,7 @@ function evaluateExpression(expression, optional) {
                                 });
                             });
                         });
-                        return deferred.promise;
+                        return angular.extend({}, loader, deferred.promise);
                     }
                     if (angular.isUndefined(item.type)) {
                         deferred.reject("Cannot load item without a type");
@@ -843,12 +843,14 @@ function evaluateExpression(expression, optional) {
                             });
                         });
                     });
-                    return loaded;
+                    return angular.extend({}, loader, loaded);
                 },
                 directive: function (identifier) {
+                    var bu$directives = $injector.get('bu$directives');
                     if (angular.isArray(identifier)) {
                         var directives = [];
                         for (var i = 0; i < identifier.length; i++) {
+                            bu$directives.await(identifier[i]);
                             directives.push({
                                 identifier: identifier[i],
                                 type: 'directive'
@@ -856,6 +858,7 @@ function evaluateExpression(expression, optional) {
                         }
                         return loader.load(directives);
                     }
+                    bu$directives.await(identifier);
                     return loader.load({
                         identifier: identifier,
                         type: 'directive'
@@ -1799,6 +1802,7 @@ function evaluateExpression(expression, optional) {
                     compileFunction.$inject = ["node", "scope", "offer"];
                 }
                 var uncompiled = bu$directiveCompiler.findUncompiled(root);
+                console.log(uncompiled);
                 bu$directiveCompiler.flush();
                 for (var i = 0; i < uncompiled.length; i++) {
                     var node = uncompiled[i];
@@ -1842,7 +1846,23 @@ function evaluateExpression(expression, optional) {
         this.$get.$inject = ["bu$name", "$rootElement", "$compile", "$rootScope", "bu$configuration", "bu$interval", "$q", "bu$storage", "$injector"];
     }]);
 
-    toolkit.service('bu$directives', ["bu$directiveCompiler", "bu$loader", "$q", function (bu$directiveCompiler, bu$loader, $q) {
+    toolkit.service('bu$directives', ["bu$directiveCompiler", "bu$loader", "$q", "bu$configuration", function (bu$directiveCompiler, bu$loader, $q, bu$configuration) {
+        var outstanding = {};
+        var bu$directives = this;
+        this.await = function (id) {
+            console.log('awaiting ' + id);
+            outstanding[id] = $q.defer();
+        };
+        this.outstanding = function () {
+            var result = {};
+            result.$all = [];
+            angular.forEach(outstanding, function (deferred, directive) {
+                result[directive] = deferred.promise;
+                result.$all.push(deferred.promise);
+            });
+            result.$all = $q.all(result.$all);
+            return result;
+        };
         /**
          * Registers a new directive definition factory or object, given its dependencies
          * @param {String} id
@@ -1850,6 +1870,7 @@ function evaluateExpression(expression, optional) {
          * @param {Function} factory
          */
         this.register = function (id, requirements, factory) {
+            console.log('registering ' + id);
             if (angular.isUndefined(factory)) {
                 factory = requirements;
                 requirements = [];
@@ -1867,8 +1888,15 @@ function evaluateExpression(expression, optional) {
                 prerequisites.push(deferred.promise);
             }
             $q.all(prerequisites).then(function () {
+                console.log('resolving ' + id);
                 bu$directiveCompiler.register(id, factory);
-                bu$directiveCompiler.compile();
+                if (bu$configuration('autoCompile') !== false) {
+                    bu$directiveCompiler.compile();
+                }
+                if (angular.isUndefined(outstanding[id])) {
+                    bu$directives.await(id);
+                }
+                outstanding[id].resolve();
             }, function (reason) {
                 throw new Error('Failed to load directive ' + id, reason);
             });
@@ -2176,7 +2204,7 @@ function evaluateExpression(expression, optional) {
 
     toolkit.provider('BootstrapUI', function () {
         this.$get = function (bu$configuration, bu$toolRegistry, bu$extensionRegistry, $injector, bu$directives, bu$storage, bu$require, bu$directiveCompiler, bu$registryFactory) {
-            return {
+            var BootstrapUI = {
                 configuration: bu$configuration,
                 tools: bu$toolRegistry,
                 extensions: bu$extensionRegistry,
@@ -2212,8 +2240,17 @@ function evaluateExpression(expression, optional) {
                 compile: function (root, compileFunction) {
                     bu$directiveCompiler.compile(root, compileFunction);
                 },
-                registry: bu$registryFactory
+                registry: bu$registryFactory,
+                ready: function () {
+                    return bu$directives.outstanding().$all;
+                },
+                compileWhenReady: function (root, compileFunction) {
+                    BootstrapUI.ready().then(function () {
+                        BootstrapUI.compile(root, compileFunction);
+                    });
+                }
             };
+            return BootstrapUI;
         };
         this.$get.$inject = ["bu$configuration", "bu$toolRegistry", "bu$extensionRegistry", "$injector", "bu$directives", "bu$storage", "bu$require", "bu$directiveCompiler", "bu$registryFactory"];
     });
