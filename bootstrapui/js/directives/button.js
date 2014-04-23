@@ -22,9 +22,7 @@
             controller: function ($scope, $element) {
                 $($element).find('[ng-transclude]').attr('ng-transclude', null);
                 var expression = undefined;
-                console.log($scope);
                 $scope.act = function () {
-                    console.log($scope.$parent);
                     if (angular.isUndefined(expression)) {
                         if ($scope.action) {
                             expression = $parse($scope.action);
