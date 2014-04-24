@@ -351,7 +351,7 @@ function evaluateExpression(expression, optional) {
      * Defines module buMain to be used for AngularJS applications
      * @type {module}
      */
-    var toolkit = angular.module("buMain", []);
+    var toolkit = angular.module("buMain", [], null);
     toolkit.value("bu.version", "0.7");
 
     (function () {
@@ -2215,7 +2215,7 @@ function evaluateExpression(expression, optional) {
     }]);
 
     toolkit.provider('BootstrapUI', function () {
-        this.$get = function (bu$configuration, bu$toolRegistry, bu$extensionRegistry, $injector, bu$directives, bu$storage, bu$require, bu$directiveCompiler, bu$registryFactory) {
+        this.$get = function (bu$configuration, bu$toolRegistry, bu$extensionRegistry, $injector, bu$directives, bu$storage, bu$require, bu$directiveCompiler, bu$registryFactory, bu$filters) {
             var BootstrapUI = {
                 configuration: bu$configuration,
                 tools: bu$toolRegistry,
@@ -2249,6 +2249,9 @@ function evaluateExpression(expression, optional) {
                         bu$directives.register(id, requirements, factory);
                     }
                 },
+                filter: function (name, factory) {
+                    bu$filters.register(name, factory);
+                },
                 compile: function (root, compileFunction) {
                     bu$directiveCompiler.compile(root, compileFunction);
                 },
@@ -2264,7 +2267,7 @@ function evaluateExpression(expression, optional) {
             };
             return BootstrapUI;
         };
-        this.$get.$inject = ["bu$configuration", "bu$toolRegistry", "bu$extensionRegistry", "$injector", "bu$directives", "bu$storage", "bu$require", "bu$directiveCompiler", "bu$registryFactory"];
+        this.$get.$inject = ["bu$configuration", "bu$toolRegistry", "bu$extensionRegistry", "$injector", "bu$directives", "bu$storage", "bu$require", "bu$directiveCompiler", "bu$registryFactory", "bu$filters"];
     });
 
     toolkit.service('bu$injector', ['$injector', function ($injector) {
@@ -2341,6 +2344,20 @@ function evaluateExpression(expression, optional) {
              */
             return template.replace(/([^\$])bui:/gi, "$1" + prefix).replace(/\$(bui:)/gi, "$1");
         });
+    }]);
+
+    toolkit.provider('bu$filters', ['$provide', '$filterProvider', function ($provide, $filterProvider) {
+        this.$get = function ($rootScope, bu$injector) {
+            return {
+                register: function (id, filter) {
+                    filter = bu$injector.convert(filter);
+                    $rootScope.$apply.postpone($rootScope, [function () {
+                        $filterProvider.register(id, filter);
+                    }]);
+                }
+            };
+        };
+        this.$get.$inject = ['$rootScope', 'bu$injector'];
     }]);
 
     /**
