@@ -1,0 +1,25 @@
+<div class="grid table-responsive" xmlns:bui="http://www.agileapes.com/ui">
+    <div ng-if="error" class="alert alert-danger">{{error}}</div>
+    <table ng-if="!error" class="table" ng-class="{'table-striped': striped, 'table-bordered': bordered, 'table-hover': hover, 'table-condensed': condensed}">
+        <tr>
+            <th class="col-sm-{{header.width}} {{className}}" ng-repeat="header in ngModel.headers">{{header.text}}</th>
+        </tr>
+        <tr ng-repeat="row in view.data" ng-class="{'active': 'active', 'success': 'success', 'info': 'info', 'warning': 'warning', 'danger': 'danger'}[row.$state]">
+            <td ng-repeat="header in ngModel.headers" ng-bind-html="row[header.id]"></td>
+        </tr>
+        <tr ng-hide="view.data.length > 0">
+            <td colspan="{{ngModel.headers.length}}" style="text-align: center;">{{noData}}</td>
+        </tr>
+    </table>
+    <div class="controls" ng-if="controls">
+        <ul class="pagination">
+            <li ng-click="goto(1)" ng-class="{'disabled': view.page <= 1}"><a href="javascript:void(0);"><bui:icon glyph="fast-backward"></bui:icon></a></li>
+            <li ng-click="goto(view.page - 1)" ng-class="{'disabled': view.page <= 1}"><a href="javascript:void(0);"><bui:icon glyph="backward"></bui:icon></a></li>
+            <li ng-if="view.pages > 6 && view.page > 3"><a>&hellip;</a></li>
+            <li ng-show="view.data.length > 0" ng-click="goto(page)" ng-repeat="page in [] | range:5:view.page:1:view.pages" ng-class="{'active': page == view.page}"><a href="javascript:void(0);">{{page}}</a></li>
+            <li ng-if="view.pages > 6 && view.pages - view.page > 3"><a>&hellip;</a></li>
+            <li ng-click="goto(view.page + 1)" ng-class="{'disabled': view.page >= view.pages}"><a href="javascript:void(0);"><bui:icon glyph="forward"></bui:icon></a></li>
+            <li ng-click="goto(view.pages)" ng-class="{'disabled': view.page >= view.pages}"><a href="javascript:void(0);"><bui:icon glyph="fast-forward"></bui:icon></a></li>
+        </ul>
+    </div>
+</div>
