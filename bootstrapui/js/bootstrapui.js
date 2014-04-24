@@ -518,6 +518,7 @@ function evaluateExpression(expression, optional) {
             config.directives.push('formSelect');
             config.directives.push('formSelectItem');
             config.directives.push('icon');
+            config.directives.push('grid');
             if (!config.debug) {
                 config.debug = false;
             }
