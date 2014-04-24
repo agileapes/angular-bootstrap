@@ -33,7 +33,38 @@
                 controls: true,
                 noData: "Nothing to show :-)"
             },
-            controller: ["$scope", "$element", "$attrs", "$transclude", "$filter", "$sce", "$q", function controller($scope, $element, $attrs, $transclude, $filter, $sce, $q) {
+            controller: ["$scope", "$element", "$attrs", "$transclude", "$filter", "$sce", "$q", "$interpolate", function controller($scope, $element, $attrs, $transclude, $filter, $sce, $q, $interpolate) {
+                var helper = {
+                    find: function (key) {
+                        var deferred = $q.defer();
+                        for (var i = 0; i < $scope.ngModel.data.length; i++) {
+                            if ($scope.ngModel.data[i][$scope.ngModel.key] == key) {
+                                deferred.resolve({
+                                    index: i,
+                                    data: $scope.ngModel.data[i]
+                                });
+                                break;
+                            }
+                        }
+                        deferred.reject();
+                        return {
+                            then: function (success, failure) {
+                                deferred.promise.then(function (descriptor) {
+                                    $scope.$apply.postpone($scope, [function () {
+                                        success.call(null, descriptor);
+                                    }]);
+                                }, function () {
+                                    $scope.$apply.postpone($scope, [function () {
+                                        failure.call();
+                                    }]);
+                                });
+                            }
+                        };
+                    },
+                    current: function () {
+                        return item;
+                    }
+                };
                 var paginator = $filter('paginator');
                 var controller = this;
                 $scope.$watch('ngModel', function (value) {
@@ -137,46 +168,12 @@
                                 };
                             }
                             if (angular.isFunction(item[header.id])) {
-                                var helper = {
-                                    find: function (key) {
-                                        var deferred = $q.defer();
-                                        for (var i = 0; i < $scope.ngModel.data.length; i++) {
-                                            if ($scope.ngModel.data[i][$scope.ngModel.key] == key) {
-                                                deferred.resolve({
-                                                    index: i,
-                                                    data: $scope.ngModel.data[i]
-                                                });
-                                                break;
-                                            }
-                                        }
-                                        deferred.reject();
-                                        return {
-                                            then: function (success, failure) {
-                                                deferred.promise.then(function (descriptor) {
-                                                    $scope.$apply.postpone($scope, [function () {
-                                                        success.call(null, descriptor);
-                                                    }]);
-                                                }, function () {
-                                                    $scope.$apply.postpone($scope, [function () {
-                                                        failure.call();
-                                                    }]);
-                                                });
-                                            }
-                                        };
-                                    },
-                                    current: function () {
-                                        return item;
-                                    }
-                                };
                                 item[header.id] = item[header.id].apply(controller, [$scope, $element, $attrs, helper]);
                             }
                             var html = item[header.id] === null ? "null" : (item[header.id] === undefined ? "" : item[header.id].toString());
-                            html = html.replace(/\{\{\s*\$key\s*\}\}/g, function () {
-                                var value = item[$scope.ngModel.key];
-                                if (angular.isString(value)) {
-                                    value = '"' + value.replace(/(^|[^\\])"/g, '$1\\"');
-                                }
-                                return value;
+                            html = $interpolate(html)({
+                                $key: item[$scope.ngModel.key],
+                                $item: item
                             });
                             item[header.id] = $sce.trustAsHtml(html);
                         });
