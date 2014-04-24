@@ -13,7 +13,7 @@
                 pageSize = input.length;
             }
             if (pageSize <= 0) {
-                pageSize = 1;
+                pageSize = input.length;
             }
             if (pageSize >= input.length) {
                 return input;
