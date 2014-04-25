@@ -2361,6 +2361,36 @@ function evaluateExpression(expression, optional) {
         this.$get.$inject = ['$rootScope', 'bu$injector'];
     }]);
 
+    toolkit.factory('bu$event', function () {
+        return function ($scope, locals) {
+            var context = angular.extend({}, locals);
+            var privates = {};
+            angular.forEach(context, function (value, key) {
+                if (angular.isFunction(value)) {
+                    context[key] = function () {
+                        return value.apply(privates, arguments);
+                    };
+                } else {
+                    privates[key] = value;
+                    context[key] = function () {
+                        return privates[key];
+                    };
+                }
+            });
+            return {
+                $emit: function (name) {
+                    $scope.$emit(name, context);
+                },
+                $broadcast: function (name) {
+                    $scope.$broadcast(name, context);
+                },
+                $get: function () {
+                    return context;
+                }
+            };
+        };
+    });
+
     /**
      * We start the application off by allowing BootstrapUI to preload all built-in directives
      * and compiling the DOM tree as they are all done.
