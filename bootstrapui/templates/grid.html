@@ -8,18 +8,24 @@
             <td ng-repeat="header in ngModel.headers" ng-bind-html="row[header.id]"></td>
         </tr>
         <tr ng-hide="view.data.length > 0">
-            <td colspan="{{ngModel.headers.length}}" style="text-align: center;">{{noData}}</td>
+            <td colspan="{{ngModel.headers.length}}" rowspan="{{ngModel.view.rows}}" style="text-align: center;"><span ng-bind-html="loading || noData"></span></td>
+        </tr>
+        <tr ng-show="angular.isDefined(loading)">
+            <td colspan="{{ngModel.headers.length}}" rowspan="{{ngModel.view.rows}}" style="text-align: center;" ng-bind-html="loading"></td>
         </tr>
     </table>
     <div class="controls" ng-if="controls">
+        {{view.page}}
+        {{view.currentPages}}
+        {{pageList}}
         <ul class="pagination">
-            <li ng-click="goto(1)" ng-class="{'disabled': view.page <= 1}"><a href="javascript:void(0);"><bui:icon glyph="fast-backward"></bui:icon></a></li>
-            <li ng-click="goto(view.page - 1)" ng-class="{'disabled': view.page <= 1}"><a href="javascript:void(0);"><bui:icon glyph="backward"></bui:icon></a></li>
-            <li ng-if="view.pages > 6 && view.page > 3"><a>&hellip;</a></li>
-            <li ng-show="view.data.length > 0" ng-click="goto(page)" ng-repeat="page in [] | range:5:view.page:1:view.pages" ng-class="{'active': page == view.page}"><a href="javascript:void(0);">{{page}}</a></li>
-            <li ng-if="view.pages > 6 && view.pages - view.page > 3"><a>&hellip;</a></li>
-            <li ng-click="goto(view.page + 1)" ng-class="{'disabled': view.page >= view.pages}"><a href="javascript:void(0);"><bui:icon glyph="forward"></bui:icon></a></li>
-            <li ng-click="goto(view.pages)" ng-class="{'disabled': view.page >= view.pages}"><a href="javascript:void(0);"><bui:icon glyph="fast-forward"></bui:icon></a></li>
+            <li ng-click="goto(view.page <= 1 || loading || view.data.length == 0, 1)" ng-class="{'disabled': view.page <= 1 || loading || view.data.length == 0}"><a href="javascript:void(0);"><bui:icon glyph="fast-backward"></bui:icon></a></li>
+            <li ng-click="goto(view.page <= 1 || loading || view.data.length == 0, view.page - 1)" ng-class="{'disabled': view.page <= 1 || loading || view.data.length == 0}"><a href="javascript:void(0);"><bui:icon glyph="backward"></bui:icon></a></li>
+            <li ng-if="view.currentPages > 6 && view.page > 3"><a>&hellip;</a></li>
+            <li ng-show="pageList.length > 0" ng-click="goto(loading || view.data.length == 0, page)" ng-repeat="page in pageList" ng-class="{'active': page == view.page, 'disabled':  loading || view.data.length == 0}"><a href="javascript:void(0);">{{page}}</a></li>
+            <li ng-if="view.currentPages > 6 && view.currentPages - view.page > 3"><a>&hellip;</a></li>
+            <li ng-click="goto(view.page >= view.currentPages || loading || view.data.length == 0, view.page + 1)" ng-class="{'disabled': view.page >= view.currentPages || loading || view.data.length == 0}"><a href="javascript:void(0);"><bui:icon glyph="forward"></bui:icon></a></li>
+            <li ng-click="goto(view.page >= view.currentPages || loading || view.data.length == 0, view.currentPages)" ng-class="{'disabled': view.page >= view.currentPages || loading || view.data.length == 0}"><a href="javascript:void(0);"><bui:icon glyph="fast-forward"></bui:icon></a></li>
         </ul>
     </div>
 </div>
