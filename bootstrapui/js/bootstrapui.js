@@ -1207,10 +1207,7 @@ function evaluateExpression(expression, optional) {
                 });
                 var compile = directive.compile;
                 directive.compile = function (tElement, tAttrs) {
-                    var linker = $injector.invoke(bracketToAnnotation(compile), this, {
-                        tElement: tElement,
-                        tAttrs: tAttrs
-                    });
+                    var linker = $injector.invoke(bindAnnotated(compile, this, tElement, tAttrs));
                     if (angular.isFunction(linker)) {
                         linker = {
                             post: linker
@@ -1220,12 +1217,18 @@ function evaluateExpression(expression, optional) {
                     linker.post = bracketToAnnotation(linker.post);
                     return {
                         pre: function (scope, element, attributes, controller, $transclude) {
+                            if (!angular.isFunction(linker.pre)) {
+                                return;
+                            }
                             $timeout(function () {
                                 linker.pre.$inject = undefined;
                                 $injector.invoke(bindAnnotated(linker.pre, this, scope, element, attributes, controller, $transclude));
                             });
                         },
                         post: function (scope, element, attributes, controller, $transclude) {
+                            if (!angular.isFunction(linker.post)) {
+                                return;
+                            }
                             $timeout(function () {
                                 linker.post.$inject = undefined;
                                 $injector.invoke(bindAnnotated(linker.post, this, scope, element, attributes, controller, $transclude));
