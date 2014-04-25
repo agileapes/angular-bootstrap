@@ -5,18 +5,22 @@
             if (!angular.isArray(input)) {
                 return input;
             }
-            if (!angular.isNumber(start)) {
+            if (!angular.isNumber(parseInt(start))) {
                 start = 1;
             }
-            if (!angular.isNumber(current)) {
+            if (!angular.isNumber(parseInt(current))) {
                 current = 1;
             }
-            if (!angular.isNumber(end)) {
+            if (!angular.isNumber(parseInt(end))) {
                 end = current;
             }
-            if (!angular.isNumber(range)) {
+            if (!angular.isNumber(parseInt(range))) {
                 range = 10;
             }
+            start = parseInt(start);
+            end = parseInt(end);
+            current = parseInt(current);
+            range = parseInt(range);
             if (end < start) {
                 end = start;
             }
