@@ -16,6 +16,8 @@
             templateUrl: "grid",
             scope: {
                 ngModel: '=',
+                selected: '=?',
+                selection: '@',
                 rows: '@',
                 page: '@',
                 striped: '@',
@@ -26,6 +28,7 @@
                 noData: "@"
             },
             defaults: {
+                selection: 'none',
                 striped: false,
                 hover: false,
                 condensed: false,
@@ -72,6 +75,7 @@
                 var paginator = $filter('paginator');
                 var range = $filter('range');
                 var controller = this;
+                var selection = [];
                 $scope.view = {};
                 $scope.view.pages = function () {
                     var event = bu$event($scope, {
@@ -103,23 +107,6 @@
                     }
                     if (!angular.isArray($scope.ngModel.data)) {
                         $scope.ngModel.data = [];
-                    }
-                    if (angular.isUndefined($scope.ngModel.key)) {
-                        $scope.ngModel.key = "";
-                    }
-                    if (!angular.isObject($scope.ngModel.view)) {
-                        $scope.ngModel.view = {};
-                    }
-                    if (!angular.isNumber($scope.ngModel.view.rows)) {
-                        $scope.ngModel.view.rows = angular.isNumber($scope.rows) ? $scope.rows : 10;
-                    }
-                    if (angular.isUndefined($scope.ngModel.view.page)) {
-                        $scope.ngModel.view.page = angular.isNumber($scope.page) ? $scope.page : 1;
-                    } else {
-                        $scope.ngModel.view.page = parseInt($scope.ngModel.view.page);
-                    }
-                    if (angular.isUndefined($scope.ngModel.view.controls)) {
-                        $scope.ngModel.view.controls = true;
                     }
                     angular.forEach($scope.ngModel.headers, function (header, index) {
                         if ($scope.error) {
@@ -156,6 +143,23 @@
                         }
                         $scope.ngModel.headers[index] = header;
                     });
+                    if (angular.isUndefined($scope.ngModel.key)) {
+                        $scope.ngModel.key = $scope.ngModel.headers[0].id;
+                    }
+                    if (!angular.isObject($scope.ngModel.view)) {
+                        $scope.ngModel.view = {};
+                    }
+                    if (!angular.isNumber($scope.ngModel.view.rows)) {
+                        $scope.ngModel.view.rows = angular.isNumber($scope.rows) ? $scope.rows : 10;
+                    }
+                    if (angular.isUndefined($scope.ngModel.view.page)) {
+                        $scope.ngModel.view.page = angular.isNumber($scope.page) ? $scope.page : 1;
+                    } else {
+                        $scope.ngModel.view.page = parseInt($scope.ngModel.view.page);
+                    }
+                    if (angular.isUndefined($scope.ngModel.view.controls)) {
+                        $scope.ngModel.view.controls = true;
+                    }
                     if ($scope.error) {
                         return;
                     }
@@ -189,6 +193,8 @@
                     });
                     event.$emit('bu.grid.navigating');
                     if (!event.$get().cancelled()) {
+                        selection = [];
+                        $scope.selected = [];
                         $scope.ngModel.view.page = target;
                         event.$emit('bu.grid.navigated');
                     }
@@ -221,7 +227,9 @@
                         $scope.loading = undefined;
                         var finalView = [];
                         for (var i = 0; i < data.length; i++) {
-                            finalView.push(angular.extend({}, data[i]));
+                            finalView.push(angular.extend({}, data[i], {
+                                $index: i
+                            }));
                             angular.forEach($scope.ngModel.headers, function (header) {
                                 var item = finalView[i];
                                 if (angular.isUndefined(item[header.id])) {
@@ -242,6 +250,44 @@
                         }
                         $scope.view.data = finalView;
                     });
+                };
+                $scope.toggle = function (row) {
+                    if (angular.isUndefined(row.$selected)) {
+                        row.$selected = false;
+                    }
+                    var i;
+                    if ($scope.selection == 'single') {
+                        for (i = 0; i < $scope.view.data.length; i++) {
+                            if (row.$index == i) {
+                                continue;
+                            }
+                            $scope.view.data[i].$selected = false;
+                        }
+                        selection = [];
+                    } else if ($scope.selection != 'multiple') {
+                        return;
+                    }
+                    row.$selected = !row.$selected;
+                    if (row.$selected) {
+                        selection.push(row);
+                    } else {
+                        for (i = 0; i < selection.length; i++) {
+                            if (selection[i].$index == row.$index) {
+                                selection.splice(i, 1);
+                                break;
+                            }
+                        }
+                    }
+                    for (i = 0; i < selection.length; i++) {
+                        var item = angular.extend({}, selection[i]);
+                        angular.forEach(item, function (value, key) {
+                            if (angular.isObject(value) && angular.isFunction(value.$$unwrapTrustedValue)) {
+                                item[key] = $sce.getTrustedHtml(value);
+                            }
+                        });
+                        selection[i] = item;
+                    }
+                    $scope.selected = selection;
                 };
             }]
         };

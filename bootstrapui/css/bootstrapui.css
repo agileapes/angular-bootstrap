@@ -156,3 +156,11 @@ body {
 .form-inline .has-feedback .checkbox-inline .form-control-feedback, .form-inline .has-feedback .radio-inline .form-control-feedback {
     top: -5px;
 }
+
+.grid table.selectable tr.table-row {
+    cursor: pointer;
+}
+
+.grid table.selectable tr.table-row.selected td {
+    background: #d4dff3;
+}
