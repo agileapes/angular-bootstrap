@@ -15,9 +15,6 @@
         </tr>
     </table>
     <div class="controls" ng-if="controls">
-        {{view.page}}
-        {{view.currentPages}}
-        {{pageList}}
         <ul class="pagination">
             <li ng-click="goto(view.page <= 1 || loading || view.data.length == 0, 1)" ng-class="{'disabled': view.page <= 1 || loading || view.data.length == 0}"><a href="javascript:void(0);"><bui:icon glyph="fast-backward"></bui:icon></a></li>
             <li ng-click="goto(view.page <= 1 || loading || view.data.length == 0, view.page - 1)" ng-class="{'disabled': view.page <= 1 || loading || view.data.length == 0}"><a href="javascript:void(0);"><bui:icon glyph="backward"></bui:icon></a></li>
