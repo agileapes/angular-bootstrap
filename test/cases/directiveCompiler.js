@@ -18,13 +18,19 @@ describe("Directive Compiler Service `bu$directiveCompiler`", function () {
             });
         //loading module
         module("myApplication");
+        inject(function ($httpBackend, bu$configuration) {
+            angular.forEach(bu$configuration('directives'), function (directive) {
+                $httpBackend.whenGET('./js/directives/' + directive + '.js').respond({});
+            });
+        });
     });
 
     afterEach(function () {
         //cleaning up the test root
         testRoot.remove();
-        inject(function ($timeout) {
+        inject(function ($timeout, $httpBackend) {
             $timeout.verifyNoPendingTasks();
+            $httpBackend.verifyNoOutstandingExpectation();
         });
     });
 

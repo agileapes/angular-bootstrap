@@ -50,7 +50,8 @@ describe("BootstrapUI's configuration", function () {
         }));
 
         it("expects no additional directives to be loaded `config.directives`", inject(function (bu$configuration) {
-            expect(bu$configuration.directives).toEqual([]);
+            expect(bu$configuration.directives.sort()).toEqual(['button', 'formAction', 'formContainer', 'formInput',
+                'formSelect', 'formSelectItem', 'grid', 'icon' ].sort());
         }));
 
         it("expects no additional filters ot be loaded `config.filters`", inject(function (bu$configuration) {
@@ -87,7 +88,7 @@ describe("BootstrapUI's configuration", function () {
             expect(bu$configuration.filtersBase).toBe("js/filters");
             expect(bu$configuration.templatesBase).toBe("templates");
             expect(bu$configuration.namespace).toBe("ui");
-            expect(bu$configuration.directives).toEqual([]);
+            expect(bu$configuration.directives.sort()).toEqual(['button', 'formAction', 'formContainer', 'formInput', 'formSelect', 'formSelectItem', 'grid', 'icon' ].sort());
             expect(bu$configuration.filters).toEqual([]);
             expect(bu$configuration.debug).toBe(false);
             expect(bu$configuration.preloadAll).toBe(true);

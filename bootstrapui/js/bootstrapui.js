@@ -471,7 +471,7 @@ function evaluateExpression(expression, optional) {
 
         this.reset = function () {
             config = function (key, value) {
-                if (typeof value == "undefined") {
+                if (angular.isUndefined(value)) {
                     return read(config, key);
                 } else {
                     config = write(config, key, value);
@@ -511,14 +511,22 @@ function evaluateExpression(expression, optional) {
             if (!config.filters) {
                 config.filters = [];
             }
-            config.directives.push('button');
-            config.directives.push('formAction');
-            config.directives.push('formContainer');
-            config.directives.push('formInput');
-            config.directives.push('formSelect');
-            config.directives.push('formSelectItem');
-            config.directives.push('icon');
-            config.directives.push('grid');
+            config.directives.pushNew = function (item) {
+                for (var i = 0; i < config.directives.length; i++) {
+                    if (config.directives[i] == item) {
+                        return;
+                    }
+                }
+                config.directives.push(item);
+            };
+            config.directives.pushNew('button');
+            config.directives.pushNew('formAction');
+            config.directives.pushNew('formContainer');
+            config.directives.pushNew('formInput');
+            config.directives.pushNew('formSelect');
+            config.directives.pushNew('formSelectItem');
+            config.directives.pushNew('grid');
+            config.directives.pushNew('icon');
             if (!config.debug) {
                 config.debug = false;
             }
@@ -1739,6 +1747,11 @@ function evaluateExpression(expression, optional) {
              */
             register: function (id, directive) {
                 registry.register(id, directive);
+                if (angular.mock) {
+                    if ($injector.get('$browser').deferredFns.length > 0) {
+                        $injector.get('$timeout').flush();
+                    }
+                }
             },
             /**
              * @returns {Array} all registered directives
@@ -1804,6 +1817,11 @@ function evaluateExpression(expression, optional) {
                     }
                 };
                 collect(root[0]);
+                if (angular.mock) {
+                    if ($injector.get('$browser').deferredFns.length > 0) {
+                        $injector.get('$timeout').flush();
+                    }
+                }
                 return nodes;
             },
             /**

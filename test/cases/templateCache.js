@@ -32,7 +32,7 @@ describe("TemplateCache", function () {
                 templateCacheProvider = $templateCacheProvider;
             });
         module("myApplicationModule");
-        inject(function ($templateCache, bu$cachingHttp) {
+        inject(function ($templateCache, bu$cachingHttp, $httpBackend, bu$configuration) {
             firstUrl = "1.html";
             $http = bu$cachingHttp;
             templateCache = $templateCache;
@@ -40,11 +40,17 @@ describe("TemplateCache", function () {
             spyOn(delegateCache, "put").and.callThrough();
             spyOn(templateCache, "get").and.callThrough();
             spyOn($http, "get").and.callThrough();
+            angular.forEach(bu$configuration('directives'), function (directive) {
+                $httpBackend.whenGET('./js/directives/' + directive + '.js').respond({});
+            });
         });
     });
 
     afterEach(function () {
         $http.verifyNoOutstandingExpectation();
+        inject(function ($httpBackend) {
+            $httpBackend.verifyNoOutstandingExpectation();
+        });
     });
 
     it("knows itself using the id `buTemplateCache`", function () {
